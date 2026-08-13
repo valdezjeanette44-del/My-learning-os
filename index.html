@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>My Learning OS</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f5f7;
+      color: #111;
+    }
+
+    .app {
+      max-width: 900px;
+      margin: auto;
+      padding: 24px;
+    }
+
+    header {
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      font-size: 36px;
+      margin: 0 0 8px;
+    }
+
+    .subtitle {
+      color: #666;
+      font-size: 17px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 20px;
+    }
+
+    .card p {
+      color: #666;
+      line-height: 1.5;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 16px;
+      cursor: pointer;
+      background: #111;
+      color: white;
+    }
+
+    @media (max-width: 600px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 30px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="app">
+
+    <header>
+      <h1>My Learning OS</h1>
+      <div class="subtitle">
+        Your personal learning dashboard
+      </div>
+    </header>
+
+    <section class="grid">
+
+      <div class="card">
+        <h2>📚 Learn</h2>
+        <p>
+          Organize the things you want to learn and understand.
+        </p>
+        <button onclick="startLearning()">Start learning</button>
+      </div>
+
+      <div class="card">
+        <h2>🎯 Goals</h2>
+        <p>
+          Keep track of your learning goals and progress.
+        </p>
+        <button onclick="showMessage('Goals')">View goals</button>
+      </div>
+
+      <div class="card">
+        <h2>🧠 Knowledge</h2>
+        <p>
+          Save ideas, concepts, notes and things you've discovered.
+        </p>
+        <button onclick="showMessage('Knowledge')">Open knowledge</button>
+      </div>
+
+      <div class="card">
+        <h2>📈 Progress</h2>
+        <p>
+          See how your learning is developing over time.
+        </p>
+        <button onclick="showMessage('Progress')">View progress</button>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+    function startLearning() {
+      alert("Let's start learning!");
+    }
+
+    function showMessage(section) {
+      alert(section + " section coming next.");
+    }
+  </script>
+
+</body>
+</html>
