@@ -1,146 +1,389 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>My Learning OS</title>
+<title>My Learning OS</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<style>
+* {
+  box-sizing: border-box;
+}
 
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f5f5f7;
-      color: #111;
-    }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f5f5f7;
+  color: #111;
+}
 
-    .app {
-      max-width: 900px;
-      margin: auto;
-      padding: 24px;
-    }
+.app {
+  max-width: 900px;
+  margin: auto;
+  padding: 24px;
+}
 
-    header {
-      margin-bottom: 30px;
-    }
+header {
+  margin-bottom: 28px;
+}
 
-    h1 {
-      font-size: 36px;
-      margin: 0 0 8px;
-    }
+h1 {
+  font-size: 36px;
+  margin: 0 0 6px;
+}
 
-    .subtitle {
-      color: #666;
-      font-size: 17px;
-    }
+.subtitle {
+  color: #666;
+  font-size: 16px;
+}
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-    }
+.search {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 14px;
+  background: white;
+  font-size: 16px;
+  margin: 20px 0;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+}
 
-    .card {
-      background: white;
-      border-radius: 18px;
-      padding: 22px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-    }
+.section-title {
+  font-size: 21px;
+  margin: 28px 0 12px;
+}
 
-    .card h2 {
-      margin-top: 0;
-      font-size: 20px;
-    }
+.focus {
+  background: #111;
+  color: white;
+  border-radius: 20px;
+  padding: 24px;
+}
 
-    .card p {
-      color: #666;
-      line-height: 1.5;
-    }
+.focus small {
+  color: #aaa;
+}
 
-    button {
-      border: 0;
-      border-radius: 12px;
-      padding: 12px 18px;
-      font-size: 16px;
-      cursor: pointer;
-      background: #111;
-      color: white;
-    }
+.focus h2 {
+  margin: 8px 0;
+  font-size: 25px;
+}
 
-    @media (max-width: 600px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
+.focus p {
+  color: #ccc;
+  line-height: 1.5;
+}
 
-      h1 {
-        font-size: 30px;
-      }
-    }
-  </style>
+button {
+  border: none;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.focus button {
+  background: white;
+  color: #111;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.card {
+  background: white;
+  border-radius: 18px;
+  padding: 20px;
+  min-height: 140px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.05);
+}
+
+.card h3 {
+  margin: 8px 0;
+}
+
+.card p {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.icon {
+  font-size: 28px;
+}
+
+.progress-box {
+  background: white;
+  border-radius: 18px;
+  padding: 20px;
+}
+
+.progress-bar {
+  height: 10px;
+  background: #e5e5e5;
+  border-radius: 20px;
+  overflow: hidden;
+  margin: 12px 0;
+}
+
+.progress {
+  width: 20%;
+  height: 100%;
+  background: #111;
+}
+
+textarea {
+  width: 100%;
+  min-height: 150px;
+  border: none;
+  border-radius: 16px;
+  padding: 16px;
+  font-family: inherit;
+  font-size: 15px;
+  resize: vertical;
+  box-shadow: 0 2px 10px rgba(0,0,0,.05);
+}
+
+.save {
+  margin-top: 10px;
+  background: #111;
+  color: white;
+}
+
+.prompt {
+  background: white;
+  border-radius: 18px;
+  padding: 20px;
+}
+
+.prompt-text {
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+footer {
+  text-align: center;
+  color: #888;
+  padding: 40px 0 20px;
+  font-size: 13px;
+}
+
+@media (max-width: 600px) {
+  .app {
+    padding: 18px;
+  }
+
+  h1 {
+    font-size: 30px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
 </head>
 
 <body>
 
-  <main class="app">
+<div class="app">
 
-    <header>
-      <h1>My Learning OS</h1>
-      <div class="subtitle">
-        Your personal learning dashboard
-      </div>
-    </header>
+<header>
+  <h1>My Learning OS 🧠</h1>
+  <div class="subtitle">
+    Build a connected understanding of the world.
+  </div>
 
-    <section class="grid">
+  <input
+    class="search"
+    id="search"
+    placeholder="Search what you want to understand..."
+    oninput="searchTopics()"
+  >
+</header>
 
-      <div class="card">
-        <h2>📚 Learn</h2>
-        <p>
-          Organize the things you want to learn and understand.
-        </p>
-        <button onclick="startLearning()">Start learning</button>
-      </div>
+<div class="focus">
 
-      <div class="card">
-        <h2>🎯 Goals</h2>
-        <p>
-          Keep track of your learning goals and progress.
-        </p>
-        <button onclick="showMessage('Goals')">View goals</button>
-      </div>
+  <small>YOUR CURRENT FOCUS</small>
 
-      <div class="card">
-        <h2>🧠 Knowledge</h2>
-        <p>
-          Save ideas, concepts, notes and things you've discovered.
-        </p>
-        <button onclick="showMessage('Knowledge')">Open knowledge</button>
-      </div>
+  <h2>Understanding the World</h2>
 
-      <div class="card">
-        <h2>📈 Progress</h2>
-        <p>
-          See how your learning is developing over time.
-        </p>
-        <button onclick="showMessage('Progress')">View progress</button>
-      </div>
+  <p>
+    Don't just memorize facts. Connect ideas,
+    compare explanations, and understand why things happen.
+  </p>
 
-    </section>
+  <button onclick="newQuestion()">
+    Give me something interesting →
+  </button>
 
-  </main>
+</div>
 
-  <script>
-    function startLearning() {
-      alert("Let's start learning!");
+<h2 class="section-title">Learning Areas</h2>
+
+<div class="grid" id="topics">
+
+  <div class="card" data-topic="Physics">
+    <div class="icon">⚛️</div>
+    <h3>Physics</h3>
+    <p>Matter, energy, space, time, forces and the fundamental laws of nature.</p>
+  </div>
+
+  <div class="card" data-topic="Chemistry">
+    <div class="icon">🧪</div>
+    <h3>Chemistry</h3>
+    <p>Atoms, molecules, reactions and how matter transforms.</p>
+  </div>
+
+  <div class="card" data-topic="Biology">
+    <div class="icon">🧬</div>
+    <h3>Biology</h3>
+    <p>Life, evolution, cells, organisms and ecosystems.</p>
+  </div>
+
+  <div class="card" data-topic="History">
+    <div class="icon">🏛️</div>
+    <h3>History</h3>
+    <p>How civilizations, institutions and ideas developed through time.</p>
+  </div>
+
+  <div class="card" data-topic="Economics">
+    <div class="icon">📈</div>
+    <h3>Economics</h3>
+    <p>Markets, incentives, capitalism, resources and human decisions.</p>
+  </div>
+
+  <div class="card" data-topic="Philosophy">
+    <div class="icon">💭</div>
+    <h3>Philosophy</h3>
+    <p>Knowledge, reality, ethics, meaning and how we reason.</p>
+  </div>
+
+</div>
+
+<h2 class="section-title">My Progress</h2>
+
+<div class="progress-box">
+
+  <strong>Building my knowledge map</strong>
+
+  <div class="progress-bar">
+    <div class="progress"></div>
+  </div>
+
+  <span id="progressText">20% started</span>
+
+</div>
+
+<h2 class="section-title">My Notes</h2>
+
+<textarea
+  id="notes"
+  placeholder="Write something you learned, a question you have, or a connection between ideas..."
+></textarea>
+
+<br>
+
+<button class="save" onclick="saveNotes()">
+  Save notes
+</button>
+
+<h2 class="section-title">Think About This</h2>
+
+<div class="prompt">
+
+  <div class="prompt-text" id="question">
+    Why can physics describe some very general rules of nature,
+    while chemistry describes more complex behavior that emerges from them?
+  </div>
+
+</div>
+
+<footer>
+  My Learning OS · Learn → Connect → Question → Understand
+</footer>
+
+</div>
+
+<script>
+
+const questions = [
+
+"Why can physics describe some very general rules of nature, while chemistry describes more complex behavior that emerges from them?",
+
+"If everything is made of atoms, why does a living organism behave so differently from a rock?",
+
+"How did humans go from small groups of hunter-gatherers to complex civilizations?",
+
+"Why do markets sometimes work extremely well and sometimes fail?",
+
+"Could consciousness eventually be explained completely by physics and biology?",
+
+"Why does mathematics describe the physical universe so effectively?",
+
+"How does evolution create complexity without having a conscious plan?"
+
+];
+
+function newQuestion() {
+
+  const random =
+    questions[Math.floor(Math.random() * questions.length)];
+
+  document.getElementById("question").textContent = random;
+
+}
+
+function saveNotes() {
+
+  const notes = document.getElementById("notes").value;
+
+  localStorage.setItem("learningNotes", notes);
+
+  alert("Notes saved.");
+
+}
+
+function loadNotes() {
+
+  const saved = localStorage.getItem("learningNotes");
+
+  if (saved) {
+    document.getElementById("notes").value = saved;
+  }
+
+}
+
+function searchTopics() {
+
+  const query =
+    document.getElementById("search").value.toLowerCase();
+
+  const cards =
+    document.querySelectorAll(".card");
+
+  cards.forEach(card => {
+
+    const topic =
+      card.dataset.topic.toLowerCase();
+
+    if (topic.includes(query)) {
+      card.style.display = "block";
+    } else {
+      card.style.display = "none";
     }
 
-    function showMessage(section) {
-      alert(section + " section coming next.");
-    }
-  </script>
+  });
+
+}
+
+loadNotes();
+
+</script>
 
 </body>
 </html>
