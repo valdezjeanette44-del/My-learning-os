@@ -86,7 +86,7 @@ function renderHome(){
  <section class="panel"><h2>My learning</h2><div class="stats"><div class="stat"><strong>${st.lessons}</strong><span>lessons done</span></div><div class="stat"><strong>${st.total}</strong><span>lessons available</span></div><div class="stat"><strong>${st.scores}</strong><span>quizzes done</span></div><div class="stat"><strong>${pct}%</strong><span>course progress</span></div></div><div class="bar" style="margin-top:16px"><div style="width:${pct}%"></div></div></section>
  <section class="dashboard-grid"><div class="panel"><h2>🧠 Review</h2><p class="big-number">${reviewDue}</p><p class="muted">concept${reviewDue===1?'':'s'} ready to review today</p><a class="button" href="/review.html">Start review →</a></div><div class="panel"><h2>🔥 Learning streak</h2><p class="big-number">${streak} day${streak===1?'':'s'}</p><p class="muted">consecutive study day${streak===1?'':'s'}</p></div></section>
  <section class="panel"><h2>📚 What’s happening with my learning?</h2><div class="learning-status"><div><strong>${st.lessons}</strong><span>learned</span></div><div><strong>${Object.keys(s.review||{}).length}</strong><span>scheduled for review</span></div><div><strong>${reviewDue}</strong><span>due now</span></div><div><strong>${Math.max(0,st.total-st.lessons)}</strong><span>still to learn</span></div></div><p class="muted" style="margin-top:14px">Your system is learning with you: new lessons become scheduled reviews, and successful reviews move farther apart.</p></section>
- <section class="panel project-home-card"><div><small>🔬 MY PROJECTS</small><h2>Plant Evolution</h2><p class="muted">Follow the story from early land plants to flowers and fruits.</p></div><a class="button" href="/projects.html">Open project →</a></section> <h2>Learning Areas</h2><div class="grid">${Object.entries(SUBJECTS).map(([n,d])=>`<a class="card" href="/subjects/${n.toLowerCase()}/"><div class="icon">${d.icon}</div><h3>${n}</h3><p class="muted">${d.desc}</p><div class="bar"><div style="width:${subjectProgress(n)}%"></div></div><small>${subjectProgress(n)}% complete</small></a>`).join('')}</div>
+ <section class="panel project-home-card"><div><small>🔬 MY PROJECTS</small><h2>Plant Evolution</h2><p class="muted">Follow the story from early land plants to flowers and fruits.</p></div><a class="button" href="/projects.html">Explore projects →</a></section> <h2>Learning Areas</h2><div class="grid">${Object.entries(SUBJECTS).map(([n,d])=>`<a class="card" href="/subjects/${n.toLowerCase()}/"><div class="icon">${d.icon}</div><h3>${n}</h3><p class="muted">${d.desc}</p><div class="bar"><div style="width:${subjectProgress(n)}%"></div></div><small>${subjectProgress(n)}% complete</small></a>`).join('')}</div>
  <section class="panel"><h2>My Notes</h2><p class="muted">Your notes are saved privately in this browser.</p><textarea class="note" id="homeNote" placeholder="Capture an idea or connection...">${esc(state().notes.home||'')}</textarea><div class="lesson-actions"><button onclick="saveHomeNote()">Save notes</button></div></section>
  <section class="panel curiosity-panel"><div class="curiosity-head"><div><small>🧠 CURIOSITY LAB</small><h2>Give your brain something interesting</h2><p class="muted">A short question to make you think, connect ideas, and explore beyond the lesson.</p></div><span class="curiosity-spark">✦</span></div><div id="curiosityCard" class="curiosity-card"><div class="curiosity-meta" id="curiosityMeta"></div><div class="curiosity-question" id="questionBox">Loading a question…</div><div class="curiosity-clue" id="curiosityClue"></div><div class="curiosity-actions"><button class="button" onclick="showCuriosityClue()">💡 Give me a clue</button><button class="button secondary" onclick="newQuestion()">↻ New question</button><a id="curiosityLesson" class="button secondary" href="#">Explore the lesson →</a></div></div></section>
  <footer>My Learning OS · Learn → Connect → Question → Understand</footer>`;
@@ -118,29 +118,122 @@ function showCuriosityClue(){
 function saveHomeNote(){const s=state();s.notes.home=document.getElementById('homeNote').value;saveState(s)}
 const PROJECTS={
  'plant-evolution':{
-  title:'Plant Evolution',
-  icon:'🌱',
-  subtitle:'From aquatic ancestors to flowering plants',
-  description:'A guided journey through the major transitions that allowed plants to live, reproduce, and diversify on land.',
+  title:'Plant Evolution',icon:'🌱',subtitle:'From aquatic ancestors to flowering plants',
+  description:'A journey through the major evolutionary innovations that allowed plants to live, reproduce, and diversify on land.',
   steps:[
-   ['Life begins in water','Photosynthetic organisms evolved in aquatic environments. Algae are a useful starting point for understanding the long history of plant evolution.','Why was moving onto land such a major challenge for plants?'],
-   ['The move onto land','Early land plants faced drying out, gravity, reproduction, and the need to obtain and transport water.','What problems would a plant face if it had no way to transport water internally?'],
-   ['Mosses and early land plants','Bryophytes such as mosses can live on land but remain strongly dependent on water and lack the vascular systems of later plants.','Why can mosses live on land but still depend heavily on water?'],
-   ['Vascular plants','Vascular tissues such as xylem and phloem allowed plants to transport water, minerals, and sugars through the body. Lignin also helped support taller plants.','How did vascular tissue change what plants could do on land?'],
-   ['Ferns and spores','Ferns are vascular plants that reproduce using spores rather than seeds. Their life cycle still includes a stage that requires water for fertilization.','Why are ferns more independent from their environment than mosses, but not completely independent from water?'],
-   ['Seeds change reproduction','Seed plants protect the embryo and provide it with stored resources, making reproduction less dependent on free water.','Why was the seed such an important evolutionary innovation?'],
-   ['Gymnosperms','Gymnosperms such as conifers produce seeds that are not enclosed inside fruits. Pollen helps reproduction occur without swimming sperm.','How did pollen help plants reproduce in drier environments?'],
-   ['Flowers and angiosperms','Angiosperms are flowering plants. Their seeds develop inside ovaries that can become fruits, and many flowers interact with animals for pollination.','How can flowers and fruits help plants reproduce and spread?'],
-   ['Fruits and seed dispersal','Animals can eat fruits and later deposit seeds elsewhere. This can move seeds away from the parent plant and into new places.','Why can spreading seeds away from the parent plant be useful?'],
-   ['The big picture','Plant evolution can be viewed as a series of solutions to life on land: support, water transport, protection, reproduction, and dispersal.','Can you explain the major innovations from early land plants to flowering plants in your own words?']
+   ['Life begins in water','Photosynthetic organisms evolved in aquatic environments.','Why was moving onto land such a major challenge?'],
+   ['The move onto land','Early land plants faced drying, gravity, reproduction, and water transport.','What problems would a plant face without internal water transport?'],
+   ['Mosses and early land plants','Mosses live on land but remain strongly dependent on water and lack vascular tissue.','Why do mosses still depend heavily on water?'],
+   ['Vascular plants','Xylem and phloem transport water and sugars; lignin provides structural support.','How did vascular tissue change plant life on land?'],
+   ['Ferns and spores','Ferns are vascular plants that reproduce with spores and still need water for fertilization.','Why are ferns more independent than mosses, but not completely?'],
+   ['Seeds change reproduction','Seeds protect embryos and store resources, reducing dependence on free water.','Why was the seed a major evolutionary innovation?'],
+   ['Gymnosperms','Conifers and other gymnosperms produce exposed seeds and use pollen.','How did pollen help plants reproduce in drier environments?'],
+   ['Flowers and angiosperms','Flowering plants protect seeds inside ovaries and often interact with animals for pollination.','How can flowers improve reproduction?'],
+   ['Fruits and seed dispersal','Fruits can attract animals that transport seeds away from the parent plant.','Why is spreading seeds useful?'],
+   ['The big picture','Plant evolution can be understood as a series of solutions to life on land.','Can you explain the major innovations in your own words?']
+  ]
+ },
+ 'human-evolution':{
+  title:'Human Evolution',icon:'🧬',subtitle:'From early hominins to Homo sapiens',
+  description:'Explore the long evolutionary story of humans, including early hominins, tools, migration, Neanderthals, and our species.',
+  steps:[
+   ['What is human evolution?','Human evolution is a branching process, not a straight ladder from ape to human.','Why is the idea of a branching tree more accurate than a ladder?'],
+   ['Early hominins','Early hominins evolved upright walking and lived in changing African environments.','Why could bipedalism have been useful?'],
+   ['Australopithecus','Australopithecines combined habitual bipedalism with relatively small brains.','What does this show about evolution?'],
+   ['Early Homo','Members of Homo had changes in body size, brain size, diet, and tool use.','Why can tools change the challenges an animal faces?'],
+   ['Stone tools','Early stone tools show that humans could select, shape, and use materials for specific tasks.','What does a tool tell us about the maker?'],
+   ['Homo erectus and migration','Homo erectus and related populations spread beyond Africa into parts of Eurasia.','What challenges would migration into new environments create?'],
+   ['Neanderthals','Neanderthals lived across parts of Eurasia and had their own technologies and adaptations.','Why should Neanderthals be understood as close human relatives rather than simple ancestors?'],
+   ['Homo sapiens','Our species evolved in Africa and later expanded across much of the world.','What evidence can scientists use to reconstruct these migrations?'],
+   ['Interbreeding and Neanderthal DNA','Some populations outside Africa inherited Neanderthal DNA through ancient interbreeding.','What can DNA reveal that fossils alone cannot?'],
+   ['The big picture','Human evolution combines anatomy, archaeology, genetics, behavior, and environmental change.','How do different kinds of evidence work together?']
+  ]
+ },
+ 'hunter-gatherers-to-civilization':{
+  title:'Hunter-Gatherers → Agriculture → Civilization',icon:'🌍',subtitle:'How food production transformed human societies',
+  description:'Follow the transition from mobile hunter-gatherer communities to farming, villages, cities, states, and civilizations.',
+  steps:[
+   ['Hunter-gatherers','For most of human history, people lived by hunting, fishing, gathering, and moving through landscapes.','Why does hunter-gatherer life not simply mean “primitive”?'],
+   ['Nomads and mobility','Mobility can be an adaptation to seasonal resources and changing environments.','Why might moving be useful rather than a disadvantage?'],
+   ['The end of the Ice Age','Climate and environments changed as the last Ice Age ended.','How could environmental change affect food strategies?'],
+   ['Domestication','People gradually changed relationships with plants and animals through cultivation and selective breeding.','How is domestication different from simply eating a wild plant?'],
+   ['Agriculture','Farming allowed some communities to produce more food from managed landscapes.','What advantages and costs can agriculture create?'],
+   ['Permanent settlements','Stored food and farming could support larger, more permanent communities.','Why can food storage change social organization?'],
+   ['Surplus and specialization','Surplus food can allow some people to specialize in crafts, trade, administration, or other work.','How can surplus create new occupations?'],
+   ['Cities and states','Large settlements required coordination, institutions, infrastructure, and often political authority.','Why does a city need more organization than a small camp?'],
+   ['Writing and administration','Writing developed in several societies and was used for administration, accounting, law, and communication.','Why would record-keeping become useful in large societies?'],
+   ['Civilization','Civilization is not a single endpoint but a set of increasingly complex social, economic, and political systems.','How would you explain the transition without saying agriculture simply “caused civilization”?']
+  ]
+ },
+ 'roman-empire':{
+  title:'Roman Empire',icon:'🏛️',subtitle:'From Roman expansion to imperial transformation',
+  description:'Study the Roman world through its republic, expansion, empire, society, culture, and transformation.',
+  steps:[
+   ['Rome before the empire','Rome developed from a city-state into a republic with institutions shaped by centuries of conflict and adaptation.','What makes a republic different from a monarchy?'],
+   ['The Roman Republic','Roman political institutions included magistrates, assemblies, and the Senate, alongside major social inequalities.','Why can political institutions coexist with unequal citizenship?'],
+   ['Expansion across the Mediterranean','Military expansion brought Rome into conflict with and influence over neighboring peoples and Mediterranean powers.','How can expansion transform the society doing the expanding?'],
+   ['Julius Caesar and civil conflict','Political competition, military power, and social tensions contributed to the late Republic’s civil wars.','Why can concentration of military power create political conflict?'],
+   ['Augustus and the Empire','Augustus established a durable imperial system while preserving some republican institutions and traditions.','How can a political system change while keeping older institutions?'],
+   ['Daily life and society','Roman society included citizens, non-citizens, enslaved people, elites, workers, families, and diverse local cultures.','Why is there no single “Roman” daily life?'],
+   ['Roman engineering and cities','Roads, aqueducts, bridges, baths, buildings, and urban planning supported life across the empire.','How can infrastructure strengthen a large state?'],
+   ['Language, law, and culture','Latin, Roman law, institutions, and cultural exchange influenced many regions for centuries.','How can cultural influence survive political change?'],
+   ['Christianity and transformation','Christianity spread within the Roman world and eventually became closely connected with imperial power.','How can a religion change as it moves through different societies?'],
+   ['The transformation of the Western Empire','The Western Roman imperial system changed through military, political, economic, demographic, and regional transformations.','Why is “fall” an incomplete way to describe this long process?']
+  ]
+ },
+ 'universe':{
+  title:'How the Universe Works',icon:'🌌',subtitle:'From the Big Bang to galaxies, stars, and cosmic structure',
+  description:'Build a conceptual map of the universe: expansion, matter, stars, galaxies, gravity, and cosmic evolution.',
+  steps:[
+   ['The observable universe','The observable universe is the region whose light has had time to reach us.','Why is the observable universe not necessarily the whole universe?'],
+   ['The early universe','The universe began in a hot, dense state and expanded and cooled.','Why does expansion lead to cooling?'],
+   ['Cosmic background radiation','The cosmic microwave background is ancient light released when the early universe became transparent.','What can ancient light tell us about the past?'],
+   ['Matter and atoms','As the universe cooled, particles and eventually atoms formed, while gravity later amplified density differences.','Why are atoms important for later cosmic structure?'],
+   ['Stars are born','Gravity can collapse clouds of gas until conditions allow nuclear fusion in stellar cores.','Why does gravity both build stars and shape their surroundings?'],
+   ['Stellar life cycles','Stars change over time depending strongly on their mass, producing different endings and elements.','Why does stellar mass matter so much?'],
+   ['Galaxies','Galaxies are vast systems of stars, gas, dust, dark matter, and other components.','How can gravity organize matter on enormous scales?'],
+   ['Black holes','Black holes are regions where gravity is so strong that beyond the event horizon, escape is impossible.','Why does a black hole not simply “suck in” everything nearby?'],
+   ['Expansion and dark energy','Observations show cosmic expansion is accelerating; dark energy is the name given to the unknown component associated with this behavior.','What does acceleration tell us about the universe?'],
+   ['The big picture','Cosmic history links expansion, matter, gravity, stars, galaxies, and the chemistry needed for planets and life.','How do processes at different scales connect?']
+  ]
+ },
+ 'gravity-orbits-relativity':{
+  title:'Gravity, Orbits & Relativity',icon:'⚛️',subtitle:'How gravity shapes motion, time, and spacetime',
+  description:'Build intuition for gravity, orbital motion, escape velocity, and Einstein’s description of spacetime.',
+  steps:[
+   ['What is gravity?','Gravity is the interaction associated with mass-energy; in Newtonian physics it is described as a force.','How does gravity change motion?'],
+   ['Why objects fall','Near Earth, gravity accelerates falling objects toward the ground, while air resistance can change their motion.','Why do objects accelerate as they fall?'],
+   ['Orbits','An orbit combines forward motion with gravitational acceleration, producing continuous free fall around a body.','Why does a satellite keep missing Earth?'],
+   ['Orbital speed','The speed and distance of an orbit determine its path and period.','What happens to orbital motion when distance changes?'],
+   ['Escape velocity','An object must have enough energy to avoid returning under gravity’s influence.','Why does escape velocity depend on the mass and radius of a body?'],
+   ['Newton’s universal gravitation','Newton described gravitational attraction quantitatively and connected falling objects with planetary motion.','Why was connecting Earth and sky such a powerful idea?'],
+   ['Einstein and spacetime','General relativity describes gravity as the curvature of spacetime produced by mass-energy.','What changes when gravity is understood as geometry?'],
+   ['Time dilation','Relativity predicts that time can pass at different rates depending on motion and gravitational field.','Why is time not identical for every observer?'],
+   ['Light and gravity','Gravity can bend light and affect its frequency and path.','How can gravity affect something with no rest mass?'],
+   ['The big picture','Newton and Einstein provide different but connected descriptions of gravity, each useful in different regimes.','When is Newtonian gravity an excellent approximation, and when is relativity needed?']
+  ]
+ },
+ 'human-brain-consciousness':{
+  title:'Human Brain & Consciousness',icon:'🧠',subtitle:'How brains process information and give rise to experience',
+  description:'Explore neurons, brain systems, perception, memory, learning, and the scientific questions surrounding consciousness.',
+  steps:[
+   ['What is the brain?','The brain is a biological organ made of interconnected cells that processes information and regulates behavior and body functions.','Why is the brain considered a biological information-processing system?'],
+   ['Neurons','Neurons communicate through electrical activity and chemical signals at synapses.','How can a network of cells transmit information?'],
+   ['Brain regions and networks','Different brain areas have specialized roles, but most complex functions depend on networks working together.','Why is it misleading to assign every mental ability to one tiny brain region?'],
+   ['Sensation and perception','Sensory systems transform physical signals into neural representations that the brain interprets.','Why is perception more than simply receiving information?'],
+   ['Memory','Memory involves processes including encoding, storage, consolidation, and retrieval.','Why can remembering be different from simply storing information?'],
+   ['Learning and plasticity','Experience can change neural connections and the way brain networks function.','How does neuroplasticity help explain learning?'],
+   ['Emotion and decision-making','Emotions and reasoning interact in guiding attention, learning, and choices.','Why are emotion and reasoning not simply opposites?'],
+   ['Sleep and the brain','Sleep supports processes important for memory, regulation, and brain function.','Why might a brain need periods of altered activity?'],
+   ['What is consciousness?','Consciousness refers broadly to subjective experience and awareness, but its mechanisms remain an active scientific and philosophical research topic.','What evidence could distinguish conscious processing from unconscious processing?'],
+   ['The big question','Understanding consciousness may require connecting neuroscience, psychology, computation, philosophy, and careful experiments.','What would a scientific explanation of consciousness need to explain?']
   ]
  }
-};
-function projectState(){
- const s=state();s.projects=s.projects||{};s.projects['plant-evolution']=s.projects['plant-evolution']||{completed:[],notes:''};return s.projects['plant-evolution'];
+};function projectState(id='plant-evolution'){
+ const s=state();s.projects=s.projects||{};s.projects[id]=s.projects[id]||{completed:[],notes:''};return s.projects[id];
 }
 function projectProgress(id){
- const p=projectState(),d=PROJECTS[id];return Math.round(((p.completed||[]).length/d.steps.length)*100);
+ const p=projectState(id),d=PROJECTS[id];return Math.round(((p.completed||[]).length/d.steps.length)*100);
 }
 function toggleProjectStep(id,i){
  const s=state(),p=s.projects=s.projects||{},ps=p[id]=p[id]||{completed:[],notes:''};
@@ -157,14 +250,20 @@ function saveProjectNotes(id){
  const saved=document.getElementById('projectSaved');if(saved){saved.textContent='✓ Saved';setTimeout(()=>saved.textContent='',1200);}
 }
 function renderProjects(){
- const id='plant-evolution',d=PROJECTS[id],p=projectState(),pct=projectProgress(id);
+ const ids=Object.keys(PROJECTS);
  document.title='Projects | My Learning OS';
  document.getElementById('app').innerHTML=nav()+`<section class="hero"><a class="back" href="/">← Back to Home</a><h1>🔬 My Projects</h1><p class="muted">Long-term investigations where you connect ideas across subjects.</p></section>
- <section class="project-hero"><div class="project-icon">${d.icon}</div><div><small>ACTIVE PROJECT</small><h2>${d.title}</h2><p>${d.subtitle}</p><p class="muted">${d.description}</p></div></section>
+ <div class="project-grid">${ids.map(id=>{const d=PROJECTS[id],pct=projectProgress(id),p=projectState(id);return `<a class="project-card" href="/projects.html?project=${id}"><div class="project-card-icon">${d.icon}</div><small>PROJECT</small><h2>${d.title}</h2><p class="muted">${d.subtitle}</p><div class="bar"><div style="width:${pct}%"></div></div><strong>${p.completed.length}/${d.steps.length} milestones · ${pct}%</strong></a>`}).join('')}</div>`;
+}
+function renderProjectDetail(id){
+ const d=PROJECTS[id];if(!d){renderProjects();return}
+ const p=projectState(id),pct=projectProgress(id);
+ document.title=d.title+' | My Learning OS';
+ document.getElementById('app').innerHTML=nav()+`<section class="hero"><a class="back" href="/projects.html">← All Projects</a><h1>${d.icon} ${d.title}</h1><p class="muted">${d.subtitle}</p></section>
+ <section class="project-hero"><div class="project-icon">${d.icon}</div><div><small>ACTIVE PROJECT</small><h2>${d.title}</h2><p>${d.description}</p></div></section>
  <section class="panel"><div class="project-progress-head"><div><h2>Project progress</h2><p class="muted">${p.completed.length} of ${d.steps.length} milestones complete</p></div><strong>${pct}%</strong></div><div class="bar"><div style="width:${pct}%"></div></div></section>
- <section class="panel"><h2>🌱 Project path</h2><div class="project-steps">${d.steps.map((x,i)=>`<button class="project-step ${p.completed.includes(i)?'done':''}" onclick="toggleProjectStep('${id}',${i})"><span class="project-check">${p.completed.includes(i)?'✓':'○'}</span><span><strong>${i+1}. ${x[0]}</strong><small>${x[1]}</small><em>Question: ${x[2]}</em></span></button>`).join('')}</div></section>
- <section class="panel"><h2>🧠 My discoveries</h2><p class="muted">Write what you discovered in your own words. This becomes part of your personal project record.</p><textarea class="note project-notes" id="projectNotes" placeholder="Example: Xylem transports water upward through the plant, and transpiration from leaves helps create the pull that moves water...">${esc(p.notes||'')}</textarea><div class="lesson-actions"><button onclick="saveProjectNotes('${id}')">Save my discoveries</button><span id="projectSaved" class="muted"></span></div></section>
- <section class="panel"><h2>🔗 Connections</h2><div class="connection-grid"><div class="connection"><strong>🌱 Biology ↔ Chemistry</strong><span>Photosynthesis, water, minerals, pigments and molecules.</span></div><div class="connection"><strong>🌱 Biology ↔ Earth science</strong><span>Plants changed landscapes, soils and Earth's atmosphere.</span></div><div class="connection"><strong>🌱 Biology ↔ Evolution</strong><span>Each innovation changed which environments plants could occupy.</span></div></div></section>`;
+ <section class="panel"><h2>Project path</h2><div class="project-steps">${d.steps.map((x,i)=>`<button class="project-step ${p.completed.includes(i)?'done':''}" onclick="toggleProjectStep('${id}',${i})"><span class="project-check">${p.completed.includes(i)?'✓':'○'}</span><span><strong>${i+1}. ${x[0]}</strong><small>${x[1]}</small><em>Question: ${x[2]}</em></span></button>`).join('')}</div></section>
+ <section class="panel"><h2>🧠 My discoveries</h2><p class="muted">Write what you discovered in your own words. This stays in your browser.</p><textarea class="note project-notes" id="projectNotes" placeholder="Write your own explanation, discoveries, questions, or connections...">${esc(p.notes||'')}</textarea><div class="lesson-actions"><button onclick="saveProjectNotes('${id}')">Save my discoveries</button><span id="projectSaved" class="muted"></span></div></section>`;
 }
 function renderMap(){
  const connections=[
@@ -213,7 +312,7 @@ function recordReview(name,i,known){
  s.activity=s.activity||{};s.activity[dateKey(new Date())]=true;saveState(s);
 }
 function finishReview(name,i,known){recordReview(name,i,known);renderSubject(name);openLesson(i);}
-function boot(){const path=location.pathname;document.body.dataset.subject=(path.match(/subjects\/([^/]+)/)||[])[1] ? (path.match(/subjects\/([^/]+)/)[1].replace(/^./,c=>c.toUpperCase())) : '';if(document.getElementById('app')){if(path.includes('/subjects/'))renderSubject(document.body.dataset.subject);else if(path.includes('knowledge.html'))renderMap();else if(path.includes('review.html'))renderReview();else if(path.includes('projects.html'))renderProjects();else if(path.includes('tutor.html'))renderTutor();else renderHome()}}
+function boot(){const path=location.pathname;document.body.dataset.subject=(path.match(/subjects\/([^/]+)/)||[])[1] ? (path.match(/subjects\/([^/]+)/)[1].replace(/^./,c=>c.toUpperCase())) : '';if(document.getElementById('app')){if(path.includes('/subjects/'))renderSubject(document.body.dataset.subject);else if(path.includes('knowledge.html'))renderMap();else if(path.includes('review.html'))renderReview();else if(path.includes('projects.html')){const id=new URLSearchParams(location.search).get('project');id?renderProjectDetail(id):renderProjects();}else if(path.includes('tutor.html'))renderTutor();else renderHome()}}
 function renderTutor(){
  document.getElementById('app').innerHTML=nav()+`<section class="hero"><h1>👩‍🏫 My Tutor</h1><p class="muted">A simple tutor layer that uses the lessons in your Learning OS. A full AI tutor can plug into this interface later without changing your learning data.</p></section>
  <section class="panel"><h2>What do you want help with?</h2><div class="tutor-grid">${Object.entries(SUBJECTS).map(([n,d])=>`<button class="card tutor-choice" onclick="startTutor('${n}')"><span class="icon">${d.icon}</span><strong>${n}</strong><span class="muted">${d.desc}</span></button>`).join('')}</div></section>
