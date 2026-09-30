@@ -1,6 +1,6 @@
 {
   "name": "My Learning OS",
-  "short_name": "Learning OS",
+  "short_name": "My Learning OS",
   "description": "Build a connected understanding of the world.",
   "start_url": "/",
   "scope": "/",
