@@ -124,7 +124,7 @@ function getDueReviews(){
  return items.sort((a,b)=>new Date(a.review.nextReview)-new Date(b.review.nextReview));
 }
 function getStreak(){
- const a=state().activity||{},d=new Date(),count=0;
+ const a=state().activity||{},d=new Date();let count=0;
  if(!a[dateKey(d)]) d.setDate(d.getDate()-1);
  while(a[dateKey(d)]){count++;d.setDate(d.getDate()-1)}
  return count;
