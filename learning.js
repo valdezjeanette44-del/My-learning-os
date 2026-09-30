@@ -5,7 +5,7 @@ function saveState(s){localStorage.setItem(KEY,JSON.stringify(s))}
 function esc(v){return String(v??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[m]))}
 function subjectProgress(name){const s=state(),n=SUBJECTS[name].lessons.length;return Math.round(((s.completed[name]||[]).length/n)*100)}
 function totalStats(){const s=state();let lessons=0,total=0,scores=0;Object.keys(SUBJECTS).forEach(k=>{total+=SUBJECTS[k].lessons.length;lessons+=(s.completed[k]||[]).length;if(s.scores[k])scores++});return{lessons,total,scores}}
-function nav(){return '<div class="topbar"><a class="brand" href="/">🧠 My Learning OS</a><nav class="nav"><a href="/">Home</a><a href="/knowledge.html">Knowledge Map</a><a href="/review.html">Review</a></nav></div>'}
+function nav(){return '<div class="topbar"><a class="brand" href="/">🧠 My Learning OS</a><nav class="nav"><a href="/">Home</a><a href="/knowledge.html">Knowledge Map</a><a href="/review.html">Review</a><a href="/tutor.html">Tutor</a></nav></div>'}
 function renderSubject(name){
  const d=SUBJECTS[name],s=state(),done=s.completed[name]||[],p=subjectProgress(name);
  document.title=name+' | My Learning OS';
@@ -45,26 +45,98 @@ function openLesson(i){document.querySelectorAll('.lesson').forEach(x=>x.classLi
 function showModelAnswer(name,i){const l=SUBJECTS[name].lessons[i],box=document.getElementById('feedback-'+i);box.hidden=false;box.innerHTML='<strong>Model answer:</strong> '+esc(l[4])}
 function toggleExplanation(i){const e=document.getElementById('explain-'+i);e.hidden=!e.hidden}
 function saveAnswer(name,i,answer){const s=state();s.answers=s.answers||{};s.answers[name]=s.answers[name]||{};s.answers[name][i]=answer;saveState(s)}
-function completeLesson(name,i){const s=state();s.completed[name]=s.completed[name]||[];if(!s.completed[name].includes(i))s.completed[name].push(i);saveState(s);renderSubject(name);openLesson(i)}
+function completeLesson(name,i){
+ const s=state();
+ s.completed[name]=s.completed[name]||[];
+ if(!s.completed[name].includes(i))s.completed[name].push(i);
+ s.review=s.review||{};
+ const key=name+'-'+i;
+ const now=new Date();
+ s.review[key]={subject:name,index:i,learnedAt:now.toISOString(),nextReview:addDays(now,1).toISOString(),interval:1,stage:0};
+ s.activity=s.activity||{};
+ s.activity[dateKey(now)]=true;
+ saveState(s);
+ renderSubject(name);
+ openLesson(i);
+}
 function saveNote(){const name=document.body.dataset.subject,s=state();s.notes[name]=document.getElementById('note').value;saveState(s);document.getElementById('saved').textContent='Saved ✓';setTimeout(()=>document.getElementById('saved').textContent='',1500)}
 function renderQuiz(name){const d=SUBJECTS[name],q=d.lessons[d.lessons.length-1];document.getElementById('quiz').innerHTML=`<div class="question"><strong>${q[3]}</strong><textarea class="answer" id="quizAnswer" placeholder="Write your answer..."></textarea><div class="lesson-actions"><button onclick="showAnswer('${name}')">Show model answer</button><button class="button secondary" onclick="markQuiz('${name}')">I understand this</button></div><div id="model" class="feedback"></div></div>`}
 function showAnswer(name){const d=SUBJECTS[name],q=d.lessons[d.lessons.length-1];document.getElementById('model').textContent='Model answer: '+q[4]}
 function markQuiz(name){const s=state();s.scores[name]={score:100,date:new Date().toISOString()};saveState(s);document.getElementById('model').textContent='Nice — quiz marked complete. Your progress is saved on this device.'}
 function renderHome(){
- const st=totalStats(),pct=Math.round(st.lessons/st.total*100);
+ const st=totalStats(),pct=Math.round(st.lessons/st.total*100),s=state(),today=new Date(),reviewDue=getDueReviews().length,streak=getStreak();
  document.title='My Learning OS';
- document.getElementById('app').innerHTML=nav()+`<section class="hero"><h1>My Learning OS 🧠</h1><p class="muted">Build a connected understanding of the world.</p></section>
- <section class="panel dark"><small>YOUR CURRENT FOCUS</small><h2>Understanding the World</h2><p class="muted">Don't just memorize facts. Connect ideas, compare explanations, ask questions and understand why things happen.</p><button class="button light" onclick="newQuestion()">Give me something interesting →</button><p id="homeQuestion" style="margin-bottom:0"></p></section>
+ document.getElementById('app').innerHTML=nav()+`<section class="hero"><h1>My Learning OS 🧠</h1><p class="muted">Build a connected understanding of the world — one idea at a time.</p></section>
+ <section class="panel dark"><small>YOUR CURRENT FOCUS</small><h2>Understanding the World</h2><p class="muted">Learn → connect → question → explain → remember.</p><button class="button light" onclick="newQuestion()">Give me something interesting →</button><p id="homeQuestion" style="margin-bottom:0"></p></section>
  <section class="panel"><h2>My learning</h2><div class="stats"><div class="stat"><strong>${st.lessons}</strong><span>lessons done</span></div><div class="stat"><strong>${st.total}</strong><span>lessons available</span></div><div class="stat"><strong>${st.scores}</strong><span>quizzes done</span></div><div class="stat"><strong>${pct}%</strong><span>course progress</span></div></div><div class="bar" style="margin-top:16px"><div style="width:${pct}%"></div></div></section>
+ <section class="dashboard-grid"><div class="panel"><h2>🧠 Review</h2><p class="big-number">${reviewDue}</p><p class="muted">concepts ready to review today</p><a class="button" href="/review.html">Start review →</a></div><div class="panel"><h2>🔥 Learning streak</h2><p class="big-number">${streak} day${streak===1?'':'s'}</p><p class="muted">consecutive study day${streak===1?'':'s'}</p></div></section>
  <h2>Learning Areas</h2><div class="grid">${Object.entries(SUBJECTS).map(([n,d])=>`<a class="card" href="/subjects/${n.toLowerCase()}/"><div class="icon">${d.icon}</div><h3>${n}</h3><p class="muted">${d.desc}</p><div class="bar"><div style="width:${subjectProgress(n)}%"></div></div><small>${subjectProgress(n)}% complete</small></a>`).join('')}</div>
  <section class="panel"><h2>My Notes</h2><p class="muted">Your notes are saved privately in this browser.</p><textarea class="note" id="homeNote" placeholder="Capture an idea or connection...">${esc(state().notes.home||'')}</textarea><div class="lesson-actions"><button onclick="saveHomeNote()">Save notes</button></div></section>
  <section class="panel"><h2>Think about this</h2><div class="question" id="questionBox">Why can simple rules produce complex systems?</div></section>
  <footer>My Learning OS · Learn → Connect → Question → Understand</footer>`;
-}
-const qs=['Why does evolution not need a conscious plan?','How can chemistry emerge from physics?','Why did agriculture change human societies?','What makes an argument convincing?','Why can markets coordinate millions of decisions?','How can gravity create stable orbits?'];
+}const qs=['Why does evolution not need a conscious plan?','How can chemistry emerge from physics?','Why did agriculture change human societies?','What makes an argument convincing?','Why can markets coordinate millions of decisions?','How can gravity create stable orbits?'];
 function newQuestion(){const q=qs[Math.floor(Math.random()*qs.length)];const e=document.getElementById('homeQuestion')||document.getElementById('questionBox');if(e)e.textContent=q}
 function saveHomeNote(){const s=state();s.notes.home=document.getElementById('homeNote').value;saveState(s)}
-function renderMap(){document.getElementById('app').innerHTML=nav()+`<section class="hero"><h1>🗺️ My Knowledge Map</h1><p class="muted">Learning becomes more powerful when ideas connect across subjects.</p></section><section class="panel"><div class="map"><div class="node">⚛️ Physics<br><small>matter · energy · forces</small></div><div class="arrow">↔</div><div class="node">🧪 Chemistry<br><small>atoms · bonds · reactions</small></div><div class="arrow">↕</div><div class="node">🧬 Biology<br><small>cells · DNA · evolution</small></div><div class="arrow">↔</div><div class="node">🏛️ History<br><small>people · societies · change</small></div><div class="arrow">↕</div><div class="node">📈 Economics<br><small>choices · incentives · trade</small></div><div class="arrow">↔</div><div class="node">💭 Philosophy<br><small>knowledge · ethics · reasoning</small></div></div></section><section class="panel"><h2>Important connections</h2><div class="chips"><span class="chip">Physics → Chemistry</span><span class="chip">Chemistry → Biology</span><span class="chip">Biology → Evolution</span><span class="chip">History → Economics</span><span class="chip">Philosophy → Science</span><span class="chip">Technology → Society</span></div><p class="muted" style="margin-top:16px">These are starting connections. As your course grows, this map can become an interactive network of the concepts you personally understand.</p></section><footer>My Learning OS · Learn → Connect → Question → Understand</footer>`}
-function renderReview(){const s=state(),items=[];Object.entries(SUBJECTS).forEach(([n,d])=>d.lessons.forEach((l,i)=>{if(!(s.completed[n]||[]).includes(i))items.push({n,i,l})}));document.getElementById('app').innerHTML=nav()+`<section class="hero"><h1>🧠 Review</h1><p class="muted">Return to concepts you have not completed yet. Short reviews help turn learning into memory.</p></section><section class="panel"><h2>Today's review</h2>${items.slice(0,6).map(x=>`<a class="card" style="margin:10px 0" href="/subjects/${x.n.toLowerCase()}/#lesson-${x.i}"><strong>${SUBJECTS[x.n].icon} ${x.n} · Lesson ${x.i+1}</strong><h3>${x.l[0]}</h3><p class="muted">${x.l[1]}</p></a>`).join('')||'<div class="empty">🎉 You have completed every lesson currently in the system. More courses can be added next.</div>'}</section><section class="panel"><h2>How review works</h2><p>Complete a lesson, return later, explain it in your own words, and compare your explanation with the model answer. Your progress is stored on this device.</p></section><footer>My Learning OS · Learn → Connect → Question → Understand</footer>`}
-function boot(){const path=location.pathname;document.body.dataset.subject=(path.match(/subjects\/([^/]+)/)||[])[1] ? (path.match(/subjects\/([^/]+)/)[1].replace(/^./,c=>c.toUpperCase())) : '';if(document.getElementById('app')){if(path.includes('/subjects/'))renderSubject(document.body.dataset.subject);else if(path.includes('knowledge.html'))renderMap();else if(path.includes('review.html'))renderReview();else renderHome()}}
+function renderMap(){
+ const connections=[
+  ['Physics','Chemistry','Matter → atoms → interactions'],
+  ['Chemistry','Biology','Molecules → cells → life'],
+  ['Biology','History','Humans → populations → societies'],
+  ['History','Economics','Resources → trade → institutions'],
+  ['Philosophy','Science','Questions → evidence → reasoning'],
+  ['Economics','History','Incentives → choices → change']
+ ];
+ document.getElementById('app').innerHTML=nav()+`<section class="hero"><h1>🗺️ My Knowledge Map</h1><p class="muted">Your subjects are not separate islands. They are connected ways of understanding the same world.</p></section>
+ <section class="panel"><h2>Core connections</h2><div class="connection-grid">${connections.map(x=>`<button class="connection" onclick="showConnection('${x[0]}','${x[1]}','${x[2]}')"><strong>${x[0]} ↔ ${x[1]}</strong><span>${x[2]}</span></button>`).join('')}</div><div id="connectionDetail" class="connection-detail"><strong>Choose a connection.</strong><br><span class="muted">Tap one to see how the ideas meet.</span></div></section>
+ <section class="panel"><h2>My learning network</h2><div class="map map-modern"><div class="node">⚛️ Physics<br><small>matter · energy · forces</small></div><div class="node">🧪 Chemistry<br><small>atoms · bonds · reactions</small></div><div class="node">🧬 Biology<br><small>cells · DNA · evolution</small></div><div class="node">🏛️ History<br><small>people · societies · change</small></div><div class="node">📈 Economics<br><small>choices · incentives · trade</small></div><div class="node">💭 Philosophy<br><small>knowledge · ethics · reasoning</small></div></div></section>
+ <footer>My Learning OS · Learn → Connect → Question → Understand</footer>`;
+}
+function showConnection(a,b,detail){const e=document.getElementById('connectionDetail');if(e)e.innerHTML='<strong>'+esc(a)+' ↔ '+esc(b)+'</strong><br>'+esc(detail);}
+function renderReview(){
+ const due=getDueReviews(),s=state();
+ document.getElementById('app').innerHTML=nav()+`<section class="hero"><h1>🧠 Review</h1><p class="muted">Review concepts at increasing intervals so they stay in memory.</p></section>
+ <section class="panel"><div class="review-summary"><div><strong>${due.length}</strong><span>due today</span></div><div><strong>${Object.keys(s.review||{}).length}</strong><span>scheduled</span></div><div><strong>${getStreak()}</strong><span>day streak</span></div></div></section>
+ <section class="panel"><h2>Today's review</h2>${due.slice(0,8).map(x=>`<div class="review-card"><div><small>${SUBJECTS[x.n].icon} ${x.n} · Lesson ${x.i+1}</small><h3>${esc(x.l[0])}</h3><p class="muted">${esc(x.l[3])}</p></div><a class="button" href="/subjects/${x.n.toLowerCase()}/#lesson-${x.i}">Review →</a></div>`).join('')||'<div class="empty">🎉 Nothing is due right now. Complete another lesson and your next review will be scheduled automatically.</div>'}</section>
+ <section class="panel"><h2>How your review grows</h2><p>After a lesson, the first review is scheduled for tomorrow. When you review successfully, the interval grows: 1 day → 3 days → 7 days → 14 days → 30 days.</p></section>
+ <footer>My Learning OS · Learn → Connect → Question → Understand</footer>`;
+}
+function addDays(date,days){const d=new Date(date);d.setDate(d.getDate()+days);return d}
+function dateKey(date){const d=new Date(date);return d.toISOString().slice(0,10)}
+function getDueReviews(){
+ const s=state(),now=new Date(),items=[];
+ Object.values(s.review||{}).forEach(r=>{if(r.nextReview&&new Date(r.nextReview)<=now){const d=SUBJECTS[r.subject];if(d&&d.lessons[r.index])items.push({n:r.subject,i:r.index,l:d.lessons[r.index],review:r})}});
+ return items.sort((a,b)=>new Date(a.review.nextReview)-new Date(b.review.nextReview));
+}
+function getStreak(){
+ const a=state().activity||{},d=new Date(),count=0;
+ if(!a[dateKey(d)]) d.setDate(d.getDate()-1);
+ while(a[dateKey(d)]){count++;d.setDate(d.getDate()-1)}
+ return count;
+}
+function recordReview(name,i,known){
+ const s=state(),key=name+'-'+i,r=s.review?.[key];
+ if(!r)return;
+ const intervals=[1,3,7,14,30];
+ r.interval=known?intervals[Math.min((r.stage||0)+1,intervals.length-1)]:1;
+ r.stage=known?Math.min((r.stage||0)+1,intervals.length-1):0;
+ r.nextReview=addDays(new Date(),r.interval).toISOString();
+ s.activity=s.activity||{};s.activity[dateKey(new Date())]=true;saveState(s);
+}
+function boot(){const path=location.pathname;document.body.dataset.subject=(path.match(/subjects\/([^/]+)/)||[])[1] ? (path.match(/subjects\/([^/]+)/)[1].replace(/^./,c=>c.toUpperCase())) : '';if(document.getElementById('app')){if(path.includes('/subjects/'))renderSubject(document.body.dataset.subject);else if(path.includes('knowledge.html'))renderMap();else if(path.includes('review.html'))renderReview();else if(path.includes('tutor.html'))renderTutor();else renderHome()}}
+function renderTutor(){
+ document.getElementById('app').innerHTML=nav()+`<section class="hero"><h1>👩‍🏫 My Tutor</h1><p class="muted">A simple tutor layer that uses the lessons in your Learning OS. A full AI tutor can plug into this interface later without changing your learning data.</p></section>
+ <section class="panel"><h2>What do you want help with?</h2><div class="tutor-grid">${Object.entries(SUBJECTS).map(([n,d])=>`<button class="card tutor-choice" onclick="startTutor('${n}')"><span class="icon">${d.icon}</span><strong>${n}</strong><span class="muted">${d.desc}</span></button>`).join('')}</div></section>
+ <section class="panel" id="tutorPanel"><h2>Choose a subject</h2><p class="muted">Your tutor will ask you a question, listen to your answer, and point you toward the relevant lesson.</p></section>
+ <footer>My Learning OS · Learn → Connect → Question → Understand</footer>`;
+}
+function startTutor(name){
+ const d=SUBJECTS[name],i=Math.floor(Math.random()*d.lessons.length),l=d.lessons[i],p=document.getElementById('tutorPanel');
+ p.innerHTML='<h2>'+d.icon+' '+esc(name)+' tutor</h2><p>'+esc(l[3])+'</p><textarea class="answer" id="tutorAnswer" placeholder="Explain your thinking in your own words..."></textarea><div class="lesson-actions"><button onclick="tutorRespond(\''+name+'\','+i+')">Check my thinking</button><a class="button secondary" href="/subjects/'+name.toLowerCase()+'/#lesson-'+i+'">Open lesson →</a></div><div id="tutorFeedback" class="feedback"></div>';
+}
+function tutorRespond(name,i){
+ const l=SUBJECTS[name].lessons[i],answer=(document.getElementById('tutorAnswer').value||'').trim(),box=document.getElementById('tutorFeedback');
+ if(!answer){box.innerHTML='✍️ Start by explaining what you think. There is no need to be perfect.';return}
+ const key=l[4].toLowerCase().split(/[^a-z0-9]+/).filter(w=>w.length>5),a=answer.toLowerCase(),hits=key.filter(w=>a.includes(w));
+ box.innerHTML=hits.length?'✅ You are connecting with the lesson. Try explaining <strong>why</strong> your idea leads to the result.':'💡 Good starting point. Open the lesson, compare the model answer, then try explaining the idea again in your own words.';
+}
 boot();
