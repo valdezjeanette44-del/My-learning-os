@@ -55,7 +55,7 @@ function saveAnswer(name,i,answer){const s=state();s.answers=s.answers||{};s.ans
 function completeLesson(name,i){
  const s=state();
  s.completed[name]=s.completed[name]||[];
- if(!s.completed[name].includes(i)){s.completed[name].push(i);s.daily=s.daily||{};const dk=todayKey();s.daily[dk]=Number(s.daily[dk]||0)+1;}
+ if(!s.completed[name].includes(i))s.completed[name].push(i);
  s.review=s.review||{};
  const key=name+'-'+i;
  const now=new Date();
@@ -77,39 +77,14 @@ function saveNote(){const name=document.body.dataset.subject,s=state();s.notes[n
 function renderQuiz(name){const d=SUBJECTS[name],q=d.lessons[d.lessons.length-1];document.getElementById('quiz').innerHTML=`<div class="question"><strong>${q[3]}</strong><textarea class="answer" id="quizAnswer" placeholder="Write your answer..."></textarea><div class="lesson-actions"><button onclick="showAnswer('${name}')">Show model answer</button><button class="button secondary" onclick="markQuiz('${name}')">I understand this</button></div><div id="model" class="feedback"></div></div>`}
 function showAnswer(name){const d=SUBJECTS[name],q=d.lessons[d.lessons.length-1];document.getElementById('model').textContent='Model answer: '+q[4]}
 function markQuiz(name){const s=state();s.scores[name]={score:100,date:new Date().toISOString()};saveState(s);document.getElementById('model').textContent='Nice — quiz marked complete. Your progress is saved on this device.'}
-function getNextLesson(){
- const s=state();
- for(const [name,d] of Object.entries(SUBJECTS)){
-  const done=s.completed[name]||[];
-  const i=d.lessons.findIndex((_,idx)=>!done.includes(idx));
-  if(i>=0)return{name,i,lesson:d.lessons[i]};
- }
- return null;
-}
-function todayKey(){return dateKey(new Date())}
-function getDailyGoal(){const s=state();return s.dailyGoal||1}
-function getDailyCount(){const s=state();return Number(s.daily?.[todayKey()]||0)}
-function setDailyGoal(goal){const s=state();s.dailyGoal=Number(goal);saveState(s);renderHome()}
-function searchLearning(query){
- const q=(query||'').trim().toLowerCase(),box=document.getElementById('searchResults');
- if(!box)return;
- if(!q){box.innerHTML='';return}
- const results=[];
- Object.entries(SUBJECTS).forEach(([name,d])=>d.lessons.forEach((l,i)=>{
-  const hay=(name+' '+l[0]+' '+l[1]+' '+l[2]).toLowerCase();
-  if(hay.includes(q))results.push({name,i,l});
- }));
- box.innerHTML=results.length?results.slice(0,8).map(r=>'<a class="search-result" href="/subjects/'+r.name.toLowerCase()+'/#lesson-'+r.i+'"><strong>'+esc(r.name)+' · Lesson '+(r.i+1)+'</strong><span>'+esc(r.l[0])+'</span></a>').join(''):'<div class="empty">No matching lessons yet. Try a subject, concept, or lesson title.</div>';
-}
 function renderHome(){
- const st=totalStats(),pct=Math.round(st.lessons/st.total*100),s=state(),today=new Date(),reviewDue=getDueReviews().length,streak=getStreak();
+ const st=totalStats(),pct=Math.round(st.lessons/st.total*100),s=state(),reviewDue=getDueReviews().length,streak=getStreak();
  document.title='My Learning OS';
- document.getElementById('app').innerHTML=nav()+`<section class="hero"><h1>My Learning OS 🧠</h1><p class="muted">Build a connected understanding of the world — one idea at a time.</p><div class="search-wrap"><input id="learningSearch" class="search-input" placeholder="Search a subject or concept..." oninput="searchLearning(this.value)" autocomplete="off"><div id="searchResults" class="search-results"></div></div></section>
+ document.getElementById('app').innerHTML=nav()+`<section class="hero"><h1>My Learning OS 🧠</h1><p class="muted">Build a connected understanding of the world — one idea at a time.</p></section>
  <section class="panel dark"><small>YOUR CURRENT FOCUS</small><h2>Understanding the World</h2><p class="muted">Learn → connect → question → explain → remember.</p><button class="button light" onclick="newQuestion()">Give me something interesting →</button><p id="homeQuestion" style="margin-bottom:0"></p></section>
  <section class="panel"><h2>My learning</h2><div class="stats"><div class="stat"><strong>${st.lessons}</strong><span>lessons done</span></div><div class="stat"><strong>${st.total}</strong><span>lessons available</span></div><div class="stat"><strong>${st.scores}</strong><span>quizzes done</span></div><div class="stat"><strong>${pct}%</strong><span>course progress</span></div></div><div class="bar" style="margin-top:16px"><div style="width:${pct}%"></div></div></section>
  <section class="dashboard-grid"><div class="panel"><h2>🧠 Review</h2><p class="big-number">${reviewDue}</p><p class="muted">concept${reviewDue===1?'':'s'} ready to review today</p><a class="button" href="/review.html">Start review →</a></div><div class="panel"><h2>🔥 Learning streak</h2><p class="big-number">${streak} day${streak===1?'':'s'}</p><p class="muted">consecutive study day${streak===1?'':'s'}</p></div></section>
  <section class="panel"><h2>📚 What’s happening with my learning?</h2><div class="learning-status"><div><strong>${st.lessons}</strong><span>learned</span></div><div><strong>${Object.keys(s.review||{}).length}</strong><span>scheduled for review</span></div><div><strong>${reviewDue}</strong><span>due now</span></div><div><strong>${Math.max(0,st.total-st.lessons)}</strong><span>still to learn</span></div></div><p class="muted" style="margin-top:14px">Your system is learning with you: new lessons become scheduled reviews, and successful reviews move farther apart.</p></section>
- <section class="dashboard-grid"><div class="panel"><h2>▶️ Continue learning</h2><div id="continueLearning"></div></div><div class="panel"><h2>🎯 Today's goal</h2><div id="dailyGoalCard"></div></div></section>
  <h2>Learning Areas</h2><div class="grid">${Object.entries(SUBJECTS).map(([n,d])=>`<a class="card" href="/subjects/${n.toLowerCase()}/"><div class="icon">${d.icon}</div><h3>${n}</h3><p class="muted">${d.desc}</p><div class="bar"><div style="width:${subjectProgress(n)}%"></div></div><small>${subjectProgress(n)}% complete</small></a>`).join('')}</div>
  <section class="panel"><h2>My Notes</h2><p class="muted">Your notes are saved privately in this browser.</p><textarea class="note" id="homeNote" placeholder="Capture an idea or connection...">${esc(state().notes.home||'')}</textarea><div class="lesson-actions"><button onclick="saveHomeNote()">Save notes</button></div></section>
  <section class="panel"><h2>Think about this</h2><div class="question" id="questionBox">Why can simple rules produce complex systems?</div></section>
