@@ -17,8 +17,30 @@ function renderSubject(name){
  <footer>My Learning OS · Learn → Connect → Question → Understand</footer>`;
  renderQuiz(name);
 }
-function lessonHTML(name,l,i,isDone){return `<article class="lesson" id="lesson-${i}"><h3>Lesson ${i+1}: ${l[0]}</h3><p class="muted">${l[1]}</p><div class="lesson-body"><p>${l[2]}</p><div class="question"><strong>🧠 Think about this:</strong><br>${l[3]}<div class="muted" style="margin-top:8px">Hint: ${l[4]}</div><textarea class="answer" id="answer-${i}" placeholder="Write your answer in your own words..."></textarea><div class="lesson-actions"><button onclick="checkAnswer('${name}',${i})">Check my answer</button><button class="button secondary" onclick="showModelAnswer('${name}',${i})">Show model answer</button></div><div id="feedback-${i}" class="feedback" hidden></div></div><div class="lesson-actions"><button onclick="completeLesson('${name}',${i})" ${isDone?'disabled':''}>${isDone?'✓ Completed':'Mark lesson complete'}</button><button class="button secondary" onclick="toggleExplanation(${i})">Explain another way</button></div><p id="explain-${i}" class="muted" hidden>In simple terms: ${l[2]} Think of it as a relationship between things that you can observe, test or reason about.</p></div><button class="button secondary" onclick="openLesson(${i})">${isDone?'Review lesson':'Open lesson'} →</button></article>`}
-function checkAnswer(name,i){const d=SUBJECTS[name],l=d.lessons[i],input=document.getElementById('answer-'+i),box=document.getElementById('feedback-'+i);const answer=(input.value||'').trim();if(!answer){box.hidden=false;box.textContent='✍️ Write your answer first. It does not need to be perfect — the goal is to think.';return}const words=answer.toLowerCase().split(/\\s+/).filter(Boolean);const keyWords=(l[4]+' '+l[2]).toLowerCase().replace(/[^a-z0-9\\s]/g,' ').split(/\\s+/).filter(w=>w.length>4);const matches=[...new Set(words.filter(w=>keyWords.includes(w)))];let message='💡 Good attempt! ';if(matches.length>=2){message+='You included important ideas: '+matches.slice(0,4).join(', ')+'. Now compare your explanation with the model answer.'}else if(answer.length>=40){message+='You explained your thinking. Look at the model answer and see what idea you could add.'}else{message+='Try adding one or two more details about why or how it happens.'}box.hidden=false;box.textContent=message;saveAnswer(name,i,answer)}
+function lessonHTML(name,l,i,isDone){return `<article class="lesson" id="lesson-${i}"><h3>Lesson ${i+1}: ${l[0]}</h3><p class="muted">${l[1]}</p><div class="lesson-body"><p>${l[2]}</p><div class="question"><strong>🧠 Think about this:</strong><br>${l[3]}<div class="muted" style="margin-top:8px">Hint: ${l[4]}</div><textarea class="answer" id="answer-${i}" placeholder="Write your answer in your own words...">${esc((s().answers?.[name]?.[i])||'')}</textarea><div class="lesson-actions"><button onclick="checkAnswer('${name}',${i})">Check my answer</button><button class="button secondary" onclick="showModelAnswer('${name}',${i})">Show model answer</button></div><div id="feedback-${i}" class="feedback" hidden></div></div><div class="lesson-actions"><button onclick="completeLesson('${name}',${i})" ${isDone?'disabled':''}>${isDone?'✓ Completed':'Mark lesson complete'}</button><button class="button secondary" onclick="toggleExplanation(${i})">Explain another way</button></div><p id="explain-${i}" class="muted" hidden>In simple terms: ${l[2]} Think of it as a relationship between things that you can observe, test or reason about.</p></div><button class="button secondary" onclick="openLesson(${i})">${isDone?'Review lesson':'Open lesson'} →</button></article>`}
+function checkAnswer(name,i){
+ const d=SUBJECTS[name],l=d.lessons[i],input=document.getElementById('answer-'+i),box=document.getElementById('feedback-'+i);
+ const answer=(input.value||'').trim();
+ if(!answer){box.hidden=false;box.innerHTML='<strong>✍️ Start with your idea.</strong><br>You do not need a perfect answer. Explain what you think first, then we can improve it together.';return}
+ const normalize=t=>t.toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
+ const words=normalize(answer).split(' ').filter(Boolean);
+ const stop=new Set(['about','after','again','because','before','being','could','does','from','have','into','more','only','other','should','their','there','these','they','this','through','what','when','where','which','while','with','would','your','that','than','then','them','were','will']);
+ const answerWords=new Set(words.filter(w=>w.length>4&&!stop.has(w)));
+ const modelWords=normalize(l[4]).split(' ').filter(w=>w.length>4&&!stop.has(w));
+ const important=[...new Set(modelWords)];
+ const matched=important.filter(w=>answerWords.has(w));
+ const missing=important.filter(w=>!answerWords.has(w)).slice(0,3);
+ let title='',body='';
+ if(matched.length>=2){title='✅ You got the main idea.';body='You included: <strong>'+matched.slice(0,4).join(', ')+'</strong>.';}
+ else if(matched.length===1){title='🟡 You have part of the idea.';body='You included <strong>'+matched[0]+'</strong>, which is important.';}
+ else{title='💡 Good start.';body='Your answer shows you are thinking about the question.';}
+ let next='';
+ if(missing.length){next='<br><strong>🔧 Add this:</strong> '+missing.join(', ')+'.';}
+ else{next='<br><strong>🌟 Next step:</strong> Explain why or how your answer works.';}
+ box.hidden=false;
+ box.innerHTML='<strong>'+title+'</strong><br>'+body+next+'<br><span class="muted">Now compare with the model answer and rewrite your answer in your own words.</span>';
+ saveAnswer(name,i,answer)
+}
 function openLesson(i){document.querySelectorAll('.lesson').forEach(x=>x.classList.remove('active'));const el=document.getElementById('lesson-'+i);el.classList.add('active');el.scrollIntoView({behavior:'smooth',block:'center'})}
 function showModelAnswer(name,i){const l=SUBJECTS[name].lessons[i],box=document.getElementById('feedback-'+i);box.hidden=false;box.innerHTML='<strong>Model answer:</strong> '+esc(l[4])}
 function toggleExplanation(i){const e=document.getElementById('explain-'+i);e.hidden=!e.hidden}
