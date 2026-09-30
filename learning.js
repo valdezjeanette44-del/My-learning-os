@@ -2,6 +2,7 @@ const SUBJECTS={"Physics":{"icon":"⚛️","desc":"Matter, energy, space, time, 
 const KEY="myLearningOS.v2";
 function state(){try{return JSON.parse(localStorage.getItem(KEY))||{completed:{},notes:{},scores:{}}}catch{return{completed:{},notes:{},scores:{}}}}
 function saveState(s){localStorage.setItem(KEY,JSON.stringify(s))}
+function esc(v){return String(v??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[m]))}
 function subjectProgress(name){const s=state(),n=SUBJECTS[name].lessons.length;return Math.round(((s.completed[name]||[]).length/n)*100)}
 function totalStats(){const s=state();let lessons=0,total=0,scores=0;Object.keys(SUBJECTS).forEach(k=>{total+=SUBJECTS[k].lessons.length;lessons+=(s.completed[k]||[]).length;if(s.scores[k])scores++});return{lessons,total,scores}}
 function nav(){return '<div class="topbar"><a class="brand" href="/">🧠 My Learning OS</a><nav class="nav"><a href="/">Home</a><a href="/knowledge.html">Knowledge Map</a><a href="/review.html">Review</a></nav></div>'}
