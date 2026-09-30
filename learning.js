@@ -5,7 +5,7 @@ function saveState(s){localStorage.setItem(KEY,JSON.stringify(s))}
 function esc(v){return String(v??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[m]))}
 function subjectProgress(name){const s=state(),n=SUBJECTS[name].lessons.length;return Math.round(((s.completed[name]||[]).length/n)*100)}
 function totalStats(){const s=state();let lessons=0,total=0,scores=0;Object.keys(SUBJECTS).forEach(k=>{total+=SUBJECTS[k].lessons.length;lessons+=(s.completed[k]||[]).length;if(s.scores[k])scores++});return{lessons,total,scores}}
-function nav(){return '<div class="topbar"><a class="brand" href="/">🧠 My Learning OS</a><nav class="nav"><a href="/">Home</a><a href="/knowledge.html">Knowledge Map</a><a href="/review.html">Review</a><a href="/tutor.html">Tutor</a></nav></div>'}
+function nav(){return '<div class="topbar"><a class="brand" href="/">🧠 My Learning OS</a><nav class="nav"><a href="/">Home</a><a href="/projects.html">Projects</a><a href="/knowledge.html">Knowledge Map</a><a href="/review.html">Review</a><a href="/tutor.html">Tutor</a></nav></div>'}
 function renderSubject(name){
  const d=SUBJECTS[name],s=state(),done=s.completed[name]||[],p=subjectProgress(name);
  document.title=name+' | My Learning OS';
@@ -86,7 +86,7 @@ function renderHome(){
  <section class="panel"><h2>My learning</h2><div class="stats"><div class="stat"><strong>${st.lessons}</strong><span>lessons done</span></div><div class="stat"><strong>${st.total}</strong><span>lessons available</span></div><div class="stat"><strong>${st.scores}</strong><span>quizzes done</span></div><div class="stat"><strong>${pct}%</strong><span>course progress</span></div></div><div class="bar" style="margin-top:16px"><div style="width:${pct}%"></div></div></section>
  <section class="dashboard-grid"><div class="panel"><h2>🧠 Review</h2><p class="big-number">${reviewDue}</p><p class="muted">concept${reviewDue===1?'':'s'} ready to review today</p><a class="button" href="/review.html">Start review →</a></div><div class="panel"><h2>🔥 Learning streak</h2><p class="big-number">${streak} day${streak===1?'':'s'}</p><p class="muted">consecutive study day${streak===1?'':'s'}</p></div></section>
  <section class="panel"><h2>📚 What’s happening with my learning?</h2><div class="learning-status"><div><strong>${st.lessons}</strong><span>learned</span></div><div><strong>${Object.keys(s.review||{}).length}</strong><span>scheduled for review</span></div><div><strong>${reviewDue}</strong><span>due now</span></div><div><strong>${Math.max(0,st.total-st.lessons)}</strong><span>still to learn</span></div></div><p class="muted" style="margin-top:14px">Your system is learning with you: new lessons become scheduled reviews, and successful reviews move farther apart.</p></section>
- <h2>Learning Areas</h2><div class="grid">${Object.entries(SUBJECTS).map(([n,d])=>`<a class="card" href="/subjects/${n.toLowerCase()}/"><div class="icon">${d.icon}</div><h3>${n}</h3><p class="muted">${d.desc}</p><div class="bar"><div style="width:${subjectProgress(n)}%"></div></div><small>${subjectProgress(n)}% complete</small></a>`).join('')}</div>
+ <section class="panel project-home-card"><div><small>🔬 MY PROJECTS</small><h2>Plant Evolution</h2><p class="muted">Follow the story from early land plants to flowers and fruits.</p></div><a class="button" href="/projects.html">Open project →</a></section> <h2>Learning Areas</h2><div class="grid">${Object.entries(SUBJECTS).map(([n,d])=>`<a class="card" href="/subjects/${n.toLowerCase()}/"><div class="icon">${d.icon}</div><h3>${n}</h3><p class="muted">${d.desc}</p><div class="bar"><div style="width:${subjectProgress(n)}%"></div></div><small>${subjectProgress(n)}% complete</small></a>`).join('')}</div>
  <section class="panel"><h2>My Notes</h2><p class="muted">Your notes are saved privately in this browser.</p><textarea class="note" id="homeNote" placeholder="Capture an idea or connection...">${esc(state().notes.home||'')}</textarea><div class="lesson-actions"><button onclick="saveHomeNote()">Save notes</button></div></section>
  <section class="panel curiosity-panel"><div class="curiosity-head"><div><small>🧠 CURIOSITY LAB</small><h2>Give your brain something interesting</h2><p class="muted">A short question to make you think, connect ideas, and explore beyond the lesson.</p></div><span class="curiosity-spark">✦</span></div><div id="curiosityCard" class="curiosity-card"><div class="curiosity-meta" id="curiosityMeta"></div><div class="curiosity-question" id="questionBox">Loading a question…</div><div class="curiosity-clue" id="curiosityClue"></div><div class="curiosity-actions"><button class="button" onclick="showCuriosityClue()">💡 Give me a clue</button><button class="button secondary" onclick="newQuestion()">↻ New question</button><a id="curiosityLesson" class="button secondary" href="#">Explore the lesson →</a></div></div></section>
  <footer>My Learning OS · Learn → Connect → Question → Understand</footer>`;
@@ -116,6 +116,56 @@ function showCuriosityClue(){
  if(item){clue.textContent='💡 '+item.clue;clue.classList.add('visible');}
 }
 function saveHomeNote(){const s=state();s.notes.home=document.getElementById('homeNote').value;saveState(s)}
+const PROJECTS={
+ 'plant-evolution':{
+  title:'Plant Evolution',
+  icon:'🌱',
+  subtitle:'From aquatic ancestors to flowering plants',
+  description:'A guided journey through the major transitions that allowed plants to live, reproduce, and diversify on land.',
+  steps:[
+   ['Life begins in water','Photosynthetic organisms evolved in aquatic environments. Algae are a useful starting point for understanding the long history of plant evolution.','Why was moving onto land such a major challenge for plants?'],
+   ['The move onto land','Early land plants faced drying out, gravity, reproduction, and the need to obtain and transport water.','What problems would a plant face if it had no way to transport water internally?'],
+   ['Mosses and early land plants','Bryophytes such as mosses can live on land but remain strongly dependent on water and lack the vascular systems of later plants.','Why can mosses live on land but still depend heavily on water?'],
+   ['Vascular plants','Vascular tissues such as xylem and phloem allowed plants to transport water, minerals, and sugars through the body. Lignin also helped support taller plants.','How did vascular tissue change what plants could do on land?'],
+   ['Ferns and spores','Ferns are vascular plants that reproduce using spores rather than seeds. Their life cycle still includes a stage that requires water for fertilization.','Why are ferns more independent from their environment than mosses, but not completely independent from water?'],
+   ['Seeds change reproduction','Seed plants protect the embryo and provide it with stored resources, making reproduction less dependent on free water.','Why was the seed such an important evolutionary innovation?'],
+   ['Gymnosperms','Gymnosperms such as conifers produce seeds that are not enclosed inside fruits. Pollen helps reproduction occur without swimming sperm.','How did pollen help plants reproduce in drier environments?'],
+   ['Flowers and angiosperms','Angiosperms are flowering plants. Their seeds develop inside ovaries that can become fruits, and many flowers interact with animals for pollination.','How can flowers and fruits help plants reproduce and spread?'],
+   ['Fruits and seed dispersal','Animals can eat fruits and later deposit seeds elsewhere. This can move seeds away from the parent plant and into new places.','Why can spreading seeds away from the parent plant be useful?'],
+   ['The big picture','Plant evolution can be viewed as a series of solutions to life on land: support, water transport, protection, reproduction, and dispersal.','Can you explain the major innovations from early land plants to flowering plants in your own words?']
+  ]
+ }
+};
+function projectState(){
+ const s=state();s.projects=s.projects||{};s.projects['plant-evolution']=s.projects['plant-evolution']||{completed:[],notes:''};return s.projects['plant-evolution'];
+}
+function projectProgress(id){
+ const p=projectState(),d=PROJECTS[id];return Math.round(((p.completed||[]).length/d.steps.length)*100);
+}
+function toggleProjectStep(id,i){
+ const s=state(),p=s.projects=s.projects||{},ps=p[id]=p[id]||{completed:[],notes:''};
+ ps.completed=ps.completed||[];
+ const at=ps.completed.indexOf(i);
+ if(at>=0)ps.completed.splice(at,1);else ps.completed.push(i);
+ saveState(s);renderProjects();
+}
+function saveProjectNotes(id){
+ const el=document.getElementById('projectNotes'),s=state();
+ s.projects=s.projects||{};s.projects[id]=s.projects[id]||{completed:[],notes:''};
+ s.projects[id].notes=el?el.value:'';
+ saveState(s);
+ const saved=document.getElementById('projectSaved');if(saved){saved.textContent='✓ Saved';setTimeout(()=>saved.textContent='',1200);}
+}
+function renderProjects(){
+ const id='plant-evolution',d=PROJECTS[id],p=projectState(),pct=projectProgress(id);
+ document.title='Projects | My Learning OS';
+ document.getElementById('app').innerHTML=nav()+`<section class="hero"><a class="back" href="/">← Back to Home</a><h1>🔬 My Projects</h1><p class="muted">Long-term investigations where you connect ideas across subjects.</p></section>
+ <section class="project-hero"><div class="project-icon">${d.icon}</div><div><small>ACTIVE PROJECT</small><h2>${d.title}</h2><p>${d.subtitle}</p><p class="muted">${d.description}</p></div></section>
+ <section class="panel"><div class="project-progress-head"><div><h2>Project progress</h2><p class="muted">${p.completed.length} of ${d.steps.length} milestones complete</p></div><strong>${pct}%</strong></div><div class="bar"><div style="width:${pct}%"></div></div></section>
+ <section class="panel"><h2>🌱 Project path</h2><div class="project-steps">${d.steps.map((x,i)=>`<button class="project-step ${p.completed.includes(i)?'done':''}" onclick="toggleProjectStep('${id}',${i})"><span class="project-check">${p.completed.includes(i)?'✓':'○'}</span><span><strong>${i+1}. ${x[0]}</strong><small>${x[1]}</small><em>Question: ${x[2]}</em></span></button>`).join('')}</div></section>
+ <section class="panel"><h2>🧠 My discoveries</h2><p class="muted">Write what you discovered in your own words. This becomes part of your personal project record.</p><textarea class="note project-notes" id="projectNotes" placeholder="Example: Xylem transports water upward through the plant, and transpiration from leaves helps create the pull that moves water...">${esc(p.notes||'')}</textarea><div class="lesson-actions"><button onclick="saveProjectNotes('${id}')">Save my discoveries</button><span id="projectSaved" class="muted"></span></div></section>
+ <section class="panel"><h2>🔗 Connections</h2><div class="connection-grid"><div class="connection"><strong>🌱 Biology ↔ Chemistry</strong><span>Photosynthesis, water, minerals, pigments and molecules.</span></div><div class="connection"><strong>🌱 Biology ↔ Earth science</strong><span>Plants changed landscapes, soils and Earth's atmosphere.</span></div><div class="connection"><strong>🌱 Biology ↔ Evolution</strong><span>Each innovation changed which environments plants could occupy.</span></div></div></section>`;
+}
 function renderMap(){
  const connections=[
   ['Physics','Chemistry','Matter → atoms → interactions'],
@@ -163,7 +213,7 @@ function recordReview(name,i,known){
  s.activity=s.activity||{};s.activity[dateKey(new Date())]=true;saveState(s);
 }
 function finishReview(name,i,known){recordReview(name,i,known);renderSubject(name);openLesson(i);}
-function boot(){const path=location.pathname;document.body.dataset.subject=(path.match(/subjects\/([^/]+)/)||[])[1] ? (path.match(/subjects\/([^/]+)/)[1].replace(/^./,c=>c.toUpperCase())) : '';if(document.getElementById('app')){if(path.includes('/subjects/'))renderSubject(document.body.dataset.subject);else if(path.includes('knowledge.html'))renderMap();else if(path.includes('review.html'))renderReview();else if(path.includes('tutor.html'))renderTutor();else renderHome()}}
+function boot(){const path=location.pathname;document.body.dataset.subject=(path.match(/subjects\/([^/]+)/)||[])[1] ? (path.match(/subjects\/([^/]+)/)[1].replace(/^./,c=>c.toUpperCase())) : '';if(document.getElementById('app')){if(path.includes('/subjects/'))renderSubject(document.body.dataset.subject);else if(path.includes('knowledge.html'))renderMap();else if(path.includes('review.html'))renderReview();else if(path.includes('projects.html'))renderProjects();else if(path.includes('tutor.html'))renderTutor();else renderHome()}}
 function renderTutor(){
  document.getElementById('app').innerHTML=nav()+`<section class="hero"><h1>👩‍🏫 My Tutor</h1><p class="muted">A simple tutor layer that uses the lessons in your Learning OS. A full AI tutor can plug into this interface later without changing your learning data.</p></section>
  <section class="panel"><h2>What do you want help with?</h2><div class="tutor-grid">${Object.entries(SUBJECTS).map(([n,d])=>`<button class="card tutor-choice" onclick="startTutor('${n}')"><span class="icon">${d.icon}</span><strong>${n}</strong><span class="muted">${d.desc}</span></button>`).join('')}</div></section>
