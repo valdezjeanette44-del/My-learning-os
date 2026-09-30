@@ -5,7 +5,7 @@ function saveState(s){localStorage.setItem(KEY,JSON.stringify(s))}
 function esc(v){return String(v??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[m]))}
 function subjectProgress(name){const s=state(),n=SUBJECTS[name].lessons.length;return Math.round(((s.completed[name]||[]).length/n)*100)}
 function totalStats(){const s=state();let lessons=0,total=0,scores=0;Object.keys(SUBJECTS).forEach(k=>{total+=SUBJECTS[k].lessons.length;lessons+=(s.completed[k]||[]).length;if(s.scores[k])scores++});return{lessons,total,scores}}
-function nav(){return '<div class="topbar"><a class="brand" href="/">🧠 My Learning OS</a><nav class="nav"><a href="/">Home</a><a href="/projects.html">Projects</a><a href="/knowledge.html">Knowledge Map</a><a href="/review.html">Review</a><a href="/tutor.html">Tutor</a></nav></div>'}
+function nav(){return '<div class="topbar"><a class="brand" href="/">🧠 My Learning OS</a><nav class="nav"><a href="/">Home</a><a href="/search.html">🔍 Search</a><a href="/projects.html">Projects</a><a href="/knowledge.html">Knowledge Map</a><a href="/review.html">Review</a><a href="/tutor.html">Tutor</a></nav></div>'}
 function renderSubject(name){
  const d=SUBJECTS[name],s=state(),done=s.completed[name]||[],p=subjectProgress(name);
  document.title=name+' | My Learning OS';
@@ -249,6 +249,20 @@ function saveProjectNotes(id){
  saveState(s);
  const saved=document.getElementById('projectSaved');if(saved){saved.textContent='✓ Saved';setTimeout(()=>saved.textContent='',1200);}
 }
+function renderSearch(){
+ document.title='Search | My Learning OS';
+ document.getElementById('app').innerHTML=nav()+`<section class="hero"><h1>🔍 Search My Learning OS</h1><p class="muted">Find lessons, projects, milestones, and your saved notes.</p><div class="global-search"><input id="globalSearch" class="search-input" placeholder="Try xylem, Neanderthal, gravity..." oninput="runSearch(this.value)" autofocus><button class="button" onclick="runSearch(document.getElementById('globalSearch').value)">Search</button></div></section><section class="panel"><div id="searchSummary" class="muted">Start typing to search.</div><div id="globalResults" class="global-results"></div></section>`;
+}
+function runSearch(query){
+ const q=(query||'').trim().toLowerCase(),box=document.getElementById('globalResults'),summary=document.getElementById('searchSummary');if(!box||!summary)return;
+ if(!q){summary.textContent='Start typing to search.';box.innerHTML='';return}
+ const out=[];
+ Object.entries(SUBJECTS).forEach(([n,d])=>d.lessons.forEach((l,i)=>{if((n+' '+l.join(' ')).toLowerCase().includes(q))out.push({i:'📚',t:l[0],m:n+' · Lesson '+(i+1),x:l[1],h:'/subjects/'+n.toLowerCase()+'/#lesson-'+i})}));
+ Object.entries(PROJECTS).forEach(([id,d])=>d.steps.forEach((x,i)=>{if((d.title+' '+x.join(' ')).toLowerCase().includes(q))out.push({i:d.icon,t:x[0],m:d.title+' · Milestone '+(i+1),x:x[1],h:'/projects.html?project='+id})}));
+ const s=state();Object.entries(s.notes||{}).forEach(([n,v])=>{if(String(v).toLowerCase().includes(q))out.push({i:'📝',t:n==='home'?'Home notes':n,m:'Your saved note',x:String(v).slice(0,180),h:n==='home'?'/':'/subjects/'+n.toLowerCase()+'/'})});
+ summary.textContent=out.length?out.length+' result'+(out.length===1?'':'s'):'No results yet';
+ box.innerHTML=out.slice(0,30).map(r=>'<a class="global-result" href="'+r.h+'"><span class="global-result-icon">'+r.i+'</span><span><small>'+esc(r.m)+'</small><strong>'+esc(r.t)+'</strong><p>'+esc(r.x)+'</p></span><b>→</b></a>').join('')||'<div class="empty">Nothing in your Learning OS matches that yet.</div>';
+}
 function renderProjects(){
  const ids=Object.keys(PROJECTS);
  document.title='Projects | My Learning OS';
@@ -312,7 +326,7 @@ function recordReview(name,i,known){
  s.activity=s.activity||{};s.activity[dateKey(new Date())]=true;saveState(s);
 }
 function finishReview(name,i,known){recordReview(name,i,known);renderSubject(name);openLesson(i);}
-function boot(){const path=location.pathname;document.body.dataset.subject=(path.match(/subjects\/([^/]+)/)||[])[1] ? (path.match(/subjects\/([^/]+)/)[1].replace(/^./,c=>c.toUpperCase())) : '';if(document.getElementById('app')){if(path.includes('/subjects/'))renderSubject(document.body.dataset.subject);else if(path.includes('knowledge.html'))renderMap();else if(path.includes('review.html'))renderReview();else if(path.includes('projects.html')){const id=new URLSearchParams(location.search).get('project');id?renderProjectDetail(id):renderProjects();}else if(path.includes('tutor.html'))renderTutor();else renderHome()}}
+function boot(){const path=location.pathname;document.body.dataset.subject=(path.match(/subjects\/([^/]+)/)||[])[1] ? (path.match(/subjects\/([^/]+)/)[1].replace(/^./,c=>c.toUpperCase())) : '';if(document.getElementById('app')){if(path.includes('/subjects/'))renderSubject(document.body.dataset.subject);else if(path.includes('knowledge.html'))renderMap();else if(path.includes('review.html'))renderReview();else if(path.includes('projects.html')){const id=new URLSearchParams(location.search).get('project');id?renderProjectDetail(id):renderProjects();}else if(path.includes('search.html'))renderSearch();else if(path.includes('tutor.html'))renderTutor();else renderHome()}}
 function renderTutor(){
  document.getElementById('app').innerHTML=nav()+`<section class="hero"><h1>👩‍🏫 My Tutor</h1><p class="muted">A simple tutor layer that uses the lessons in your Learning OS. A full AI tutor can plug into this interface later without changing your learning data.</p></section>
  <section class="panel"><h2>What do you want help with?</h2><div class="tutor-grid">${Object.entries(SUBJECTS).map(([n,d])=>`<button class="card tutor-choice" onclick="startTutor('${n}')"><span class="icon">${d.icon}</span><strong>${n}</strong><span class="muted">${d.desc}</span></button>`).join('')}</div></section>
