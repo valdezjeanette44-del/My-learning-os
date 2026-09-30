@@ -19,7 +19,8 @@ function renderSubject(name){
 }
 function lessonHTML(name,l,i,isDone){
  const r=state().review?.[name+'-'+i],due=r&&new Date(r.nextReview)<=new Date();
- return `<article class="lesson" id="lesson-${i}"><h3>Lesson ${i+1}: ${l[0]}</h3><p class="muted">${l[1]}</p><div class="lesson-body"><p>${l[2]}</p><div class="question"><strong>🧠 Think about this:</strong><br>${l[3]}<div class="muted" style="margin-top:8px">Hint: ${l[4]}</div><textarea class="answer" id="answer-${i}" placeholder="Write your answer in your own words...">${esc((state().answers?.[name]?.[i])||'')}</textarea><div class="lesson-actions"><button onclick="checkAnswer('${name}',${i})">Check my answer</button><button class="button secondary" onclick="showModelAnswer('${name}',${i})">Show model answer</button></div><div id="feedback-${i}" class="feedback" hidden></div></div><div class="lesson-actions"><button onclick="completeLesson('${name}',${i})" ${isDone?'disabled':''}>${isDone?'✓ Completed':'Mark lesson complete'}</button><button class="button secondary" onclick="toggleExplanation(${i})">Explain another way</button></div>${due?`<div class="review-prompt"><strong>🧠 This concept is due for review.</strong><div class="lesson-actions"><button onclick="finishReview('${name}',${i},true)">✓ I remembered it</button><button class="button secondary" onclick="finishReview('${name}',${i},false)">↻ I need more practice</button></div></div>`:''}<p id="explain-${i}" class="muted" hidden>In simple terms: ${l[2]} Think of it as a relationship between things that you can observe, test or reason about.</p></div><button class="button secondary" onclick="openLesson(${i})">${isDone?'Review lesson':'Open lesson'} →</button></article>`}
+ const scheduled=r&&!due;
+ return `<article class="lesson" id="lesson-${i}"><h3>Lesson ${i+1}: ${l[0]}</h3><p class="muted">${l[1]}</p><div class="lesson-body"><p>${l[2]}</p><div class="question"><strong>🧠 Think about this:</strong><br>${l[3]}<div class="muted" style="margin-top:8px">Hint: ${l[4]}</div><textarea class="answer" id="answer-${i}" placeholder="Write your answer in your own words...">${esc((state().answers?.[name]?.[i])||'')}</textarea><div class="lesson-actions"><button onclick="checkAnswer('${name}',${i})">Check my answer</button><button class="button secondary" onclick="showModelAnswer('${name}',${i})">Show model answer</button></div><div id="feedback-${i}" class="feedback" hidden></div></div><div class="lesson-actions"><button onclick="completeLesson('${name}',${i})" ${isDone?'disabled':''}>${isDone?'✓ Completed':'Mark lesson complete'}</button><button class="button secondary" onclick="toggleExplanation(${i})">Explain another way</button></div>${scheduled?`<div id="review-status-${i}" class="review-scheduled"><strong>🧠 Review scheduled</strong><br>Next review: <strong>${formatDate(r.nextReview)}</strong>.<br><span class="muted">This concept will return for review so you can strengthen your memory.</span></div>`:''}${due?`<div class="review-prompt"><strong>🧠 This concept is due for review.</strong><div class="lesson-actions"><button onclick="finishReview('${name}',${i},true)">✓ I remembered it</button><button class="button secondary" onclick="finishReview('${name}',${i},false)">↻ I need more practice</button></div></div>`:''}<p id="explain-${i}" class="muted" hidden>In simple terms: ${l[2]} Think of it as a relationship between things that you can observe, test or reason about.</p></div><button class="button secondary" onclick="openLesson(${i})">${isDone?'Review lesson':'Open lesson'} →</button></article>`}
 function checkAnswer(name,i){
  const d=SUBJECTS[name],l=d.lessons[i],input=document.getElementById('answer-'+i),box=document.getElementById('feedback-'+i);
  const answer=(input.value||'').trim();
@@ -60,6 +61,13 @@ function completeLesson(name,i){
  saveState(s);
  renderSubject(name);
  openLesson(i);
+ setTimeout(()=>showReviewScheduled(name,i),50);
+}
+function showReviewScheduled(name,i){
+ const e=document.getElementById('review-status-'+i);
+ if(!e)return;
+ e.hidden=false;
+ e.innerHTML='<strong>🧠 Review scheduled</strong><br>Next review: <strong>tomorrow</strong> · '+formatDate(state().review?.[name+'-'+i]?.nextReview)+'.<br><span class="muted">Your Learning OS will bring this idea back so you can strengthen your memory.</span>';
 }
 function saveNote(){const name=document.body.dataset.subject,s=state();s.notes[name]=document.getElementById('note').value;saveState(s);document.getElementById('saved').textContent='Saved ✓';setTimeout(()=>document.getElementById('saved').textContent='',1500)}
 function renderQuiz(name){const d=SUBJECTS[name],q=d.lessons[d.lessons.length-1];document.getElementById('quiz').innerHTML=`<div class="question"><strong>${q[3]}</strong><textarea class="answer" id="quizAnswer" placeholder="Write your answer..."></textarea><div class="lesson-actions"><button onclick="showAnswer('${name}')">Show model answer</button><button class="button secondary" onclick="markQuiz('${name}')">I understand this</button></div><div id="model" class="feedback"></div></div>`}
@@ -104,6 +112,7 @@ function renderReview(){
 }
 function addDays(date,days){const d=new Date(date);d.setDate(d.getDate()+days);return d}
 function dateKey(date){const d=new Date(date);return d.toISOString().slice(0,10)}
+function formatDate(value){return new Date(value).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}
 function getDueReviews(){
  const s=state(),now=new Date(),items=[];
  Object.values(s.review||{}).forEach(r=>{if(r.nextReview&&new Date(r.nextReview)<=now){const d=SUBJECTS[r.subject];if(d&&d.lessons[r.index])items.push({n:r.subject,i:r.index,l:d.lessons[r.index],review:r})}});
