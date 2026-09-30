@@ -44,3 +44,5 @@
 .project-card h2{margin:.3rem 0 .5rem}
 .project-card strong{font-size:.9rem}
 @media(max-width:700px){.project-grid{grid-template-columns:1fr}}
+
+.global-search{display:flex;gap:10px;margin-top:22px;max-width:760px}.global-search .search-input{flex:1}.global-results{display:grid;gap:10px;margin-top:18px}.global-result{display:flex;gap:14px;padding:18px;border:1px solid #e5e7eb;border-radius:18px;background:#fff;text-decoration:none;color:inherit}.global-result-icon{font-size:1.6rem}.global-result small,.global-result strong,.global-result p{display:block}.global-result p{color:#6b7280}.global-result b{margin-left:auto}@media(max-width:600px){.global-search{flex-direction:column}.global-search .button{width:100%}}
