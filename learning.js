@@ -15,6 +15,7 @@ function renderSubject(name){
  <section class="panel"><h2>My notes</h2><textarea class="note" id="note" placeholder="Write what you understood, a question, or a connection...">${esc(s.notes[name]||'')}</textarea><div class="lesson-actions"><button onclick="saveNote()">Save notes</button><span id="saved" class="muted"></span></div></section>
  <section class="panel"><h2>Quick quiz</h2><p>Answer in your own words, then reveal the model answer.</p><div id="quiz"></div></section>
  <footer>My Learning OS · Learn → Connect → Question → Understand</footer>`;
+ newQuestion();
  renderQuiz(name);
  const nextLesson=getNextLesson(),cont=document.getElementById("continueLearning");
  if(cont) cont.innerHTML=nextLesson?'<p class="muted">'+esc(nextLesson.name)+' · Lesson '+(nextLesson.i+1)+'</p><h3>'+esc(nextLesson.lesson[0])+'</h3><p class="muted">'+esc(nextLesson.lesson[1])+'</p><a class="button" href="/subjects/'+nextLesson.name.toLowerCase()+'/#lesson-'+nextLesson.i+'">Continue →</a>':'<p>🎉 You have completed every lesson currently in the course.</p>';
@@ -87,10 +88,33 @@ function renderHome(){
  <section class="panel"><h2>📚 What’s happening with my learning?</h2><div class="learning-status"><div><strong>${st.lessons}</strong><span>learned</span></div><div><strong>${Object.keys(s.review||{}).length}</strong><span>scheduled for review</span></div><div><strong>${reviewDue}</strong><span>due now</span></div><div><strong>${Math.max(0,st.total-st.lessons)}</strong><span>still to learn</span></div></div><p class="muted" style="margin-top:14px">Your system is learning with you: new lessons become scheduled reviews, and successful reviews move farther apart.</p></section>
  <h2>Learning Areas</h2><div class="grid">${Object.entries(SUBJECTS).map(([n,d])=>`<a class="card" href="/subjects/${n.toLowerCase()}/"><div class="icon">${d.icon}</div><h3>${n}</h3><p class="muted">${d.desc}</p><div class="bar"><div style="width:${subjectProgress(n)}%"></div></div><small>${subjectProgress(n)}% complete</small></a>`).join('')}</div>
  <section class="panel"><h2>My Notes</h2><p class="muted">Your notes are saved privately in this browser.</p><textarea class="note" id="homeNote" placeholder="Capture an idea or connection...">${esc(state().notes.home||'')}</textarea><div class="lesson-actions"><button onclick="saveHomeNote()">Save notes</button></div></section>
- <section class="panel"><h2>Think about this</h2><div class="question" id="questionBox">Why can simple rules produce complex systems?</div></section>
+ <section class="panel curiosity-panel"><div class="curiosity-head"><div><small>🧠 CURIOSITY LAB</small><h2>Give your brain something interesting</h2><p class="muted">A short question to make you think, connect ideas, and explore beyond the lesson.</p></div><span class="curiosity-spark">✦</span></div><div id="curiosityCard" class="curiosity-card"><div class="curiosity-meta" id="curiosityMeta"></div><div class="curiosity-question" id="questionBox">Loading a question…</div><div class="curiosity-clue" id="curiosityClue"></div><div class="curiosity-actions"><button class="button" onclick="showCuriosityClue()">💡 Give me a clue</button><button class="button secondary" onclick="newQuestion()">↻ New question</button><a id="curiosityLesson" class="button secondary" href="#">Explore the lesson →</a></div></div></section>
  <footer>My Learning OS · Learn → Connect → Question → Understand</footer>`;
-}const qs=['Why does evolution not need a conscious plan?','How can chemistry emerge from physics?','Why did agriculture change human societies?','What makes an argument convincing?','Why can markets coordinate millions of decisions?','How can gravity create stable orbits?'];
-function newQuestion(){const q=qs[Math.floor(Math.random()*qs.length)];const e=document.getElementById('homeQuestion')||document.getElementById('questionBox');if(e)e.textContent=q}
+}const qs=[
+ {subject:'Biology',icon:'🧬',q:'Why does evolution not need a conscious plan?',clue:'Think about how small differences can affect survival and reproduction over many generations.',lesson:3},
+ {subject:'Chemistry',icon:'🧪',q:'How can chemistry emerge from physics?',clue:'Start with atoms, their electrons, and the way atoms interact with one another.',lesson:1},
+ {subject:'History',icon:'🏛️',q:'Why did agriculture change human societies?',clue:'Think about food surplus, population size, settlement, and specialization.',lesson:2},
+ {subject:'Philosophy',icon:'🤔',q:'What makes an argument convincing?',clue:'Ask whether the conclusion actually follows from the reasons given.',lesson:3},
+ {subject:'Economics',icon:'📈',q:'Why can markets coordinate millions of decisions?',clue:'Think about prices as signals and how people respond to incentives.',lesson:1},
+ {subject:'Physics',icon:'🌌',q:'How can gravity create stable orbits?',clue:'An orbit is a continuous fall caused by gravity while an object also moves sideways.',lesson:3},
+ {subject:'Biology',icon:'🧬',q:'How can a tiny cell eventually become a whole organism?',clue:'Think about cell division, different cell roles, and how instructions in DNA are used.',lesson:1},
+ {subject:'History',icon:'🌍',q:'How can one invention change an entire society?',clue:'Follow the chain: technology → behavior → economy → institutions.',lesson:0}
+];
+function newQuestion(){
+ const item=qs[Math.floor(Math.random()*qs.length)];
+ const meta=document.getElementById('curiosityMeta'),q=document.getElementById('questionBox'),clue=document.getElementById('curiosityClue'),link=document.getElementById('curiosityLesson');
+ if(!q)return;
+ if(meta)meta.textContent=item.icon+' '+item.subject;
+ q.textContent=item.q;
+ if(clue){clue.textContent='';clue.classList.remove('visible');}
+ if(link){link.href='/subjects/'+item.subject.toLowerCase()+'/#lesson-'+item.lesson;}
+}
+function showCuriosityClue(){
+ const clue=document.getElementById('curiosityClue');
+ if(!clue)return;
+ const q=document.getElementById('questionBox'),item=qs.find(x=>x.q===q?.textContent);
+ if(item){clue.textContent='💡 '+item.clue;clue.classList.add('visible');}
+}
 function saveHomeNote(){const s=state();s.notes.home=document.getElementById('homeNote').value;saveState(s)}
 function renderMap(){
  const connections=[
