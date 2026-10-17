@@ -182,3 +182,38 @@
 }
 
 @media(max-width:650px){.topbar{display:flex;align-items:center;margin-bottom:12px}.brand{margin-bottom:0}.topbar .nav{display:none}}
+
+/* Compact, one-step-at-a-time project workspace */
+.project-page-heading{margin-bottom:12px}
+.project-page-heading h1{font-size:clamp(1.5rem,5vw,2.2rem);margin:.45rem 0}
+.project-hero-compact{padding:16px 18px;gap:14px;border-radius:16px;margin:12px 0}
+.project-hero-compact .project-icon{font-size:2rem;flex-shrink:0}
+.project-hero-compact h2{font-size:1.15rem;margin:.2rem 0 .35rem}
+.project-hero-compact p{margin:.25rem 0;line-height:1.5}
+.project-progress-panel,.project-path-panel,.project-discoveries{padding:16px}
+.project-progress-head{align-items:center;gap:12px}
+.project-progress-head h2,.project-path-heading h2,.project-discoveries h2{font-size:1.1rem;margin:0 0 4px}
+.project-progress-head p,.project-path-heading p{margin:0;font-size:.9rem}
+.project-progress-head>strong{font-size:1.35rem}
+.project-path-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.step-count{font-size:.78rem;color:#6b7280;white-space:nowrap}
+.project-steps{gap:8px}
+.project-step-card{border:1px solid #e5e7eb;border-radius:13px;overflow:hidden;background:#fff}
+.project-step-card.done{border-color:#bbf7d0;background:#f8fdf9}
+.project-step-toggle{display:flex;align-items:center;gap:10px;width:100%;padding:12px;text-align:left;border:0;background:transparent;cursor:pointer;color:inherit}
+.project-check{display:flex;align-items:center;justify-content:center;flex:0 0 28px;width:28px;height:28px;border-radius:50%;background:#f3f4f6;color:#4b5563;font-size:.8rem;font-weight:700}
+.project-step-card.done .project-check{background:#dcfce7;color:#166534}
+.project-step-title{min-width:0;flex:1}
+.project-step-title strong{display:block;font-size:.94rem;line-height:1.35}
+.project-step-title small{display:block;margin-top:3px;color:#6b7280;font-size:.78rem}
+.project-step-chevron{font-size:1.25rem;color:#6b7280}
+.project-step-card.is-open{border-color:#c7d2fe;box-shadow:0 1px 3px rgba(79,70,229,.06)}
+.project-step-content{padding:0 12px 13px 50px}
+.project-step-content>p{margin:0 0 12px;line-height:1.6;font-size:.93rem}
+.project-question{padding:10px 12px;border-radius:10px;background:#f5f3ff;color:#4338ca;margin-bottom:12px}
+.project-question strong{font-size:.8rem}
+.project-question p{margin:4px 0 0;font-size:.9rem;line-height:1.5}
+.project-complete-button{font-size:.84rem;padding:9px 12px;border-radius:9px}
+.project-complete-button.is-complete{background:#dcfce7;color:#166534;border-color:#bbf7d0}
+.project-discoveries .project-notes{min-height:100px}
+@media(max-width:600px){.project-hero-compact{padding:13px;flex-direction:row;align-items:flex-start}.project-hero-compact .project-icon{font-size:1.7rem}.project-progress-panel,.project-path-panel,.project-discoveries{padding:13px}.project-step-toggle{padding:11px 10px}.project-step-content{padding:0 10px 12px 48px}.project-page-heading h1{font-size:1.5rem}}
