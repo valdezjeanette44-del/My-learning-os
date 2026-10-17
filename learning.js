@@ -40,7 +40,8 @@ function lessonHTML(name,l,i,isDone){
    <div id="feedback-${i}" class="feedback" hidden></div>
   </div>
   <button class="text-action" onclick="toggleExplanation(${i})">Explain this more simply</button>
-  <p id="explain-${i}" class="simple-explanation" hidden>In simple terms: ${esc(l[2])} Think of it as a relationship between things you can observe, test, or reason about.</p>
+  <p id="explain-${i}" class="simple-explanation" hidden><strong>Start with the basics</strong><br>${esc(l[1])}<br><br><strong>The key idea</strong><br>${esc(l[2])}</p>
+  <section class="self-check"><span class="lesson-label">CAN I EXPLAIN IT?</span><p>Without looking at the example answer, could you explain the main idea to a friend?</p><div class="lesson-actions"><button class="button secondary" onclick="setSelfCheck('${name}',${i},true)">✓ I can explain it</button><button class="button secondary" onclick="setSelfCheck('${name}',${i},false)">↻ I need another try</button></div><p id="self-check-${i}" class="self-check-status">${esc(state().selfChecks?.[name]?.[i]===true?'✓ You marked this as understood.':state().selfChecks?.[name]?.[i]===false?'Keep practising. You can come back to this later.':'')}</p></section>
   <div class="lesson-actions lesson-finish"><button onclick="completeLesson('${name}',${i})" ${isDone?'disabled':''}>${isDone?'✓ Lesson completed':'Mark lesson complete'}</button></div>
   ${scheduled?`<div id="review-status-${i}" class="review-scheduled"><strong>🧠 Review scheduled</strong><br>Next review: <strong>${formatDate(r.nextReview)}</strong>.<br><span class="muted">This concept will return for review so you can strengthen your memory.</span></div>`:''}
   ${due?`<div class="review-prompt"><strong>🧠 This concept is due for review.</strong><div class="lesson-actions"><button onclick="finishReview('${name}',${i},true)">✓ I remembered it</button><button class="button secondary" onclick="finishReview('${name}',${i},false)">↻ I need more practice</button></div></div>`:''}
@@ -49,27 +50,28 @@ function lessonHTML(name,l,i,isDone){
 }
 function toggleHint(i){const e=document.getElementById('hint-'+i);if(e)e.hidden=!e.hidden;}
 function checkAnswer(name,i){
- const d=SUBJECTS[name],l=d.lessons[i],input=document.getElementById('answer-'+i),box=document.getElementById('feedback-'+i);
+ const l=SUBJECTS[name].lessons[i],input=document.getElementById('answer-'+i),box=document.getElementById('feedback-'+i);
  const answer=(input.value||'').trim();
- if(!answer){box.hidden=false;box.innerHTML='<strong>✍️ Start with your idea.</strong><br>You do not need a perfect answer. Explain what you think first, then we can improve it together.';return}
- const normalize=t=>t.toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
- const words=normalize(answer).split(' ').filter(Boolean);
+ if(!answer){box.hidden=false;box.innerHTML='<strong>✍️ Start with your idea.</strong><br>You do not need a perfect answer. Write one or two sentences about what you think, then check them.';return}
+ const normalize=t=>t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
  const stop=new Set(['about','after','again','because','before','being','could','does','from','have','into','more','only','other','should','their','there','these','they','this','through','what','when','where','which','while','with','would','your','that','than','then','them','were','will']);
- const answerWords=new Set(words.filter(w=>w.length>4&&!stop.has(w)));
- const modelWords=normalize(l[4]).split(' ').filter(w=>w.length>4&&!stop.has(w));
- const important=[...new Set(modelWords)];
- const matched=important.filter(w=>answerWords.has(w));
- const missing=important.filter(w=>!answerWords.has(w)).slice(0,3);
- let title='',body='';
- if(matched.length>=2){title='✅ You got the main idea.';body='You included: <strong>'+matched.slice(0,4).join(', ')+'</strong>.';}
- else if(matched.length===1){title='🟡 You have part of the idea.';body='You included <strong>'+matched[0]+'</strong>, which is important.';}
- else{title='💡 Good start.';body='Your answer shows you are thinking about the question.';}
- let next='';
- if(missing.length){next='<br><strong>🔧 Add this:</strong> '+missing.join(', ')+'.';}
- else{next='<br><strong>🌟 Next step:</strong> Explain why or how your answer works.';}
- box.hidden=false;
- box.innerHTML='<strong>'+title+'</strong><br>'+body+next+'<br><span class="muted">Now compare with the model answer and rewrite your answer in your own words.</span>';
- saveAnswer(name,i,answer)
+ const answerWords=new Set(normalize(answer).split(' ').filter(w=>w.length>3&&!stop.has(w)));
+ const concepts=[...new Set(normalize(l[4]).split(' ').filter(w=>w.length>3&&!stop.has(w)))];
+ const matched=concepts.filter(w=>answerWords.has(w));
+ const missing=concepts.filter(w=>!answerWords.has(w)).slice(0,3);
+ let feedback='';
+ if(answer.split(/\s+/).length<7) feedback='<strong>🌱 A first thought</strong><br>Try adding one more sentence to explain how or why.';
+ else feedback='<strong>🧠 You have put your thinking into words.</strong><br>Now check whether your explanation includes the central idea.';
+ if(matched.length) feedback+='<br><strong>Ideas you mentioned:</strong> '+esc(matched.slice(0,4).join(', '))+'.';
+ if(missing.length) feedback+='<br><strong>Ideas to check:</strong> '+esc(missing.join(', '))+'.';
+ feedback+='<br><small>This is a simple word-based guide, not a grade of your understanding. Compare the example answer and decide what you would improve.</small>';
+ box.hidden=false;box.innerHTML=feedback;
+ saveAnswer(name,i,answer);
+}
+function setSelfCheck(name,i,understood){
+ const s=state();s.selfChecks=s.selfChecks||{};s.selfChecks[name]=s.selfChecks[name]||{};s.selfChecks[name][i]=understood;saveState(s);
+ const box=document.getElementById('self-check-'+i);
+ if(box)box.textContent=understood?'✓ You marked this as understood. Great—try explaining it once without looking.':'That is okay. Review the key idea or example, then try again later.';
 }
 function openLesson(i){
  document.querySelectorAll('.lesson').forEach(x=>{x.classList.remove('active');const b=x.querySelector('.lesson-summary');if(b)b.setAttribute('aria-expanded','false');const c=x.querySelector('.lesson-chevron');if(c)c.textContent='+';});
