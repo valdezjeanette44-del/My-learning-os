@@ -98,7 +98,7 @@ function getWeeklyStats(){
 }
 function renderHome(){
  const st=totalStats(),pct=Math.round(st.lessons/st.total*100),s=state(),reviewDue=getDueReviews().length,streak=getStreak(),next=getNextLesson(),week=getWeeklyStats();
- const projectIds=Object.keys(PROJECTS).sort((a,b)=>projectProgress(a)-projectProgress(b)).slice(0,2);
+ const projectIds=Object.keys(PROJECTS).sort((a,b)=>{const pa=projectProgress(a),pb=projectProgress(b),rank=x=>x>0&&x<100?0:x===0?1:2;return rank(pa)-rank(pb)||pb-pa;}).slice(0,2);
  document.title='My Learning OS';
  document.getElementById('app').innerHTML=nav()+`
  <section class="hero home-hero"><small class="muted">YOUR PERSONAL LEARNING SPACE</small><h1>What would you like to learn?</h1><p class="muted">Small steps. Clear ideas. Steady progress.</p></section>
