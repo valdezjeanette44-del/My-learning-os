@@ -292,3 +292,11 @@
  .lesson-section,.lesson-body .question{padding:11px}
  .lesson-body .lesson-actions button{flex:1 1 auto}
 }
+
+
+/* Lesson self-check: short, calm and easy to use on mobile */
+.lesson .self-check{margin:12px 0;padding:13px;border:1px solid #e5e2f5;border-radius:12px;background:#fbfaff}
+.lesson .self-check>p{font-size:.9rem;line-height:1.55;margin:6px 0 10px}
+.lesson .self-check .lesson-actions{display:flex;flex-wrap:wrap;gap:7px}
+.lesson .self-check-status{font-size:.82rem!important;color:#5145a8;margin:8px 0 0!important}
+.lesson .feedback small{display:block;margin-top:8px;color:#626477;line-height:1.5}
