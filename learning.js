@@ -259,7 +259,7 @@ function toggleProjectStep(id,i){
  if(notes)ps.notes=notes.value;
  ps.completed=ps.completed||[];
  const at=ps.completed.indexOf(i);
- if(at>=0)ps.completed.splice(at,1);else {ps.completed.push(i);s.learningLog=s.learningLog||[];s.learningLog.push({type:'project',id:id+'-'+i,at:new Date().toISOString()});}
+ if(at>=0)ps.completed.splice(at,1);else {ps.completed.push(i);s.learningLog=s.learningLog||[];s.learningLog.push({type:'project',id:id,at:new Date().toISOString()});}
  saveState(s);renderProjectDetail(id,i);
 }
 function saveProjectNotes(id){
