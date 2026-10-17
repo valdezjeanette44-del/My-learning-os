@@ -349,3 +349,91 @@
  .tutor-send-row button{width:100%}
  .tutor-path-grid{grid-template-columns:1fr}
 }
+
+
+/* Reflecta-inspired knowledge garden home: warm, editorial, calm */
+:root{--garden-ink:#29251f;--garden-muted:#797269;--garden-paper:#fbf8f1;--garden-line:#e9dfd0;--garden-clay:#c96c43;--garden-peach:#f3e3cf}
+body{background:var(--garden-paper);color:var(--garden-ink)}
+.app{max-width:1200px;padding:22px 30px}
+.topbar{padding:5px 0 14px;border-bottom:1px solid var(--garden-line)}
+.brand{color:var(--garden-ink);letter-spacing:.08em;text-transform:uppercase;font-size:.84rem}
+.brand:before{content:"◈";color:var(--garden-clay);font-size:1.25rem;margin-right:9px}
+.nav a{color:#71685f}
+.nav a:hover,.nav a:focus{background:#f1e8dc;color:var(--garden-clay)}
+.reflecta-hero{display:grid;grid-template-columns:minmax(230px,.78fr) minmax(0,1.8fr);gap:30px;align-items:center;padding:20px 0 26px;margin:0 0 22px}
+.reflecta-copy{padding:18px 4px 12px}
+.reflecta-kicker{font-size:.65rem;letter-spacing:.17em;font-weight:800;color:#8b7b68}
+.reflecta-copy h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(3rem,6.4vw,5.4rem);font-weight:400;letter-spacing:-.055em;line-height:.92;margin:25px 0 18px}
+.reflecta-copy h1 span{color:var(--garden-clay)}
+.reflecta-copy>p{font-size:.96rem;line-height:1.7;color:#756d64;max-width:290px}
+.reflecta-copy ul{list-style:none;padding:0;margin:23px 0;display:grid;gap:10px;color:#766d62;font-size:.82rem}
+.reflecta-copy li:first-letter{color:var(--garden-clay)}
+.reflecta-start{display:inline-flex;align-items:center;gap:18px;background:var(--garden-clay);color:#fff;text-decoration:none;padding:13px 17px;border-radius:5px;font-size:.82rem;font-weight:700;box-shadow:0 5px 12px #b9663b24}
+.reflecta-start span{font-size:1rem}
+.reflecta-art{position:relative;isolation:isolate;min-height:440px;border:1px solid #e9e0d4;border-radius:22px;background:radial-gradient(ellipse at 70% 28%,#f1e7d6 0,transparent 38%),linear-gradient(145deg,#fffdf8,#f5eee3);box-shadow:0 12px 36px #55432c12;overflow:hidden}
+.reflecta-art:before{content:"";position:absolute;inset:0;background-image:radial-gradient(#d7c4a9 .8px,transparent .8px);background-size:19px 19px;opacity:.28;z-index:-2}
+.tree-orbit{position:absolute;border:1px solid #e2d4c0;border-radius:50%;width:280px;height:280px;top:28px;right:7%;opacity:.8}
+.orbit-two{width:360px;height:360px;top:0;right:0;opacity:.45}
+.tree-trunk{position:absolute;right:11%;top:20px;font-family:Georgia,serif;font-size:9rem;color:#d9c6a7;opacity:.38;transform:rotate(-12deg)}
+.tree-node{position:absolute;display:flex;flex-direction:column;gap:9px;padding:18px 19px;border:1px solid #e8dfd3;border-radius:15px;background:#fffdf9eF;box-shadow:0 9px 26px #5a422018;backdrop-filter:blur(6px)}
+.tree-node small{align-self:flex-start;background:#f4e7d3;border-radius:4px;padding:4px 8px;font-size:.59rem;letter-spacing:.08em;color:#866b4f;font-weight:800}
+.tree-node strong{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:clamp(1.15rem,2.2vw,1.7rem);line-height:1.15}
+.tree-node span{font-size:.75rem;line-height:1.55;color:#766e65}
+.tree-node b{font-size:.62rem;font-weight:600;color:#8a7d6c;border-top:1px solid #eee5d8;padding-top:9px;margin-top:2px}
+.tree-parent{left:4%;top:8%;width:51%;min-height:210px;padding-top:20px}
+.tree-current{left:31%;top:35%;width:43%;min-height:195px;z-index:2}
+.tree-child{right:3%;bottom:7%;width:35%;min-height:170px;z-index:3;border-color:#efcfb7;box-shadow:0 10px 28px #b8673b20}
+.tree-child strong{font-size:1.3rem}
+.tree-caption{position:absolute;bottom:13px;left:16px;font-family:Georgia,serif;font-style:italic;font-size:.8rem;color:#8b7b68}
+.reflecta-section-label{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--garden-line);padding:0 2px 10px;margin:0 0 16px;color:#8a7b68;font-size:.67rem;letter-spacing:.12em;font-weight:800}
+.reflecta-section-label span+span{letter-spacing:0;text-transform:none;font-weight:500}
+.continue-card,.home-focus>div,.home-review,.home-weekly,.home-project,.home-subject,.home-details,.panel{background:#fffdf9;border-color:var(--garden-line);box-shadow:0 4px 18px #58472e08}
+.continue-card{border-color:#e5c7b1;background:linear-gradient(110deg,#f8eee2,#fffdf9)}
+.continue-icon{background:#f3e1d1}
+.continue-copy small,.continue-card>b{color:var(--garden-clay)}
+.home-focus>div>strong{font-family:Georgia,serif;font-weight:400;color:var(--garden-clay)}
+.bar,.home-project-bar{background:#eee5d9}
+.bar>div,.home-project-bar span{background:var(--garden-clay)}
+.home-section-heading h2{font-family:Georgia,"Times New Roman",serif;font-size:1.55rem;font-weight:400}
+.home-section-heading>a{color:var(--garden-clay)}
+.home-project,.home-subject{border-color:var(--garden-line)}
+.home-project-icon{background:#f6eadb}
+.home-subject>span{filter:saturate(.72)}
+.home-subject .bar>div{background:#c98b63}
+.home-details summary{color:#4b4238}
+.home-details summary:after{color:var(--garden-clay)}
+.button,button{background:var(--garden-clay)}
+.button.secondary{background:#f1e6d8;color:#5e4d3b}
+@media(max-width:700px){
+ .app{padding:13px 15px 90px}
+ .topbar{border:0}
+ .reflecta-hero{grid-template-columns:1fr;gap:15px;padding-top:4px}
+ .reflecta-copy{padding:8px 2px 4px}
+ .reflecta-copy h1{font-size:3.45rem;margin:17px 0 14px}
+ .reflecta-copy>p{font-size:.9rem}
+ .reflecta-copy ul{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 6px;font-size:.75rem;margin:17px 0}
+ .reflecta-start{padding:12px 14px}
+ .reflecta-art{min-height:365px;border-radius:17px}
+ .tree-orbit{width:230px;height:230px;right:0;top:16px}
+ .orbit-two{width:285px;height:285px;right:-45px;top:0}
+ .tree-trunk{font-size:7rem;right:4%;top:20px}
+ .tree-node{padding:12px;gap:7px;border-radius:12px}
+ .tree-node strong{font-size:1.15rem}
+ .tree-node span{font-size:.68rem;line-height:1.4}
+ .tree-node b{font-size:.55rem;padding-top:7px}
+ .tree-parent{left:3%;top:7%;width:58%;min-height:165px}
+ .tree-current{left:20%;top:34%;width:52%;min-height:164px}
+ .tree-child{right:3%;bottom:8%;width:43%;min-height:145px}
+ .tree-child strong{font-size:1.1rem}
+ .tree-caption{font-size:.67rem;max-width:47%;line-height:1.3}
+ .reflecta-section-label{font-size:.58rem;letter-spacing:.08em}
+ .home-section-heading h2{font-size:1.35rem}
+}
+@media(max-width:370px){
+ .reflecta-copy h1{font-size:3rem}
+ .reflecta-art{min-height:340px}
+ .tree-parent{width:61%}
+ .tree-current{left:17%;width:55%}
+ .tree-child{width:46%}
+ .reflecta-section-label span+span{display:none}
+}
