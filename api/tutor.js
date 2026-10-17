@@ -11,6 +11,11 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ message: "Use POST to send a tutor message." });
   }
 
+  const origin = req.headers.origin;
+  if (origin !== "https://my-learning-os.vercel.app") {
+    return res.status(403).json({ message: "Please open the tutor from My Learning OS to continue." });
+  }
+
   if (!process.env.OPENAI_API_KEY) {
     return res.status(503).json({
       message: "The tutor's secure API key has not been configured yet. Add OPENAI_API_KEY in your Vercel project settings, then redeploy."
