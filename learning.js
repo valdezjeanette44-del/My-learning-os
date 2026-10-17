@@ -236,6 +236,8 @@ function projectProgress(id){
 }
 function toggleProjectStep(id,i){
  const s=state(),p=s.projects=s.projects||{},ps=p[id]=p[id]||{completed:[],notes:''};
+ const notes=document.getElementById('projectNotes');
+ if(notes)ps.notes=notes.value;
  ps.completed=ps.completed||[];
  const at=ps.completed.indexOf(i);
  if(at>=0)ps.completed.splice(at,1);else ps.completed.push(i);
