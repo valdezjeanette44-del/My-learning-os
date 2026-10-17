@@ -14,6 +14,7 @@ function renderSubject(name){
  <section class="panel course-panel"><div class="course-heading"><div><h2>Your lessons</h2><p class="muted">Open one lesson at a time. You can go at your own pace.</p></div><span class="course-count">${done.length}/${d.lessons.length}</span></div><div id="lessons">${d.lessons.map((l,i)=>lessonHTML(name,l,i,done.includes(i))).join('')}</div></section>
  <section class="panel"><h2>My notes</h2><textarea class="note" id="note" placeholder="Write what you understood, a question, or a connection...">${esc(s.notes[name]||'')}</textarea><div class="lesson-actions"><button onclick="saveNote()">Save notes</button><span id="saved" class="muted"></span></div></section>
  <section class="panel"><h2>Quick quiz</h2><p>Answer in your own words, then reveal the model answer.</p><div id="quiz"></div></section>
+ <details class="home-details"><summary>🛟 Back up my learning data</summary><div class="home-notes"><p class="muted">Save a copy of your completed lessons, notes, quiz answers, reviews, and project progress. Keep the backup somewhere safe.</p><div class="lesson-actions"><button onclick="exportLearningBackup()">Download backup</button><button class="button secondary" onclick="document.getElementById('learningBackupFile').click()">Restore backup</button></div><input id="learningBackupFile" type="file" accept=".json,application/json" style="display:none" onchange="importLearningBackup(this)"><p class="muted" style="font-size:.8rem">Restoring replaces the learning data currently saved in this browser.</p><p id="backupStatus" class="muted" role="status"></p></div></details>
  <footer>My Learning OS · Learn → Connect → Question → Understand</footer>`;
  newQuestion();
  renderQuiz(name);
@@ -480,5 +481,30 @@ async function sendTutorMessage(suppliedText){
  }finally{
   tutorRequestPending=false;if(button){button.disabled=false;button.textContent='Send message ↗';}
  }
+}
+function exportLearningBackup(){
+ const backup={app:'My Learning OS',version:1,exportedAt:new Date().toISOString(),data:state()};
+ const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download='my-learning-os-backup-'+new Date().toISOString().slice(0,10)+'.json';
+ document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ const status=document.getElementById('backupStatus');if(status)status.textContent='Backup downloaded. Keep the file somewhere safe.';
+}
+function importLearningBackup(input){
+ const file=input&&input.files&&input.files[0];if(!file)return;
+ const status=document.getElementById('backupStatus'),reader=new FileReader();
+ reader.onload=()=>{
+  try{
+   const backup=JSON.parse(String(reader.result||''));
+   if(!backup||backup.app!=='My Learning OS'||!backup.data||typeof backup.data!=='object'||Array.isArray(backup.data))throw new Error('This does not look like a My Learning OS backup.');
+   if(!confirm('Restore this backup? Your current My Learning OS data in this browser will be replaced.')){if(status)status.textContent='Restore cancelled. Your current data is unchanged.';return;}
+   localStorage.setItem(KEY,JSON.stringify(backup.data));
+   if(status)status.textContent='Backup restored. Reloading your learning space…';
+   location.reload();
+  }catch(error){if(status)status.textContent=error.message||'Could not read that backup. Please choose a valid My Learning OS backup file.';}
+  finally{input.value='';}
+ };
+ reader.onerror=()=>{if(status)status.textContent='Could not read this file. Please try again.';input.value='';};
+ reader.readAsText(file);
 }
 boot();
