@@ -56,6 +56,8 @@ function saveAnswer(name,i,answer){const s=state();s.answers=s.answers||{};s.ans
 function completeLesson(name,i){
  const s=state();
  s.completed[name]=s.completed[name]||[];
+ s.learningLog=s.learningLog||[];
+ if(!s.completed[name].includes(i))s.learningLog.push({type:'lesson',id:name+'-'+i,at:new Date().toISOString()});
  if(!s.completed[name].includes(i))s.completed[name].push(i);
  s.review=s.review||{};
  const key=name+'-'+i;
@@ -79,17 +81,34 @@ function renderQuiz(name){const d=SUBJECTS[name],q=d.lessons[d.lessons.length-1]
 function checkQuiz(name){const d=SUBJECTS[name],q=d.lessons[d.lessons.length-1],input=document.getElementById('quizAnswer'),box=document.getElementById('model'),answer=(input.value||'').trim();if(!answer){box.hidden=false;box.innerHTML='<strong>✍️ Try writing your idea first.</strong><br>There is no need to be perfect. Give it a try, then compare it with the explanation.';return}const s=state();s.quizAnswers=s.quizAnswers||{};s.quizAnswers[name]=answer;saveState(s);box.hidden=false;box.innerHTML='<strong>🧠 Compare your answer</strong><p><strong>Your answer:</strong> '+esc(answer)+'</p><p><strong>Model answer:</strong> '+esc(q[4])+'</p><p><strong>Why this makes sense:</strong> '+esc(q[1]+' '+q[2])+'</p><p class="muted">Look for the key idea in the model answer. If you missed it, try rewriting your answer in your own words.</p>'}
 function showAnswer(name){const d=SUBJECTS[name],q=d.lessons[d.lessons.length-1],box=document.getElementById('model');box.hidden=false;box.innerHTML='<strong>Model answer:</strong> '+esc(q[4])+'<p><strong>Why this makes sense:</strong> '+esc(q[1]+' '+q[2])+'</p><p class="muted">Try explaining the idea in your own words before marking the quiz complete.</p>'}
 function markQuiz(name){const s=state();s.scores[name]={score:100,date:new Date().toISOString()};saveState(s);const box=document.getElementById('model');box.hidden=false;box.innerHTML='<strong>✓ Quiz marked complete.</strong><br>Your progress is saved on this device. Remember: completion means you reviewed the idea, not that every answer was automatically graded.'}
+function getNextLesson(){
+ const s=state();
+ for(const [name,d] of Object.entries(SUBJECTS)){
+  const done=s.completed?.[name]||[];
+  const i=d.lessons.findIndex((_,index)=>!done.includes(index));
+  if(i>=0)return{name,i,lesson:d.lessons[i],icon:d.icon};
+ }
+ return null;
+}
+function getWeeklyStats(){
+ const s=state(),cutoff=new Date();cutoff.setDate(cutoff.getDate()-6);cutoff.setHours(0,0,0,0);
+ const recent=(s.learningLog||[]).filter(x=>new Date(x.at)>=cutoff);
+ const days=new Set(recent.map(x=>dateKey(new Date(x.at))));
+ return {lessons:recent.filter(x=>x.type==='lesson').length,projects:new Set(recent.filter(x=>x.type==='project').map(x=>x.id)).size,days:days.size};
+}
 function renderHome(){
- const st=totalStats(),pct=Math.round(st.lessons/st.total*100),s=state(),reviewDue=getDueReviews().length,streak=getStreak();
- const projectIds=Object.keys(PROJECTS);
+ const st=totalStats(),pct=Math.round(st.lessons/st.total*100),s=state(),reviewDue=getDueReviews().length,streak=getStreak(),next=getNextLesson(),week=getWeeklyStats();
+ const projectIds=Object.keys(PROJECTS).sort((a,b)=>projectProgress(a)-projectProgress(b)).slice(0,2);
  document.title='My Learning OS';
  document.getElementById('app').innerHTML=nav()+`
  <section class="hero home-hero"><small class="muted">YOUR PERSONAL LEARNING SPACE</small><h1>What would you like to learn?</h1><p class="muted">Small steps. Clear ideas. Steady progress.</p></section>
+ ${next?`<a class="continue-card" href="/subjects/${next.name.toLowerCase()}/#lesson-${next.i}"><span class="continue-icon">${next.icon}</span><span class="continue-copy"><small>YOUR NEXT STEP</small><strong>Continue learning</strong><span>${next.name} · Lesson ${next.i+1}: ${esc(next.lesson[0])}</span></span><b>Continue →</b></a>`:'<section class="continue-card all-done"><span class="continue-icon">🎉</span><span class="continue-copy"><small>AMAZING PROGRESS</small><strong>All lessons completed!</strong><span>Choose a subject to revisit or explore a project.</span></span><b>Explore →</b></section>'}
  <section class="home-focus">
   <div><small>YOUR PROGRESS</small><strong>${pct}%</strong><span>${st.lessons} of ${st.total} lessons completed</span><div class="bar"><div style="width:${pct}%"></div></div></div>
   <a class="home-review" href="/review.html"><span>🧠</span><span><strong>${reviewDue} to review</strong><small>${streak} day learning streak</small></span><b>→</b></a>
  </section>
- <section class="home-section"><div class="home-section-heading"><div><small class="muted">LEARN BY DOING</small><h2>My Projects</h2></div><a href="/projects.html">See all →</a></div>
+ <section class="home-weekly"><div class="weekly-heading"><div><small>YOUR LAST 7 DAYS</small><strong>A little progress adds up</strong></div><span>📅</span></div><div class="weekly-stats"><div><strong>${week.lessons}</strong><span>lessons completed</span></div><div><strong>${week.projects}</strong><span>projects progressed</span></div><div><strong>${week.days}/7</strong><span>active days</span></div></div></section>
+ <section class="home-section"><div class="home-section-heading"><div><small class="muted">LEARN BY DOING</small><h2>My Projects</h2></div><a href="/projects.html">View all →</a></div>
   <div class="home-projects">${projectIds.map(id=>{const d=PROJECTS[id],p=projectState(id),done=(p.completed||[]).length,progress=projectProgress(id);return `<a class="home-project" href="/projects.html?project=${id}"><span class="home-project-icon">${d.icon}</span><span class="home-project-info"><strong>${d.title}</strong><small>${done}/${d.steps.length} steps · ${progress}%</small><span class="home-project-bar"><span style="width:${progress}%"></span></span></span><b>›</b></a>`}).join('')}</div>
  </section>
  <section class="home-section" id="learning-areas"><div class="home-section-heading"><div><small class="muted">EXPLORE A SUBJECT</small><h2>Learning Areas</h2></div></div>
@@ -240,7 +259,7 @@ function toggleProjectStep(id,i){
  if(notes)ps.notes=notes.value;
  ps.completed=ps.completed||[];
  const at=ps.completed.indexOf(i);
- if(at>=0)ps.completed.splice(at,1);else ps.completed.push(i);
+ if(at>=0)ps.completed.splice(at,1);else {ps.completed.push(i);s.learningLog=s.learningLog||[];s.learningLog.push({type:'project',id:id+'-'+i,at:new Date().toISOString()});}
  saveState(s);renderProjectDetail(id,i);
 }
 function saveProjectNotes(id){
