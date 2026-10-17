@@ -437,3 +437,16 @@ body{background:var(--garden-paper);color:var(--garden-ink)}
  .tree-child{width:46%}
  .reflecta-section-label span+span{display:none}
 }
+
+
+/* Clear teaching rhythm: simple explanation, concrete example, why it works */
+.teacher-card,.teacher-why{padding:14px 15px;border-radius:13px;margin:10px 0}
+.teacher-simple{background:#f8f0e4;border:1px solid #eee0ca}
+.teacher-example{background:#fffdf9;border:1px solid #ead9c7}
+.teacher-why{background:#f3f0e8;border:1px solid #e5dfd2}
+.teacher-card p,.teacher-why p{margin:0;font-size:.94rem;line-height:1.7;color:#494238}
+.teacher-card .lesson-label,.teacher-why .lesson-label{margin-bottom:7px;color:#a35e3d}
+.teacher-simple:before{content:"🌱";float:right;font-size:1.1rem;margin-left:10px}
+.teacher-example:before{content:"🌍";float:right;font-size:1.1rem;margin-left:10px}
+.teacher-why:before{content:"↗";float:right;font-size:1.2rem;color:#b66a46;margin-left:10px}
+@media(max-width:650px){.teacher-card,.teacher-why{padding:12px;margin:8px 0}.teacher-card p,.teacher-why p{font-size:.9rem}}
