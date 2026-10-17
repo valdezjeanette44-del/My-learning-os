@@ -33,7 +33,7 @@ function lessonHTML(name,l,i,isDone){
   <span class="lesson-chevron">+</span>
  </button>
  <div class="lesson-body">
-  <div class="teacher-card teacher-simple"><span class="lesson-label">IN SIMPLE WORDS</span><p>${esc(l[1])}</p></div><div class="teacher-card teacher-example"><span class="lesson-label">A REAL-WORLD EXAMPLE</span><p>${esc(l[2])}</p></div><div class="teacher-why"><span class="lesson-label">WHY IT WORKS</span><p>${esc(l[2])} ${esc(l[1])}</p></div>
+  <div class="teacher-card teacher-simple"><span class="lesson-label">IN SIMPLE WORDS</span><p>${esc(l[1])}</p></div><div class="teacher-card teacher-example"><span class="lesson-label">A REAL-WORLD EXAMPLE</span><p>${esc(l[2])}</p></div><div class="teacher-why"><span class="lesson-label">WHY IT WORKS</span><p>${esc(whyItWorks(name,l))}</p></div>
   <div class="question"><span class="lesson-label">THINK ABOUT IT</span><p>${esc(l[3])}</p>
    <button class="hint-toggle button secondary" onclick="toggleHint(${i})">💡 Need a hint?</button><p id="hint-${i}" class="lesson-hint" hidden>${esc(l[4])}</p>
    <textarea class="answer" id="answer-${i}" placeholder="Try explaining your answer in your own words…">${esc((state().answers?.[name]?.[i])||'')}</textarea>
@@ -379,6 +379,46 @@ function recordReview(name,i,known){
  s.activity=s.activity||{};s.activity[dateKey(new Date())]=true;saveState(s);
 }
 function finishReview(name,i,known){recordReview(name,i,known);renderSubject(name);openLesson(i);}
+
+function whyItWorks(subject,lesson){
+ const title=lesson[0];
+ const explanations={
+ "What does physics study?":"Physics looks for repeatable patterns. Testing the same idea under different conditions helps us distinguish a reliable rule from a one-time coincidence.",
+ "Motion and speed":"Distance and time let us compare movement consistently. Covering more distance in the same time means greater speed.",
+ "Energy":"Energy can change form and move between objects. Tracking these transfers explains how motion, heat, light, and other changes are connected.",
+ "Gravity and orbits":"Gravity continually changes the direction of a moving object. Forward motion and gravitational pull together can produce an orbit.",
+ "What is matter made of?":"Matter has structure at scales too small to see directly. Evidence from experiments helps scientists infer what these tiny building blocks are doing.",
+ "Atoms and elements":"An element is defined by the number of protons in its atoms. Changing that number changes which element it is.",
+ "Chemical bonds":"Atoms can become more stable by sharing or transferring electrons. The resulting attractions hold atoms together in molecules and compounds.",
+ "Chemical reactions":"During a reaction, atoms rearrange into new combinations. The atoms are conserved even though the materials can have very different properties.",
+ "What is life?":"Living things maintain organized processes, use energy, respond to their surroundings, and produce new generations. No single sign alone explains every edge case.",
+ "Cells: the basic unit":"Cells keep many essential chemical processes in a controlled space. Their membranes regulate what enters and leaves, helping the cell maintain conditions it needs.",
+ "DNA and heredity":"DNA stores instructions in a chemical sequence. When DNA is copied and passed to offspring, inherited information can be carried across generations.",
+ "Evolution by natural selection":"Individuals vary, and some differences affect survival or reproduction. When those differences are inherited, their frequency can change over many generations.",
+ "How do historians study the past?":"Different sources provide different kinds of evidence. Comparing them helps historians spot gaps, bias, and explanations that fit the evidence better.",
+ "Prehistory and archaeology":"Objects and remains preserve traces of past behavior. Their location and age help researchers interpret how people lived when written records are absent.",
+ "Agriculture and civilization":"Farming can create more predictable food supplies, but it also ties people to land and seasonal work. Surplus can support larger settlements and specialized roles.",
+ "Empires and exchange":"Trade and conquest connect distant communities, moving goods, ideas, people, and diseases. Those connections can create wealth while also producing inequality and conflict.",
+ "What is economics?":"Resources are limited while people have many possible wants. Economics studies how individuals and societies make choices under those constraints.",
+ "Supply and demand":"Prices influence how much buyers want and how much sellers offer. Their interaction helps coordinate decisions, although real markets can have delays and other complications.",
+ "Incentives":"People often respond to the benefits and costs they face. Changing a reward or penalty can change behavior, though people do not all respond in the same way.",
+ "Trade and specialization":"People and businesses can focus on tasks where they have a relative advantage, then exchange results. This can increase total output when the gains from exchange exceed its costs.",
+ "What is a business?":"A business survives when the value customers receive is worth more to them than the price, while the income can cover the business's costs. Both customer value and financial sustainability matter.",
+ "Revenue, costs and profit":"Profit depends on what remains after costs are subtracted from revenue. Sales alone do not reveal whether the business is financially healthy.",
+ "Understanding customers":"Customer research reduces guesswork by revealing what people actually need, value, and are willing to pay for. Real behavior is often more informative than compliments alone.",
+ "Testing a business idea":"A small test turns assumptions into evidence before large amounts of money are committed. Results help you improve the offer or decide not to continue.",
+ "What is technology?":"A technology works by combining tools, methods, and knowledge into a process that produces a useful result. Its reliability depends on how well those parts work together.",
+ "How does the internet work?":"Devices split communication into data packets and use shared network rules to route them. Servers respond to requests, while browsers interpret the returned files as a page.",
+ "What is an algorithm?":"Clear steps break a larger problem into manageable operations. The same inputs and rules can produce a predictable result, making the process testable and repeatable.",
+ "What is artificial intelligence?":"AI systems learn statistical patterns from examples and use those patterns to make predictions or generate outputs. Pattern matching can be powerful, but it does not guarantee truth.",
+ "What is philosophy?":"Philosophy makes assumptions and reasons explicit so ideas can be examined rather than accepted automatically.",
+ "How do we know?":"Evidence supports some beliefs more strongly than others. Checking sources, testing predictions, and considering alternative explanations helps us update our confidence.",
+ "Ethics and choices":"Ethical reasoning asks who is affected, what matters to them, and which principles should guide action. Considering consequences and fairness can reveal trade-offs hidden by a quick decision.",
+ "Arguments and reasoning":"A conclusion is only as strong as its reasons and evidence. Checking whether the reasons really support the conclusion helps expose gaps and hidden assumptions."
+ };
+ return explanations[title]||"To understand why this idea works, look for the cause-and-effect relationship: what changes, what stays the same, and what evidence would show the result. Try changing one factor at a time and predict what should happen.";
+}
+
 function boot(){const path=location.pathname;document.body.dataset.subject=(path.match(/subjects\/([^/]+)/)||[])[1] ? (path.match(/subjects\/([^/]+)/)[1].replace(/^./,c=>c.toUpperCase())) : '';if(document.getElementById('app')){if(path.includes('/subjects/'))renderSubject(document.body.dataset.subject);else if(path.includes('knowledge.html'))renderMap();else if(path.includes('review.html'))renderReview();else if(path.includes('projects.html')){const id=new URLSearchParams(location.search).get('project');id?renderProjectDetail(id):renderProjects();}else if(path.includes('search.html'))renderSearch();else if(path.includes('tutor.html'))renderTutor();else renderHome()}}
 let tutorFocusIndex=-1;
 let tutorRequestPending=false;
