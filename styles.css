@@ -180,3 +180,5 @@
 @media(min-width:651px){
  .mobile-nav{display:none}
 }
+
+@media(max-width:650px){.topbar{display:flex;align-items:center;margin-bottom:12px}.brand{margin-bottom:0}.topbar .nav{display:none}}
