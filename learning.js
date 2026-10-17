@@ -379,20 +379,106 @@ function recordReview(name,i,known){
 }
 function finishReview(name,i,known){recordReview(name,i,known);renderSubject(name);openLesson(i);}
 function boot(){const path=location.pathname;document.body.dataset.subject=(path.match(/subjects\/([^/]+)/)||[])[1] ? (path.match(/subjects\/([^/]+)/)[1].replace(/^./,c=>c.toUpperCase())) : '';if(document.getElementById('app')){if(path.includes('/subjects/'))renderSubject(document.body.dataset.subject);else if(path.includes('knowledge.html'))renderMap();else if(path.includes('review.html'))renderReview();else if(path.includes('projects.html')){const id=new URLSearchParams(location.search).get('project');id?renderProjectDetail(id):renderProjects();}else if(path.includes('search.html'))renderSearch();else if(path.includes('tutor.html'))renderTutor();else renderHome()}}
+let tutorFocusIndex=-1;
+let tutorRequestPending=false;
 function renderTutor(){
- document.getElementById('app').innerHTML=nav()+`<section class="hero"><h1>👩‍🏫 My Tutor</h1><p class="muted">A simple tutor layer that uses the lessons in your Learning OS. A full AI tutor can plug into this interface later without changing your learning data.</p></section>
- <section class="panel"><h2>What do you want help with?</h2><div class="tutor-grid">${Object.entries(SUBJECTS).map(([n,d])=>`<button class="card tutor-choice" onclick="startTutor('${n}')"><span class="icon">${d.icon}</span><strong>${n}</strong><span class="muted">${d.desc}</span></button>`).join('')}</div></section>
- <section class="panel" id="tutorPanel"><h2>Choose a subject</h2><p class="muted">Your tutor will ask you a question, listen to your answer, and point you toward the relevant lesson.</p></section>
+ document.title='My Tutor | My Learning OS';
+ const options=Object.entries(SUBJECTS).map(([n,d])=>'<option value="'+esc(n)+'">'+d.icon+' '+esc(n)+'</option>').join('');
+ document.getElementById('app').innerHTML=nav()+`<section class="hero tutor-hero"><span class="tutor-eyebrow">YOUR PERSONAL LEARNING COMPANION</span><h1>Learn through conversation.</h1><p class="muted">Ask anything, explore an idea, or let your tutor guide you through a lesson. Your conversations stay saved on this device.</p></section>
+ <section class="panel tutor-workspace">
+  <div class="tutor-controls"><label for="tutorSubject">What are we exploring?</label><select id="tutorSubject" onchange="changeTutorSubject()">`+options+`</select><label for="tutorLesson">Focus on a lesson (optional)</label><select id="tutorLesson" onchange="changeTutorFocus()"><option value="-1">Open exploration — any question</option></select></div>
+  <div class="tutor-focus-label" id="tutorFocusLabel">Open exploration · ask your own question</div>
+  <div class="tutor-prompt-row"><button class="button secondary" onclick="useTutorPrompt('Explain this in simple words, with an everyday example.')">Explain simply</button><button class="button secondary" onclick="useTutorPrompt('Give me a real-life example and explain why it works.')">Real-life example</button><button class="button secondary" onclick="useTutorPrompt('Quiz me with one question at a time. Wait for my answer before explaining.')">Quiz me</button><button class="button secondary" onclick="useTutorPrompt('Connect this idea to another subject I am learning.')">Connect ideas</button></div>
+  <div class="tutor-chat-heading"><div><h2>Our conversation</h2><p class="muted">No pressure to get it right. Curiosity comes first.</p></div><button class="text-action" onclick="clearTutorChat()">Clear chat</button></div>
+  <div id="tutorMessages" class="tutor-messages" aria-live="polite"></div>
+  <div id="tutorStatus" class="tutor-status" role="status"></div>
+  <label for="tutorInput" class="tutor-input-label">What would you like to understand?</label><textarea id="tutorInput" class="tutor-input" rows="3" placeholder="Ask a question, tell me what confuses you, or explain your current thinking…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendTutorMessage()}"></textarea>
+  <div class="tutor-send-row"><small class="muted">Enter to send · Shift + Enter for a new line</small><button id="tutorSend" onclick="sendTutorMessage()">Send message ↗</button></div>
+  <p class="tutor-privacy-note">Your chat is saved in this browser. AI replies require a connected API service.</p>
+ </section>
+ <section class="panel tutor-path-panel"><h2>Turn curiosity into progress</h2><div class="tutor-path-grid"><a href="/#learning-areas"><strong>📚 Structured lessons</strong><span>Learn in small steps and save your progress.</span></a><a href="/projects.html"><strong>🔬 Hands-on projects</strong><span>Use what you learn to investigate real questions.</span></a><a href="/review.html"><strong>🧠 Remember more</strong><span>Return to important ideas before you forget them.</span></a></div></section>
  <footer>My Learning OS · Learn → Connect → Question → Understand</footer>`;
+ updateTutorLessonOptions();
+ renderTutorMessages(document.getElementById('tutorSubject').value);
+}
+function updateTutorLessonOptions(){
+ const subject=document.getElementById('tutorSubject')?.value||Object.keys(SUBJECTS)[0],select=document.getElementById('tutorLesson');
+ if(!select)return;
+ const lessons=SUBJECTS[subject].lessons;
+ select.innerHTML='<option value="-1">Open exploration — any question</option>'+lessons.map((l,i)=>'<option value="'+i+'">'+(i+1)+'. '+esc(l[0])+'</option>').join('');
+ select.value=String(tutorFocusIndex);
+ if(select.value!==String(tutorFocusIndex)){tutorFocusIndex=-1;select.value='-1';}
+ updateTutorFocusLabel();
+}
+function updateTutorFocusLabel(){
+ const name=document.getElementById('tutorSubject')?.value||Object.keys(SUBJECTS)[0],box=document.getElementById('tutorFocusLabel');
+ if(!box)return;
+ const l=tutorFocusIndex>=0?SUBJECTS[name].lessons[tutorFocusIndex]:null;
+ box.textContent=l?'Learning focus · '+l[0]:'Open exploration · ask your own question';
+}
+function changeTutorSubject(){
+ tutorFocusIndex=-1;updateTutorLessonOptions();
+ const name=document.getElementById('tutorSubject').value;
+ renderTutorMessages(name);
+}
+function changeTutorFocus(){
+ const select=document.getElementById('tutorLesson');
+ tutorFocusIndex=select?parseInt(select.value,10):-1;
+ if(Number.isNaN(tutorFocusIndex))tutorFocusIndex=-1;
+ updateTutorFocusLabel();
+}
+function tutorHistory(name){
+ const s=state();s.tutorChats=s.tutorChats||{};s.tutorChats[name]=s.tutorChats[name]||[];return s.tutorChats[name];
+}
+function renderTutorMessages(name){
+ const box=document.getElementById('tutorMessages');if(!box)return;
+ const messages=tutorHistory(name);
+ if(!messages.length){
+  const d=SUBJECTS[name];
+  box.innerHTML='<div class="tutor-welcome"><span class="tutor-welcome-icon">'+d.icon+'</span><strong>Hi! Let’s get curious about '+esc(name)+'.</strong><p>I can explain an idea in different ways, ask you questions, help you practise, or explore a question you have. What are you curious about today?</p></div>';
+ }else{
+  box.innerHTML=messages.map(m=>'<div class="tutor-message '+(m.role==='user'?'from-user':'from-tutor')+'"><span class="tutor-message-label">'+(m.role==='user'?'You':'Your tutor')+'</span><div>'+esc(m.content).replace(/\n/g,'<br>')+'</div></div>').join('');
+ }
+ box.scrollTop=box.scrollHeight;
 }
 function startTutor(name){
- const d=SUBJECTS[name],i=Math.floor(Math.random()*d.lessons.length),l=d.lessons[i],p=document.getElementById('tutorPanel');
- p.innerHTML='<h2>'+d.icon+' '+esc(name)+' tutor</h2><p>'+esc(l[3])+'</p><textarea class="answer" id="tutorAnswer" placeholder="Explain your thinking in your own words..."></textarea><div class="lesson-actions"><button onclick="tutorRespond(\''+name+'\','+i+')">Check my thinking</button><a class="button secondary" href="/subjects/'+name.toLowerCase()+'/#lesson-'+i+'">Open lesson →</a></div><div id="tutorFeedback" class="feedback"></div>';
+ const select=document.getElementById('tutorSubject');
+ if(select&&SUBJECTS[name]){select.value=name;changeTutorSubject();}
 }
-function tutorRespond(name,i){
- const l=SUBJECTS[name].lessons[i],answer=(document.getElementById('tutorAnswer').value||'').trim(),box=document.getElementById('tutorFeedback');
- if(!answer){box.innerHTML='✍️ Start by explaining what you think. There is no need to be perfect.';return}
- const key=l[4].toLowerCase().split(/[^a-z0-9]+/).filter(w=>w.length>5),a=answer.toLowerCase(),hits=key.filter(w=>a.includes(w));
- box.innerHTML=hits.length?'✅ You are connecting with the lesson. Try explaining <strong>why</strong> your idea leads to the result.':'💡 Good starting point. Open the lesson, compare the model answer, then try explaining the idea again in your own words.';
+function useTutorPrompt(prompt){sendTutorMessage(prompt);}
+function clearTutorChat(){
+ const name=document.getElementById('tutorSubject')?.value;if(!name)return;
+ if(!confirm('Clear the saved tutor conversation for '+name+'? Your lessons and notes will not be deleted.'))return;
+ const s=state();s.tutorChats=s.tutorChats||{};s.tutorChats[name]=[];saveState(s);renderTutorMessages(name);
+ const status=document.getElementById('tutorStatus');if(status)status.textContent='Conversation cleared.';
+}
+async function sendTutorMessage(suppliedText){
+ if(tutorRequestPending)return;
+ const input=document.getElementById('tutorInput'),name=document.getElementById('tutorSubject')?.value;
+ const message=String(suppliedText!==undefined?suppliedText:(input?.value||'')).trim();
+ if(!name||!message)return;
+ if(message.length>1500){const status=document.getElementById('tutorStatus');if(status)status.textContent='Please keep each message under 1,500 characters.';return;}
+ const s=state();s.tutorChats=s.tutorChats||{};s.tutorChats[name]=s.tutorChats[name]||[];
+ s.tutorChats[name].push({role:'user',content:message});saveState(s);
+ if(input)input.value='';
+ renderTutorMessages(name);
+ const status=document.getElementById('tutorStatus'),button=document.getElementById('tutorSend');
+ tutorRequestPending=true;if(button){button.disabled=true;button.textContent='Thinking…';}if(status)status.textContent='Your tutor is thinking…';
+ const lesson=tutorFocusIndex>=0?SUBJECTS[name].lessons[tutorFocusIndex]:null;
+ try{
+  const response=await fetch('/api/tutor',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subject:name,lessonTitle:lesson?lesson[0]:'',lessonContext:lesson?[lesson[1],lesson[2],lesson[3],lesson[4]].join('\n'): '',messages:s.tutorChats[name].slice(-12).map(m=>({role:m.role,content:m.content}))})});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(data.message||'Your tutor could not reply just now. Please try again.');
+  const latest=state();latest.tutorChats=latest.tutorChats||{};latest.tutorChats[name]=latest.tutorChats[name]||[];
+  latest.tutorChats[name].push({role:'assistant',content:data.answer||'I could not create a reply. Please try again.'});saveState(latest);
+  renderTutorMessages(name);if(status)status.textContent='';
+ }catch(error){
+  const friendly=error.message==='Failed to fetch'?'The tutor service is not connected yet. The app needs its secure API setup before AI replies can work.':error.message;
+  const latest=state();latest.tutorChats=latest.tutorChats||{};latest.tutorChats[name]=latest.tutorChats[name]||[];
+  latest.tutorChats[name].push({role:'assistant',content:'I could not answer just now. '+friendly});saveState(latest);
+  renderTutorMessages(name);if(status)status.textContent='You can try sending your question again.';
+ }finally{
+  tutorRequestPending=false;if(button){button.disabled=false;button.textContent='Send message ↗';}
+ }
 }
 boot();
