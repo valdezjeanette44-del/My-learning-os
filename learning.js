@@ -11,7 +11,7 @@ function renderSubject(name){
  document.title=name+' | My Learning OS';
  document.getElementById('app').innerHTML=nav()+`<main class="hero"><a class="back" href="/">← Back to Learning Areas</a><h1>${d.icon} ${name}</h1><p class="muted">${d.desc}</p></main>
  <section class="panel"><div class="stats"><div class="stat"><strong>${done.length}</strong><span>lessons done</span></div><div class="stat"><strong>${d.lessons.length}</strong><span>lessons</span></div><div class="stat"><strong>${p}%</strong><span>progress</span></div><div class="stat"><strong>${s.scores[name]?.score||0}%</strong><span>quiz</span></div></div><div class="bar" style="margin-top:16px"><div style="width:${p}%"></div></div></section>
- <section class="panel"><h2>Course</h2><p class="muted">Learn → Connect → Question → Understand</p><div id="lessons">${d.lessons.map((l,i)=>lessonHTML(name,l,i,done.includes(i))).join('')}</div></section>
+ <section class="panel course-panel"><div class="course-heading"><div><h2>Your lessons</h2><p class="muted">Open one lesson at a time. You can go at your own pace.</p></div><span class="course-count">${done.length}/${d.lessons.length}</span></div><div id="lessons">${d.lessons.map((l,i)=>lessonHTML(name,l,i,done.includes(i))).join('')}</div></section>
  <section class="panel"><h2>My notes</h2><textarea class="note" id="note" placeholder="Write what you understood, a question, or a connection...">${esc(s.notes[name]||'')}</textarea><div class="lesson-actions"><button onclick="saveNote()">Save notes</button><span id="saved" class="muted"></span></div></section>
  <section class="panel"><h2>Quick quiz</h2><p>Answer in your own words, then reveal the model answer.</p><div id="quiz"></div></section>
  <footer>My Learning OS · Learn → Connect → Question → Understand</footer>`;
@@ -25,7 +25,29 @@ function renderSubject(name){
 function lessonHTML(name,l,i,isDone){
  const r=state().review?.[name+'-'+i],due=r&&new Date(r.nextReview)<=new Date();
  const scheduled=r&&!due;
- return `<article class="lesson" id="lesson-${i}"><h3>Lesson ${i+1}: ${l[0]}</h3><p class="muted">${l[1]}</p><div class="lesson-body"><p>${l[2]}</p><div class="question"><strong>🧠 Think about this:</strong><br>${l[3]}<div class="muted" style="margin-top:8px">Hint: ${l[4]}</div><textarea class="answer" id="answer-${i}" placeholder="Write your answer in your own words...">${esc((state().answers?.[name]?.[i])||'')}</textarea><div class="lesson-actions"><button onclick="checkAnswer('${name}',${i})">Check my answer</button><button class="button secondary" onclick="showModelAnswer('${name}',${i})">Show model answer</button></div><div id="feedback-${i}" class="feedback" hidden></div></div><div class="lesson-actions"><button onclick="completeLesson('${name}',${i})" ${isDone?'disabled':''}>${isDone?'✓ Completed':'Mark lesson complete'}</button><button class="button secondary" onclick="toggleExplanation(${i})">Explain another way</button></div>${scheduled?`<div id="review-status-${i}" class="review-scheduled"><strong>🧠 Review scheduled</strong><br>Next review: <strong>${formatDate(r.nextReview)}</strong>.<br><span class="muted">This concept will return for review so you can strengthen your memory.</span></div>`:''}${due?`<div class="review-prompt"><strong>🧠 This concept is due for review.</strong><div class="lesson-actions"><button onclick="finishReview('${name}',${i},true)">✓ I remembered it</button><button class="button secondary" onclick="finishReview('${name}',${i},false)">↻ I need more practice</button></div></div>`:''}<p id="explain-${i}" class="muted" hidden>In simple terms: ${l[2]} Think of it as a relationship between things that you can observe, test or reason about.</p></div><button class="button secondary" onclick="openLesson(${i})">${isDone?'Review lesson':'Open lesson'} →</button></article>`}
+ return `<article class="lesson ${isDone?'lesson-done':''}" id="lesson-${i}">
+ <button class="lesson-summary" type="button" aria-expanded="false" onclick="openLesson(${i})">
+  <span class="lesson-number">${isDone?'✓':i+1}</span>
+  <span class="lesson-summary-copy"><strong>${esc(l[0])}</strong><small>${esc(l[1])}</small></span>
+  <span class="lesson-chevron">+</span>
+ </button>
+ <div class="lesson-body">
+  <div class="lesson-section"><span class="lesson-label">THE KEY IDEA</span><p>${esc(l[2])}</p></div>
+  <div class="question"><span class="lesson-label">THINK ABOUT IT</span><p>${esc(l[3])}</p>
+   <button class="hint-toggle button secondary" onclick="toggleHint(${i})">💡 Need a hint?</button><p id="hint-${i}" class="lesson-hint" hidden>${esc(l[4])}</p>
+   <textarea class="answer" id="answer-${i}" placeholder="Try explaining your answer in your own words…">${esc((state().answers?.[name]?.[i])||'')}</textarea>
+   <div class="lesson-actions"><button onclick="checkAnswer('${name}',${i})">Check my answer</button><button class="button secondary" onclick="showModelAnswer('${name}',${i})">Show example answer</button></div>
+   <div id="feedback-${i}" class="feedback" hidden></div>
+  </div>
+  <button class="text-action" onclick="toggleExplanation(${i})">Explain this more simply</button>
+  <p id="explain-${i}" class="simple-explanation" hidden>In simple terms: ${esc(l[2])} Think of it as a relationship between things you can observe, test, or reason about.</p>
+  <div class="lesson-actions lesson-finish"><button onclick="completeLesson('${name}',${i})" ${isDone?'disabled':''}>${isDone?'✓ Lesson completed':'Mark lesson complete'}</button></div>
+  ${scheduled?`<div id="review-status-${i}" class="review-scheduled"><strong>🧠 Review scheduled</strong><br>Next review: <strong>${formatDate(r.nextReview)}</strong>.<br><span class="muted">This concept will return for review so you can strengthen your memory.</span></div>`:''}
+  ${due?`<div class="review-prompt"><strong>🧠 This concept is due for review.</strong><div class="lesson-actions"><button onclick="finishReview('${name}',${i},true)">✓ I remembered it</button><button class="button secondary" onclick="finishReview('${name}',${i},false)">↻ I need more practice</button></div></div>`:''}
+ </div>
+ </article>`;
+}
+function toggleHint(i){const e=document.getElementById('hint-'+i);if(e)e.hidden=!e.hidden;}
 function checkAnswer(name,i){
  const d=SUBJECTS[name],l=d.lessons[i],input=document.getElementById('answer-'+i),box=document.getElementById('feedback-'+i);
  const answer=(input.value||'').trim();
@@ -49,7 +71,12 @@ function checkAnswer(name,i){
  box.innerHTML='<strong>'+title+'</strong><br>'+body+next+'<br><span class="muted">Now compare with the model answer and rewrite your answer in your own words.</span>';
  saveAnswer(name,i,answer)
 }
-function openLesson(i){document.querySelectorAll('.lesson').forEach(x=>x.classList.remove('active'));const el=document.getElementById('lesson-'+i);el.classList.add('active');el.scrollIntoView({behavior:'smooth',block:'center'})}
+function openLesson(i){
+ document.querySelectorAll('.lesson').forEach(x=>{x.classList.remove('active');const b=x.querySelector('.lesson-summary');if(b)b.setAttribute('aria-expanded','false');const c=x.querySelector('.lesson-chevron');if(c)c.textContent='+';});
+ const el=document.getElementById('lesson-'+i);if(!el)return;
+ el.classList.add('active');const b=el.querySelector('.lesson-summary');if(b)b.setAttribute('aria-expanded','true');const c=el.querySelector('.lesson-chevron');if(c)c.textContent='−';
+ el.scrollIntoView({behavior:'smooth',block:'start'});
+}
 function showModelAnswer(name,i){const l=SUBJECTS[name].lessons[i],box=document.getElementById('feedback-'+i);box.hidden=false;box.innerHTML='<strong>Model answer:</strong> '+esc(l[4])}
 function toggleExplanation(i){const e=document.getElementById('explain-'+i);e.hidden=!e.hidden}
 function saveAnswer(name,i,answer){const s=state();s.answers=s.answers||{};s.answers[name]=s.answers[name]||{};s.answers[name][i]=answer;saveState(s)}
