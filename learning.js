@@ -239,7 +239,7 @@ function toggleProjectStep(id,i){
  ps.completed=ps.completed||[];
  const at=ps.completed.indexOf(i);
  if(at>=0)ps.completed.splice(at,1);else ps.completed.push(i);
- saveState(s);renderProjects();
+ saveState(s);renderProjectDetail(id,i);
 }
 function saveProjectNotes(id){
  const el=document.getElementById('projectNotes'),s=state();
@@ -268,15 +268,18 @@ function renderProjects(){
  document.getElementById('app').innerHTML=nav()+`<section class="hero"><a class="back" href="/">← Back to Home</a><h1>🔬 My Projects</h1><p class="muted">Long-term investigations where you connect ideas across subjects.</p></section>
  <div class="project-grid">${ids.map(id=>{const d=PROJECTS[id],pct=projectProgress(id),p=projectState(id);return `<a class="project-card" href="/projects.html?project=${id}"><div class="project-card-icon">${d.icon}</div><small>PROJECT</small><h2>${d.title}</h2><p class="muted">${d.subtitle}</p><div class="bar"><div style="width:${pct}%"></div></div><strong>${p.completed.length}/${d.steps.length} milestones · ${pct}%</strong></a>`}).join('')}</div>`;
 }
-function renderProjectDetail(id){
+function renderProjectDetail(id,openIndex=0){
  const d=PROJECTS[id];if(!d){renderProjects();return}
  const p=projectState(id),pct=projectProgress(id);
  document.title=d.title+' | My Learning OS';
- document.getElementById('app').innerHTML=nav()+`<section class="hero"><a class="back" href="/projects.html">← All Projects</a><h1>${d.icon} ${d.title}</h1><p class="muted">${d.subtitle}</p></section>
- <section class="project-hero"><div class="project-icon">${d.icon}</div><div><small>ACTIVE PROJECT</small><h2>${d.title}</h2><p>${d.description}</p></div></section>
- <section class="panel"><div class="project-progress-head"><div><h2>Project progress</h2><p class="muted">${p.completed.length} of ${d.steps.length} milestones complete</p></div><strong>${pct}%</strong></div><div class="bar"><div style="width:${pct}%"></div></div></section>
- <section class="panel"><h2>Project path</h2><div class="project-steps">${d.steps.map((x,i)=>`<button class="project-step ${p.completed.includes(i)?'done':''}" onclick="toggleProjectStep('${id}',${i})"><span class="project-check">${p.completed.includes(i)?'✓':'○'}</span><span><strong>${i+1}. ${x[0]}</strong><small>${x[1]}</small><em>Question: ${x[2]}</em></span></button>`).join('')}</div></section>
- <section class="panel"><h2>🧠 My discoveries</h2><p class="muted">Write what you discovered in your own words. This stays in your browser.</p><textarea class="note project-notes" id="projectNotes" placeholder="Write your own explanation, discoveries, questions, or connections...">${esc(p.notes||'')}</textarea><div class="lesson-actions"><button onclick="saveProjectNotes('${id}')">Save my discoveries</button><span id="projectSaved" class="muted"></span></div></section>`;
+ document.getElementById('app').innerHTML=nav()+`<section class="hero project-page-heading"><a class="back" href="/projects.html">← All Projects</a><h1>${d.icon} ${d.title}</h1><p class="muted">${d.subtitle}</p></section>
+ <section class="project-hero project-hero-compact"><div class="project-icon">${d.icon}</div><div><small>YOUR PROJECT</small><h2>${d.title}</h2><p>${d.description}</p></div></section>
+ <section class="panel project-progress-panel"><div class="project-progress-head"><div><h2>Progress</h2><p class="muted">${p.completed.length} of ${d.steps.length} steps complete</p></div><strong>${pct}%</strong></div><div class="bar"><div style="width:${pct}%"></div></div></section>
+ <section class="panel project-path-panel"><div class="project-path-heading"><div><h2>Project steps</h2><p class="muted">Open one step at a time. Work at your own pace.</p></div><span class="step-count">${d.steps.length} steps</span></div><div class="project-steps">${d.steps.map((x,i)=>`<article class="project-step-card ${p.completed.includes(i)?'done':''} ${openIndex===i?'is-open':''}">
+ <button class="project-step-toggle" aria-expanded="${openIndex===i}" onclick="renderProjectDetail('${id}',${openIndex===i?-1:i})"><span class="project-check">${p.completed.includes(i)?'✓':'${i+1}'}</span><span class="project-step-title"><strong>${i+1}. ${x[0]}</strong><small>${p.completed.includes(i)?'Completed':'Tap to open this step'}</small></span><span class="project-step-chevron">${openIndex===i?'−':'+'}</span></button>
+ ${openIndex===i?`<div class="project-step-content"><p>${x[1]}</p><div class="project-question"><strong>Think about it</strong><p>${x[2]}</p></div><button class="project-complete-button ${p.completed.includes(i)?'is-complete':''}" onclick="toggleProjectStep('${id}',${i})">${p.completed.includes(i)?'✓ Mark as not complete':'Mark step complete ✓'}</button></div>`:''}
+ </article>`).join('')}</div></section>
+ <section class="panel project-discoveries"><h2>🧠 My discoveries</h2><p class="muted">Save your ideas and questions here.</p><textarea class="note project-notes" id="projectNotes" placeholder="What did you discover? What questions do you still have?">${esc(p.notes||'')}</textarea><div class="lesson-actions"><button onclick="saveProjectNotes('${id}')">Save my discoveries</button><span id="projectSaved" class="muted"></span></div></section>`;
 }
 function renderMap(){
  const connections=[
