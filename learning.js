@@ -24,6 +24,7 @@ function renderSubject(name){
  if(goal) goal.innerHTML='<p><strong>'+gc+'</strong> of <strong>'+gg+'</strong> learning actions</p><div class="bar"><div style="width:'+Math.min(100,Math.round(gc/gg*100))+'%"></div></div><div class="goal-buttons"><button class="button secondary" onclick="setDailyGoal(1)">1</button><button class="button secondary" onclick="setDailyGoal(2)">2</button><button class="button secondary" onclick="setDailyGoal(3)">3</button></div><small class="muted">Choose a small daily goal that feels realistic.</small>';
 }
 function lessonHTML(name,l,i,isDone){
+ const teaching=teacherContent(name,l);
  const r=state().review?.[name+'-'+i],due=r&&new Date(r.nextReview)<=new Date();
  const scheduled=r&&!due;
  return `<article class="lesson ${isDone?'lesson-done':''}" id="lesson-${i}">
@@ -33,7 +34,7 @@ function lessonHTML(name,l,i,isDone){
   <span class="lesson-chevron">+</span>
  </button>
  <div class="lesson-body">
-  <div class="teacher-card teacher-simple"><span class="lesson-label">IN SIMPLE WORDS</span><p>${esc(l[1])}</p></div><div class="teacher-card teacher-example"><span class="lesson-label">A REAL-WORLD EXAMPLE</span><p>${esc(l[2])}</p></div><div class="teacher-why"><span class="lesson-label">WHY IT WORKS</span><p>${esc(whyItWorks(name,l))}</p></div>
+  <div class="teacher-card teacher-simple"><span class="lesson-label">IN SIMPLE WORDS</span><p>${esc(teaching.simple)}</p></div><div class="teacher-card teacher-example"><span class="lesson-label">A REAL-WORLD EXAMPLE</span><p>${esc(teaching.example)}</p></div><div class="teacher-why"><span class="lesson-label">WHY IT WORKS</span><p>${esc(whyItWorks(name,l))}</p></div>
   <div class="question"><span class="lesson-label">THINK ABOUT IT</span><p>${esc(l[3])}</p>
    <button class="hint-toggle button secondary" onclick="toggleHint(${i})">💡 Need a hint?</button><p id="hint-${i}" class="lesson-hint" hidden>${esc(l[4])}</p>
    <textarea class="answer" id="answer-${i}" placeholder="Try explaining your answer in your own words…">${esc((state().answers?.[name]?.[i])||'')}</textarea>
@@ -379,6 +380,47 @@ function recordReview(name,i,known){
  s.activity=s.activity||{};s.activity[dateKey(new Date())]=true;saveState(s);
 }
 function finishReview(name,i,known){recordReview(name,i,known);renderSubject(name);openLesson(i);}
+
+
+function teacherContent(subject,lesson){
+ const title=lesson[0];
+ const content={
+ "What does physics study?":["Physics helps us explain why things move, fall, heat up, or make sounds.","Throw a ball upward: it slows, pauses briefly, then falls because Earth's gravity pulls it down."],
+ "Motion and speed":["Speed tells you how fast something moves; motion means its position changes.","If you walk 100 metres in 2 minutes, your average speed is 50 metres per minute."],
+ "Energy":["Energy helps make changes happen, such as moving an object, warming food, or lighting a room.","A rolling ball has motion energy. When it hits a cushion, some energy transfers into sound, heat, and the cushion's movement."],
+ "Gravity and orbits":["Gravity is the pull between objects that have mass. It keeps us on the ground and helps guide planets around the Sun.","A satellite moves forward while Earth's gravity continually bends its path, so it keeps falling around Earth instead of straight down."],
+ "What is matter made of?":["Everyday things are made of tiny particles, including atoms, that are far too small to see with our eyes.","Water is made of water molecules. Each molecule contains two hydrogen atoms and one oxygen atom."],
+ "Atoms and elements":["An atom's element depends on how many protons it has in its centre.","Every carbon atom has six protons. If the number of protons changes, it becomes a different element."],
+ "Chemical bonds":["Atoms can join because electrical attractions between their particles hold them together.","In water, oxygen and hydrogen atoms share electrons in bonds, forming a water molecule."],
+ "Chemical reactions":["A chemical reaction rearranges atoms, turning starting substances into different substances.","When iron rusts, iron reacts with oxygen and moisture to form rust; the atoms are rearranged into a new material."],
+ "What is life?":["Living things carry out processes that keep them alive, use energy, and respond to their surroundings.","A plant uses light to make sugars, grows new leaves, and responds to water and sunlight."],
+ "Cells: the basic unit":["Cells are tiny living units that carry out the jobs needed to keep an organism alive.","Your muscle cells use energy to contract, helping you lift a bag or climb stairs."],
+ "DNA and heredity":["DNA is like a set of biological instructions that cells use and copy. It helps pass inherited traits between generations.","A puppy may inherit coat-colour variants from its parents because DNA is passed on during reproduction."],
+ "Evolution by natural selection":["Evolution happens when inherited traits in a population change across generations. Natural selection is one cause of that change.","If some insects are better camouflaged, birds may eat fewer of them. Those insects may leave more offspring, so camouflage can become more common."],
+ "How do historians study the past?":["Historians use clues from the past and compare sources to work out what likely happened.","To understand a historical event, a historian might compare a letter, a newspaper report, and an object from the same period."],
+ "Prehistory and archaeology":["Archaeologists study physical traces left behind to learn about people who lived long ago.","Stone tools, food remains, and the place where they were found can reveal how an ancient community lived."],
+ "Agriculture and civilization":["Farming allowed many communities to grow food in one place, sometimes supporting larger settlements.","A village that stores grain can feed people through seasons when crops are not ready, allowing some people to do other jobs."],
+ "Empires and exchange":["Empires ruled large areas, while trade and migration connected people across regions. These connections spread ideas as well as goods.","Along trade routes, people could exchange spices, cloth, languages, inventions, and religious ideas."],
+ "What is economics?":["Economics explores how people make choices when time, money, and resources are limited.","If you spend your evening studying, you have less time for a movie. Choosing one option means giving up another."],
+ "Supply and demand":["Demand is how much customers are willing and able to buy; supply is how much sellers are willing and able to offer.","On a hot day, more people may want ice cream. If the supply cannot quickly increase, sellers may run out or prices may rise."],
+ "Incentives":["An incentive is something that makes a choice more or less attractive.","A shop offers a loyalty stamp for each purchase; customers may return because collecting stamps brings a reward."],
+ "Trade and specialization":["People can save time and produce more by focusing on tasks they do relatively well, then exchanging what they make.","One person prepares ingredients while another cooks. Working in parallel can get dinner ready faster than each person doing every task alone."],
+ "What is a business?":["A business offers something people value and tries to earn enough to cover its costs.","A bakery sells bread, but customers also value its freshness, convenient location, and the time it saves them."],
+ "Revenue, costs and profit":["Revenue is money coming in from sales. Profit is what remains after the business pays its costs.","If you sell a pouch for €30 and buying and shipping it costs €18, €12 remains before advertising, tax, and other expenses."],
+ "Understanding customers":["Businesses need to learn what people actually need, not just guess what they might buy.","Before selling a travel pouch, ask travellers what frustrates them when packing and which features they would pay for."],
+ "Testing a business idea":["A small test lets you learn whether an idea works before risking a lot of money.","Show a sample bag to a few potential customers and ask what they would change before ordering a large quantity."],
+ "What is technology?":["Technology combines tools and knowledge to solve a problem or make a task easier.","A washing machine uses water, detergent, a motor, and timed cycles to clean clothes with less manual effort."],
+ "How does the internet work?":["The internet lets devices send data to one another using shared rules. Websites are delivered from servers to your device.","When you open a website, your phone requests its files from a server, and your browser turns those files into the page you see."],
+ "What is an algorithm?":["An algorithm is a clear set of steps that solves a problem or completes a task.","A navigation app compares possible routes step by step and chooses one that fits your settings, such as avoiding toll roads."],
+ "What is artificial intelligence?":["AI uses patterns learned from examples to make predictions or create outputs, such as text or image descriptions.","A music app may recommend a song because its system detects patterns in what you and similar listeners enjoy."],
+ "What is philosophy?":["Philosophy asks big questions and uses careful reasoning to examine possible answers.","If you ask whether a promise should always be kept, philosophy helps you explore duties, consequences, and exceptions."],
+ "How do we know?":["We build confidence in a belief by looking at evidence and asking how strong the reasons are.","Before believing an online claim, check where it came from, whether other reliable sources agree, and what evidence is offered."],
+ "Ethics and choices":["Ethics helps us think about what is fair or right and how our choices affect other people.","If you find a lost wallet, you might consider the owner's needs, your responsibility, and the honest action to take."],
+ "Arguments and reasoning":["Good reasoning connects evidence and reasons to a conclusion instead of relying only on confidence or emotion.","If someone says a product is best because one friend liked it, ask whether that single experience is enough evidence for everyone."]
+ };
+ const item=content[title];
+ return item?{simple:item[0],example:item[1]}:{simple:lesson[1],example:lesson[2]};
+}
 
 function whyItWorks(subject,lesson){
  const title=lesson[0];
