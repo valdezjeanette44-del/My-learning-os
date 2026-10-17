@@ -92,17 +92,22 @@ function toggleHint(i){const e=document.getElementById('hint-'+i);if(e)e.hidden=
 function checkAnswer(name,i){
  const l=SUBJECTS[name].lessons[i],input=document.getElementById('answer-'+i),box=document.getElementById('feedback-'+i);
  const answer=(input.value||'').trim();
- if(!answer){box.hidden=false;box.innerHTML='<strong>✍️ Start with your idea.</strong><br>Write one or two sentences answering the question. It does not need to be perfect.';return}
+ if(!answer){box.hidden=false;box.innerHTML='<strong>✍️ Start with your idea.</strong><br>Write one or two sentences. It does not need to be perfect.';return}
  saveAnswer(name,i,answer);
  const words=answer.split(/\s+/).filter(Boolean);
  const normalized=answer.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
  const cues={"What does physics study?":["gravity","force","pull","down","motion"],"Motion and speed":["distance","time","direction","speed","velocity"],"Energy":["energy","kinetic","heat","sound","transfer"],"Gravity and orbits":["gravity","sideways","orbit","forward","fall"],"What is matter made of?":["atom","molecule","physical","chemical","substance"],"Atoms and elements":["proton","carbon","oxygen","element","atom"],"Chemical bonds":["atom","electron","bond","stable","energy"],"Chemical reactions":["atom","same number","balance","reactant","product"],"What is life?":["energy","grow","respond","living","plant"],"Cells: the basic unit":["membrane","inside","outside","control","cell"],"DNA and heredity":["dna","gene","protein","trait","instruction"],"Evolution by natural selection":["inherited","variation","survive","reproduce","generation"],"How do historians study the past?":["source","perspective","evidence","compare","bias"],"Prehistory and archaeology":["tool","artifact","evidence","past","archaeologist"],"Agriculture and civilization":["food","farm","surplus","settlement","society"],"Empires and exchange":["trade","route","ideas","goods","invention"],"What is economics?":["alternative","choice","give up","opportunity cost","value"],"Supply and demand":["supply","demand","shortage","price","buyers"],"Incentives":["reward","cost","behavior","choice","consequence"],"Trade and specialization":["specialize","comparative advantage","trade","exchange","produce"],"What is a business?":["customer","problem","need","value","offer"],"Revenue, costs and profit":["revenue","cost","profit","sales","expense"],"Understanding customers":["customer","need","research","buy","feedback"],"Testing a business idea":["test","evidence","customer","risk","feedback"],"What is technology?":["tool","solve","problem","process","useful"],"How does the internet work?":["server","request","data","network","browser"],"What is an algorithm?":["steps","order","input","output","result"],"What is artificial intelligence?":["pattern","training","prediction","generate","verify"],"What is philosophy?":["reason","concept","assumption","principle","question"],"How do we know?":["evidence","justified","belief","source","reason"],"Ethics and choices":["principle","consequence","fairness","choice","people"],"Arguments and reasoning":["reason","evidence","conclusion","argument","opinion"]};
  const matched=(cues[l[0]]||[]).filter(term=>normalized.includes(term));
  let message='';
- if(words.length<6)message='<strong>🌱 Good start—add a little more.</strong><br>Try writing a full sentence that answers the question and a second sentence explaining why.';
- else if(matched.length>=2)message='<strong>🌿 You included relevant ideas.</strong><br>You mentioned '+esc(matched.slice(0,3).join(', '))+'. Now make the connection explicit: explain how these ideas answer the question.';
- else message='<strong>🌱 You have started thinking it through.</strong><br>Try connecting your answer more directly to the question. Use the hint if needed, then explain the key idea in your own words.';
- message+='<br><br><strong>Check your understanding</strong><br>Compare your answer with the example answer below. Look for the main idea and the reason behind it; your wording does not have to be identical.';
+ if(words.length<6){
+  message='<strong>🌱 Good start.</strong><br>You have the beginning of an answer. Add one sentence explaining why or how.';
+ }else if(matched.length>=2){
+  message='<strong>🌿 You have the main idea.</strong><br>Your answer includes '+esc(matched.slice(0,3).join(', '))+'. To make it stronger, explain the link between the customer’s need and the useful offer.';
+ }else{
+  message='<strong>🌱 You are working through the idea.</strong><br>Try answering the question directly, then add a reason or a concrete example. You can use the hint to guide you.';
+ }
+ const help=lessonHelp(l[0]);
+ message+='<div class="answer-coach"><strong>Example answer</strong><p>'+esc(help.answer)+'</p><strong>Why this works</strong><p>'+esc(whyItWorks(name,l))+'</p><span>Your wording can be different. Check whether your answer includes the same central idea and explains why it matters.</span></div>';
  box.hidden=false;box.innerHTML=message;
 }
 function setSelfCheck(name,i,understood){
