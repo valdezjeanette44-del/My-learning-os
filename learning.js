@@ -96,27 +96,38 @@ function checkAnswer(name,i){
  saveAnswer(name,i,answer);
  const normalized=answer.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
  const words=normalized.split(/\s+/).filter(Boolean);
- const cues={"What does physics study?":["gravity","force","pull","down","motion"],"Motion and speed":["distance","time","direction","speed","velocity"],"Energy":["energy","kinetic","heat","sound","transfer"],"Gravity and orbits":["gravity","sideways","orbit","forward","fall"],"What is matter made of?":["atom","molecule","physical","chemical","substance"],"Atoms and elements":["proton","carbon","oxygen","element","atom"],"Chemical bonds":["atom","electron","bond","stable","energy"],"Chemical reactions":["atom","same number","balance","reactant","product"],"What is life?":["energy","grow","respond","living","plant"],"Cells: the basic unit":["membrane","inside","outside","control","cell"],"DNA and heredity":["dna","gene","protein","trait","instruction"],"Evolution by natural selection":["inherited","variation","survive","reproduce","generation"],"How do historians study the past?":["source","perspective","evidence","compare","bias"],"Prehistory and archaeology":["tool","artifact","evidence","past","archaeologist"],"Agriculture and civilization":["food","farm","surplus","settlement","society"],"Empires and exchange":["trade","route","ideas","goods","invention"],"What is economics?":["alternative","choice","give up","opportunity cost","value"],"Supply and demand":["supply","demand","shortage","price","buyers"],"Incentives":["reward","cost","behavior","choice","consequence"],"Trade and specialization":["specialize","comparative advantage","trade","exchange","produce"],"What is a business?":["customer","problem","need","value","offer"],"Revenue, costs and profit":["revenue","cost","profit","sales","expense"],"Understanding customers":["customer","need","research","buy","feedback"],"Testing a business idea":["test","evidence","customer","risk","feedback"],"What is technology?":["tool","solve","problem","process","useful"],"How does the internet work?":["server","request","data","network","browser"],"What is an algorithm?":["steps","order","input","output","result"],"What is artificial intelligence?":["pattern","training","prediction","generate","verify"],"What is philosophy?":["reason","concept","assumption","principle","question"],"How do we know?":["evidence","justified","belief","source","reason"],"Ethics and choices":["principle","consequence","fairness","choice","people"],"Arguments and reasoning":["reason","evidence","conclusion","argument","opinion"]};
- const matched=(cues[l[0]]||[]).filter(term=>normalized.includes(term));
+ const cues={"What does physics study?":["gravity","force","pull","motion","energy"],"Motion and speed":["distance","time","direction","speed","velocity"],"Energy":["energy","kinetic","heat","sound","transfer"],"Gravity and orbits":["gravity","sideways","orbit","forward","fall"],"What is matter made of?":["atom","molecule","particle","substance"],"Atoms and elements":["proton","carbon","oxygen","element","atom"],"Chemical bonds":["atom","electron","bond","stable","energy"],"Chemical reactions":["atom","balance","reactant","product","rearrange"],"What is life?":["energy","grow","respond","living","cell","plant"],"Cells: the basic unit":["membrane","inside","outside","control","cell"],"DNA and heredity":["dna","gene","protein","trait","instruction"],"Evolution by natural selection":["inherited","variation","survive","reproduce","generation","offspring"],"How do historians study the past?":["source","perspective","evidence","compare","bias"],"Prehistory and archaeology":["tool","artifact","evidence","past","archaeologist"],"Agriculture and civilization":["food","farm","surplus","settlement","society"],"Empires and exchange":["trade","route","ideas","goods","invention","exchange"],"What is economics?":["alternative","choice","give up","opportunity cost","value","limited"],"Supply and demand":["supply","demand","shortage","price","buyers"],"Incentives":["reward","cost","behavior","choice","consequence"],"Trade and specialization":["specialize","comparative advantage","trade","exchange","produce"],"What is a business?":["customer","problem","need","value","offer","useful"],"Revenue, costs and profit":["revenue","cost","profit","sales","expense"],"Understanding customers":["customer","need","research","buy","feedback"],"Testing a business idea":["test","evidence","customer","risk","feedback"],"What is technology?":["tool","solve","problem","process","useful"],"How does the internet work?":["server","request","data","network","browser"],"What is an algorithm?":["steps","order","input","output","result"],"What is artificial intelligence?":["pattern","training","prediction","generate","verify"],"What is philosophy?":["reason","concept","assumption","principle","question"],"How do we know?":["evidence","justified","belief","source","reason"],"Ethics and choices":["principle","consequence","fairness","choice","people"],"Arguments and reasoning":["reason","evidence","conclusion","argument","opinion"]};
+ const aliases={"customer":["customer","customers","buyer","buyers"],"offer":["offer","offering","product","service"],"problem":["problem","problems","solve","solves"],"need":["need","needs","require","requires"],"value":["value","useful","helpful"],"trade":["trade","trading","traders","exchange"],"idea":["idea","ideas","knowledge"],"tool":["tool","tools","technology"],"steps":["step","steps","order","sequence"],"evidence":["evidence","source","sources","proof"],"atom":["atom","atoms"],"cell":["cell","cells"],"energy":["energy","energies"],"cost":["cost","costs","expense","expenses"],"revenue":["revenue","sales","income"],"profit":["profit","profits","remaining"],"inherited":["inherited","inherit","heredity"],"reproduce":["reproduce","offspring","generation"],"reason":["reason","reasons","because","explain"],"pattern":["pattern","patterns"],"price":["price","prices","cost"],"supply":["supply","available","availability"],"demand":["demand","buyers","want"],"motion":["motion","move","movement"],"gravity":["gravity","gravitational"],"force":["force","forces","push","pull"]};
+ const matched=(cues[l[0]]||[]).filter(term=>(aliases[term]||[term]).some(alias=>normalized.includes(alias)));
  const help=lessonHelp(l[0]);
- let message='';
+ let heading='',feedback='';
  if(l[0]==="What is a business?"){
-  if(matched.includes("customer")&&(matched.includes("problem")||matched.includes("need"))&&(matched.includes("offer")||matched.includes("value"))){
-   message='<strong>✅ Correct — you understood the main idea!</strong><br>You identified that a business helps customers by offering something useful. To make your answer even stronger, name a specific need, such as saving time or finding a product that keeps toiletries organized.';
-  }else if(matched.includes("customer")||matched.includes("problem")||matched.includes("need")||matched.includes("useful")){
-   message='<strong>🌿 You are on the right track.</strong><br>You mentioned an important part of the idea. To complete your answer, explain what the customer needs and how the business’s offer helps meet that need.';
+  const customer=matched.includes("customer"),problem=matched.includes("problem"),offer=matched.includes("offer")||matched.includes("value");
+  if(customer&&(problem||matched.includes("need"))&&offer){
+   heading='✅ Correct — you understood the main idea.';
+   feedback='You connected the customer’s problem with a useful offer. To deepen your answer, add a specific example of a need the product meets.';
+  }else if(customer||problem||matched.includes("need")||matched.includes("useful")||matched.includes("offer")){
+   heading='🌿 You are on the right track.';
+   feedback='You identified part of the idea. Make the connection clearer: what does the customer need, and how does the product or service help?';
   }else{
-   message='<strong>🌱 Let’s connect it to the question.</strong><br>Start with the customer: what are they trying to do, and what useful product or service could help them?';
+   heading='🌱 Let’s start with the customer.';
+   feedback='What is the customer trying to do? Name one useful product or service that could help them.';
   }
- }else if(words.length<6){
-  message='<strong>🌱 Good start.</strong><br>You have the beginning of an answer. Add one sentence explaining why or how.';
- }else if(matched.length>=2){
-  message='<strong>🌿 You included relevant ideas.</strong><br>Your answer mentions '+esc(matched.slice(0,3).join(', '))+'. Explain how those ideas connect to answer the question.';
+ }else if(words.length<5){
+  heading='🌱 Good start.';
+  feedback='Add one detail about how or why it happens. A concrete example can help make your thinking clearer.';
+ }else if(matched.length>=3){
+  heading='✅ You included several key ideas.';
+  feedback='You mentioned '+esc(matched.slice(0,3).join(', '))+'. Your next step is to connect those ideas with a clear cause-and-effect explanation.';
+ }else if(matched.length>=1){
+  heading='🌿 You have part of the idea.';
+  feedback='You mentioned '+esc(matched.slice(0,2).join(' and '))+'. To strengthen your answer, explain the main reason behind it or give an example.';
  }else{
-  message='<strong>🌱 You are working through the idea.</strong><br>Try answering the question directly, then add a reason or a concrete example. You can use the hint to guide you.';
+  heading='🌱 Let’s try a different angle.';
+  feedback='Answer the question in your first sentence, then add a reason or everyday example. Tap “Need a hint?” if you want a clue.';
  }
- message+='<div class="answer-coach"><strong>Example answer</strong><p>'+esc(help.answer)+'</p><strong>Why this works</strong><p>'+esc(whyItWorks(name,l))+'</p><span>Your wording can be different. Check whether your answer includes the same central idea and explains why it matters.</span></div>';
- box.hidden=false;box.innerHTML=message;
+ box.hidden=false;
+ box.innerHTML='<strong>'+heading+'</strong><p>'+feedback+'</p><p class="muted">You can compare your answer with the example above using <strong>Show example answer</strong>. Your wording does not need to be identical.</p>';
 }
 function setSelfCheck(name,i,understood){
  const s=state();s.selfChecks=s.selfChecks||{};s.selfChecks[name]=s.selfChecks[name]||{};s.selfChecks[name][i]=understood;saveState(s);
