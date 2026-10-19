@@ -161,35 +161,37 @@ Philosophy:{
 "Ethics and choices":["Two people want to reduce poverty but disagree about a policy's fairness. Why might they differ?","They may weigh consequences, duties, rights or fairness principles differently.","One must not care about poverty at all.","Ethical reasoning cannot consider more than one value.","The law automatically settles every moral question."],
 "Arguments and reasoning":["Someone says a policy works because it worked once in one town. What should you ask?","Ask whether one example is sufficient and whether other factors explain the outcome.","Accept it because one example proves a universal rule.","Reject it only because it is an opinion.","Ignore evidence and focus on the speaker's confidence."]
 }};
-function lessonQuizQuestions(name,i){
- const l=SUBJECTS[name].lessons[i],title=l[0],data=QUIZ_AUDIT_BANK[name]?.[title];
+function lessonQuizQuestions(name,i,variant=0){
+ const l=SUBJECTS[name].lessons[i],title=l[0],data=QUIZ_AUDIT_BANK[name]?.[title],help=lessonHelp(title),mis=QUIZ_MISCONCEPTIONS[name]?.[title]||[];
  if(!data) throw new Error("Missing audited quiz for "+name+" / "+title);
- const fact1=String(l[1]||"").trim(),fact2=String(l[2]||"").trim();
- const scenario=data[0],scenarioAnswer=data[1],wrongScenario=data.slice(2);
- const commonWrong=[
-  "This claim contradicts the evidence and explanation in the lesson.",
-  "This conclusion does not follow from the facts described.",
-  "This statement confuses the central concept with a different idea."
+ const fact1=String(l[1]||"").trim(),fact2=String(l[2]||"").trim(),scenario=data[0],scenarioAnswer=data[1],wrongScenario=data.slice(2);
+ const transferQ=String(l[3]||"Apply the lesson's key idea to a new situation.").trim();
+ const transferA=String(help.answer||fact2||fact1).trim();
+ const fallbackWrong=[
+  "This claim conflicts with the key idea explained in the lesson.",
+  "This conclusion is not supported by the evidence described in the lesson.",
+  "This confuses the concept with a different process."
  ];
  const specs=[
-  {q:"Which statement best summarizes the main idea of this lesson?",correct:fact1,wrong:wrongScenario,why:"The central idea is: "+fact1},
-  {q:"Which detail about "+title.toLowerCase()+" is accurate?",correct:fact2,wrong:wrongScenario.slice().reverse(),why:"The lesson explains: "+fact2},
-  {q:scenario,correct:scenarioAnswer,wrong:wrongScenario,why:"The best answer is: "+scenarioAnswer},
-  {q:"Which statement is a misconception rather than an accurate explanation of "+title.toLowerCase()+"?",correct:wrongScenario[0],wrong:[fact1,fact2,scenarioAnswer],why:"This is the misconception to avoid. Remember: "+fact1},
-  {q:"What general lesson does this real-world example illustrate?",correct:scenarioAnswer,wrong:[fact1,fact2,...wrongScenario].filter(x=>x!==scenarioAnswer),why:"The example illustrates this principle: "+scenarioAnswer}
+  {skill:"concept",q:"Which statement best summarizes the main idea of this lesson?",correct:fact1,wrong:mis,why:"The lesson's central idea is: "+fact1},
+  {skill:"key fact",q:"Which detail about "+title.toLowerCase()+" is accurate?",correct:fact2,wrong:mis.slice().reverse(),why:"The key detail is: "+fact2},
+  {skill:"application",q:scenario,correct:scenarioAnswer,wrong:wrongScenario,why:"In this situation, the best explanation is: "+scenarioAnswer},
+  {skill:"misconception",q:"Which statement is a misconception about "+title.toLowerCase()+"?",correct:mis[0]||wrongScenario[0],wrong:[fact1,fact2,scenarioAnswer],why:"This statement is the misconception. The accurate idea is: "+fact1},
+  {skill:"transfer",q:transferQ,correct:transferA,wrong:uniqueChoices([scenarioAnswer,...wrongScenario,...mis,fact1,fact2],transferA),why:"The lesson's explanation is: "+transferA}
  ];
+ function uniqueChoices(arr,correct){return arr.map(x=>String(x||"").trim()).filter((x,j,a)=>x&&x!==correct&&a.indexOf(x)===j)}
  return specs.map((spec,qi)=>{
-  const unique=arr=>arr.map(x=>String(x||"").trim()).filter((x,j,a)=>x&&x!==spec.correct&&a.indexOf(x)===j);
-  let wrong=unique(spec.wrong).slice(0,3);
-  for(const fallback of [...wrongScenario,...commonWrong,fact1,fact2]){if(wrong.length>=3)break;if(fallback!==spec.correct&&!wrong.includes(fallback))wrong.push(fallback)}
-  if(wrong.length!==3)throw new Error("Not enough distinct choices: "+name+" / "+title);
-  const options=[{text:spec.correct,correct:true},...wrong.map(text=>({text,correct:false}))];
-  const shift=(i*3+qi*2+Object.keys(SUBJECTS).indexOf(name))%4;
-  return {q:spec.q,options:options.slice(shift).concat(options.slice(0,shift)),explain:spec.why};
+  let wrong=uniqueChoices(spec.wrong||[],spec.correct).slice(0,3);
+  for(const fallback of [...mis,...wrongScenario,...fallbackWrong,fact1,fact2,scenarioAnswer]){if(wrong.length>=3)break;if(fallback!==spec.correct&&!wrong.includes(fallback))wrong.push(fallback)}
+  if(wrong.length!==3)throw new Error("Not enough distinct choices: "+name+" / "+title+" / "+spec.skill);
+  if(variant===1){wrong=wrong.slice(1).concat(wrong[0]);}
+  const options=[{text:spec.correct,correct:true},...wrong.map(text=>({text,correct:false,reason:"This choice does not fit because the lesson explains: "+(spec.skill==="application"?scenarioAnswer:fact1)}))];
+  const shift=(i*3+qi*2+Object.keys(SUBJECTS).indexOf(name)+(variant?1:0))%4;
+  return {skill:spec.skill,q:variant&&qi===2?"Try a different application: "+transferQ:spec.q,options:options.slice(shift).concat(options.slice(0,shift)),explain:spec.why};
  });
 }
 function lessonQuizHTML(name,i){
- const key=name+'-'+i,results=state().quizResults||{},saved=results[key],questions=lessonQuizQuestions(name,i);
+ const key=name+'-'+i,results=state().quizResults||{},saved=results[key],questions=lessonQuizQuestions(name,i,window.quizRetryVariant?.[key]||0);
  return `<section class="lesson-mcq" id="mcq-${i}">
   <div class="mcq-heading"><div><span class="lesson-label">KNOWLEDGE CHECK</span><h3>Test your understanding</h3><p>5 questions · Recall, apply, spot misconceptions and reason.</p></div><span class="mcq-score">${saved?'Best: '+saved.best+'/'+saved.total:'5 questions'}</span></div>
   <form onsubmit="submitLessonQuiz(event,'${name}',${i})">
@@ -210,18 +212,20 @@ function submitLessonQuiz(event,name,i){
   const chosen=answers[qi],right=q.options.findIndex(o=>o.correct),isCorrect=q.options[chosen].correct;if(isCorrect)correct++;else missed.push(qi);
   const feedback=document.getElementById('mcq-feedback-'+i+'-'+qi);
   feedback.hidden=false;feedback.className='mcq-feedback '+(isCorrect?'correct':'incorrect');
-  feedback.textContent=(isCorrect?'✓ Correct. ':'✗ Not quite. Correct answer: ')+q.options[right].text+' Explanation: '+q.explain;
+  feedback.textContent=isCorrect?'✓ Correct. Why: '+q.explain:'✗ Your answer: '+q.options[chosen].text+'. Why it does not fit: '+(q.options[chosen].reason||('This conflicts with the lesson’s key idea: '+SUBJECTS[name].lessons[i][1]))+' Correct answer: '+q.options[right].text+'. Why it works: '+q.explain;
  });
  const s=state();s.quizResults=s.quizResults||{};const key=name+'-'+i,previous=s.quizResults[key]||{attempts:0,best:0};
- s.quizResults[key]={subject:name,index:i,correct,total:questions.length,best:Math.max(previous.best||0,correct),attempts:(previous.attempts||0)+1,lastAnswers:answers,lastScore:correct,missed,updatedAt:new Date().toISOString()};
+ const skillNames=questions.map(q=>q.skill||'understanding');const missedSkills=missed.map(qi=>skillNames[qi]);const best=Math.max(previous.best||0,correct);const mastered=correct===questions.length;const reviewDays=mastered?7:1;s.quizResults[key]={...previous,subject:name,index:i,correct,total:questions.length,best,attempts:(previous.attempts||0)+1,lastAnswers:answers,lastScore:correct,missed,missedSkills,mastered,conceptsToReview:[...new Set(missedSkills)],nextReviewAt:new Date(Date.now()+reviewDays*86400000).toISOString(),updatedAt:new Date().toISOString()};
  saveState(s);
  result.textContent='You got '+correct+' out of '+questions.length+' correct ('+Math.round(correct/questions.length*100)+'%). Best: '+s.quizResults[key].best+'/'+questions.length+' · Attempts: '+s.quizResults[key].attempts+'. Your score is saved on this device.';
  const score=document.querySelector('#mcq-'+i+' .mcq-score');if(score)score.textContent='Best: '+s.quizResults[key].best+'/'+questions.length;
  const retry=document.getElementById('mcq-retry-missed-'+i);if(retry)retry.hidden=missed.length===0;
 }
 function retryMissedLessonQuiz(name,i){
- const s=state(),saved=s.quizResults?.[name+'-'+i],missed=saved?.missed||[];
+ const s=state(),key=name+'-'+i,saved=s.quizResults?.[key],missed=saved?.missed||[];
  if(!missed.length){resetLessonQuiz(i);return}
+ window.quizRetryVariant=window.quizRetryVariant||{};window.quizRetryVariant[key]=1;
+ const section=document.getElementById('mcq-'+i);if(section){section.outerHTML=lessonQuizHTML(name,i);}
  missed.forEach(qi=>{
   document.querySelectorAll('#mcq-'+i+' input[name="mcq-'+i+'-'+qi+'"]').forEach(input=>input.checked=false);
   const feedback=document.getElementById('mcq-feedback-'+i+'-'+qi);if(feedback){feedback.hidden=true;feedback.textContent='';}
