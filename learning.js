@@ -112,30 +112,77 @@ const QUIZ_MISCONCEPTIONS={
   "Arguments and reasoning":["An opinion becomes a strong argument when it is stated confidently.","A conclusion is supported even if the reasons are unrelated to it.","If the conclusion is popular, the premises do not need checking."]
  }
 };
+const QUIZ_AUDIT_BANK={
+Physics:{
+"What does physics study?":["A ball is thrown upward. What mainly causes it to slow down?","Gravity pulls downward; air resistance may also affect the ball.","The upward force from your hand continues acting after contact ends.","The ball temporarily has no forces acting on it.","The ball's mass gradually decreases."],
+"Motion and speed":["Two cyclists travel at 10 km/h, one north and one south. What is true?","They have the same speed but different velocities because their directions differ.","They have different speeds because they travel in opposite directions.","They have identical velocities because their speed is equal.","Neither cyclist is moving because their speeds match."],
+"Energy":["A book falls from a shelf. What happens to its gravitational potential energy?","It decreases as energy is transferred into kinetic energy, with some potentially dissipated.","It increases because the book moves faster.","It disappears and is not transferred into another form.","It stays constant because the book's mass does not change."],
+"Gravity and orbits":["If a satellite lost its sideways speed near Earth, what would gravity tend to do?","It would fall toward Earth rather than continue its usual orbit.","It would remain in the same circular orbit.","It would move straight away because gravity pushes outward.","It would stop experiencing gravity."]
+},
+Chemistry:{
+"What is matter made of?":["Ice melts into liquid water. What has happened?","It is a physical change: the particles remain water molecules but move differently.","Water molecules have changed into a new element.","The atoms have been destroyed and replaced.","Melting is necessarily a chemical reaction."],
+"Atoms and elements":["An atom has six protons. Which element is it?","Carbon, because an element is defined by its number of protons.","Oxygen, because all non-metals are oxygen.","Any element, because proton number does not identify it.","Carbon only if it also has six neutrons."],
+"Chemical bonds":["Two atoms share a pair of electrons. What kind of bond is this?","A covalent bond, in which atoms share electron pairs.","An ionic bond defined by full electron transfer.","A nuclear bond that changes the elements.","No bond, because sharing electrons prevents attraction."],
+"Chemical reactions":["An equation has four oxygen atoms on the left but only two on the right. What should happen?","Adjust coefficients until each type of atom is balanced on both sides.","Delete extra oxygen atoms from the reactants.","Change oxygen atoms into another element.","Leave it unbalanced because atom counts do not matter."]
+},
+Biology:{
+"What is life?":["A young plant grows toward a sunny window. What does this demonstrate?","It is a living organism responding to its environment while growing.","Plants are not alive because only animals respond to stimuli.","The plant moves only if it changes location as a whole.","It proves plants obtain all energy directly from soil."],
+"Cells: the basic unit":["A cell needs nutrients but must keep harmful substances out. Which structure regulates exchange?","The cell membrane selectively controls what enters and leaves.","The nucleus acts as a freely open outer wall.","The cell wall controls all molecular traffic in every cell.","DNA physically pumps all substances across the boundary."],
+"DNA and heredity":["A gene affects a protein used to make pigment. How could it influence appearance?","By influencing a cellular process that contributes to pigment production.","By directly choosing appearance regardless of cells.","By changing the number of protons in the organism's atoms.","By guaranteeing the same appearance in every environment."],
+"Evolution by natural selection":["Some beetles are better camouflaged and leave more offspring. What may happen over generations?","If camouflage is heritable, it may become more common in the population.","Every beetle changes color because it needs to survive.","The population stops evolving once camouflage appears.","The least successful beetles always pass on more traits."]
+},
+History:{
+"How do historians study the past?":["Two sources describe a battle differently. What should a historian do?","Compare perspectives, purposes and other evidence before drawing a conclusion.","Assume the account by a soldier must be correct.","Discard both sources because disagreement makes evidence useless.","Choose whichever account sounds more dramatic."],
+"Prehistory and archaeology":["A stone tool is found beside animal bones and a hearth. What is the best conclusion?","The context provides clues about activities, but interpretations need evidence.","It proves exactly what every person believed.","It has no historical value because it is not written.","It proves the tool had only one possible use."],
+"Agriculture and civilization":["A village begins producing surplus grain. What change might follow?","Some people may take specialized jobs because not everyone must produce food full time.","Everyone must move away immediately.","Surplus food guarantees equal wealth for every household.","Trade and social organization become impossible."],
+"Empires and exchange":["What might travel along trade routes besides goods?","Ideas, technologies, languages and sometimes diseases can travel with people.","Nothing, because only objects cross cultural boundaries.","Only rulers' ideas spread, with no local influence.","Knowledge never changes when people meet."]
+},
+Economics:{
+"What is economics?":["You study on Saturday instead of taking a paid shift. What is an opportunity cost?","The value of the next-best alternative you gave up, such as those wages.","Every possible activity you could ever do, added together.","Only the money spent on study materials.","Nothing, because studying is useful."],
+"Supply and demand":["Many people want a product, but shops have very few units. What pressure may result?","Buyers may compete for limited units, putting upward pressure on price.","Prices must fall because more people are interested.","Supply automatically increases immediately.","Demand becomes zero because the product is scarce."],
+"Incentives":["A city charges for parking in crowded areas. Why might behavior change?","The added cost may encourage some drivers to choose other transport or locations.","Prices have no effect on choices.","Every driver must respond in exactly the same way.","The charge automatically creates more parking spaces."],
+"Trade and specialization":["Countries specialize according to lower opportunity cost. What concept explains potential gains?","Comparative advantage: specialize according to opportunity cost and trade.","Absolute advantage means one country must produce everything.","Trade benefits only the country with the largest population.","Opportunity cost is irrelevant to specialization."]
+},
+Business:{
+"What is a business?":["Travellers struggle to organize toiletries. What is a useful starting point for a business idea?","Offer a solution that helps travellers and test whether they value it.","Choose a product without investigating the problem.","Assume everyone will buy any item with a luxury label.","Set a high price first and ignore usefulness."],
+"Revenue, costs and profit":["You sell a bag for €30 and product plus delivery cost €18. What remains before other costs?","€12 before additional expenses such as advertising, fees and taxes.","€30, because costs are not subtracted.","€18, because that is the profit.","€48, because revenue and costs are added."],
+"Understanding customers":["What is a strong early way to investigate demand for a travel pouch?","Ask target customers about needs and observe their buying or packing habits.","Ask only close friends whether they like the color.","Order a large stock before talking to anyone.","Treat social media likes as proof of paid demand."],
+"Testing a business idea":["You have a small budget for a new product. Which test reduces risk?","Show a sample or simple product page to potential customers before scaling.","Spend the whole budget on stock immediately.","Assume no sales proves no market after one view.","Ignore costs and test only the logo."]
+},
+Technology:{
+"What is technology?":["A map app combines location data, maps and software. What does this illustrate?","Technology combines tools and knowledge to help solve a practical problem.","Technology must be a physical machine, so apps do not count.","The app works without data or instructions.","Technology always replaces human judgment completely."],
+"How does the internet work?":["You open a website and your browser requests its page. What typically happens next?","A server or service sends requested data through networks for the browser to display.","The page appears without any data being sent or received.","Your phone physically travels to the server.","The browser downloads the entire internet first."],
+"What is an algorithm?":["A recipe says to preheat the oven before baking. Why might order matter?","Some steps depend on earlier steps, so changing order can affect the result.","Instructions always work in any order.","A recipe cannot be an algorithm because it is not code.","Order matters only when steps are alphabetical."],
+"What is artificial intelligence?":["An AI gives a confident but incorrect historical date. What is sensible?","Verify the claim against reliable sources because plausible answers can be wrong.","Accept it because confidence guarantees accuracy.","Assume every other answer from the AI is false.","Use it without checking if it sounds fluent."]
+},
+Philosophy:{
+"What is philosophy?":["Two people disagree about fairness. What philosophical approach could help?","Clarify the concept, examine assumptions and compare the reasons for each view.","Count votes and treat the majority as automatically correct.","End the discussion because concepts cannot be examined.","Assume both claims are equally justified without evaluation."],
+"How do we know?":["You guess a hidden number correctly but had no clues. Was the belief well justified?","No. It happened to be true, but you lacked evidence or good reasons.","Yes, because truth alone always proves good reasoning.","Yes, because confidence is the same as evidence.","No, because a lucky guess cannot ever be true."],
+"Ethics and choices":["Two people want to reduce poverty but disagree about a policy's fairness. Why might they differ?","They may weigh consequences, duties, rights or fairness principles differently.","One must not care about poverty at all.","Ethical reasoning cannot consider more than one value.","The law automatically settles every moral question."],
+"Arguments and reasoning":["Someone says a policy works because it worked once in one town. What should you ask?","Ask whether one example is sufficient and whether other factors explain the outcome.","Accept it because one example proves a universal rule.","Reject it only because it is an opinion.","Ignore evidence and focus on the speaker's confidence."]
+}};
 function lessonQuizQuestions(name,i){
- const l=SUBJECTS[name].lessons[i],title=l[0],help=lessonHelp(title);
- const fact1=String(l[1]||"").trim(),fact2=String(l[2]||"").trim(),scenario=String(l[3]||"").trim(),answer=String(help.answer||fact2||fact1).trim();
- const bank=QUIZ_MISCONCEPTIONS[name]||{};
- const mis=bank[title]||[
-  "The idea is true only because someone believes it, even without supporting evidence.",
-  "The concept works in exactly the opposite way from what the lesson explains.",
-  "The idea can never apply outside one narrow example."
+ const l=SUBJECTS[name].lessons[i],title=l[0],help=lessonHelp(title),data=QUIZ_AUDIT_BANK[name]?.[title];
+ if(!data) throw new Error("Missing audited quiz for "+name+" / "+title);
+ const fact1=String(l[1]||"").trim(),fact2=String(l[2]||"").trim(),answer=String(help.answer||fact2||fact1).trim();
+ const scenario=data[0],scenarioAnswer=data[1],wrongScenario=data.slice(2);
+ const commonWrong=[
+  "This claim contradicts the evidence and explanation in the lesson.",
+  "This conclusion does not follow from the facts described.",
+  "This statement confuses the central concept with a different idea."
  ];
- const unique=(arr,exclude=[])=>arr.map(x=>String(x||"").trim()).filter((x,j,a)=>x&&!exclude.includes(x)&&a.indexOf(x)===j);
- const combined=[fact1,fact2].filter(Boolean).join(" ");
- const distractors=(correct,preferred)=>unique(preferred.concat(mis,fact1,fact2,answer),[correct]).slice(0,3);
- const build=(q,correct,wrong,why)=>({q,correct,wrong:distractors(correct,wrong),why});
  const specs=[
-  build("Which statement best summarizes the main idea of this lesson about "+title.toLowerCase()+"?",fact1,[...mis], "The lesson's main idea is: "+fact1),
-  build("Which detail about "+title.toLowerCase()+" is accurate?",fact2,[mis[1],mis[2],mis[0]], "This detail is accurate because the lesson explains: "+fact2),
-  build(scenario||("How would you apply "+title.toLowerCase()+" in a real situation?"),answer,[mis[2],mis[0],mis[1]], "For this situation, the best explanation is: "+answer),
-  build("Which statement is a misconception, rather than a fact, about "+title.toLowerCase()+"?",mis[0],[fact1,fact2,answer], "This is the misconception to avoid. A more accurate starting point is: "+fact1),
-  build("Which explanation best connects the lesson's main idea with an important detail?",combined,[mis[0],mis[1],mis[2]], "This answer connects the two key ideas: "+fact1+" "+fact2)
+  {q:"Which statement best summarizes the main idea of this lesson?",correct:fact1,wrong:commonWrong,why:"The central idea is: "+fact1},
+  {q:"Which detail about "+title.toLowerCase()+" is accurate?",correct:fact2,wrong:commonWrong.slice().reverse(),why:"The lesson explains: "+fact2},
+  {q:scenario,correct:scenarioAnswer,wrong:wrongScenario,why:"The best answer is: "+scenarioAnswer},
+  {q:"Which statement is a misconception rather than an accurate explanation of "+title.toLowerCase()+"?",correct:wrongScenario[0],wrong:[fact1,fact2,scenarioAnswer],why:"This is the misconception to avoid. Remember: "+fact1},
+  {q:"How do the main idea and key detail fit together?",correct:fact1+" "+fact2,wrong:wrongScenario,why:"Together, these ideas explain the topic: "+fact1+" "+fact2}
  ];
  return specs.map((spec,qi)=>{
-  const wrong=spec.wrong.filter(x=>x&&x!==spec.correct);
-  while(wrong.length<3){const fallback="This claim is not supported by the lesson's explanation.";if(!wrong.includes(fallback)&&fallback!==spec.correct)wrong.push(fallback);else wrong.push("This conclusion does not follow from the evidence presented.");}
-  const options=[{text:spec.correct,correct:true},...wrong.slice(0,3).map(text=>({text,correct:false}))];
+  const unique=arr=>arr.map(x=>String(x||"").trim()).filter((x,j,a)=>x&&x!==spec.correct&&a.indexOf(x)===j);
+  let wrong=unique(spec.wrong).slice(0,3);
+  while(wrong.length<3){const fallback=commonWrong.find(x=>x!==spec.correct&&!wrong.includes(x));if(!fallback)throw new Error("Not enough unique answer choices: "+name+" / "+title);wrong.push(fallback)}
+  const options=[{text:spec.correct,correct:true},...wrong.map(text=>({text,correct:false}))];
   const shift=(i*3+qi*2+Object.keys(SUBJECTS).indexOf(name))%4;
   return {q:spec.q,options:options.slice(shift).concat(options.slice(0,shift)),explain:spec.why};
  });
