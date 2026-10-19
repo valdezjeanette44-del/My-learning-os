@@ -187,24 +187,54 @@ function getWeeklyStats(){
  return {lessons:recent.filter(x=>x.type==='lesson').length,projects:new Set(recent.filter(x=>x.type==='project').map(x=>x.id)).size,days:days.size};
 }
 function renderHome(){
- const st=totalStats(),pct=Math.round(st.lessons/st.total*100),s=state(),reviewDue=getDueReviews().length,streak=getStreak(),next=getNextLesson(),week=getWeeklyStats();
+ const st=totalStats(),pct=Math.round(st.lessons/st.total*100),s=state(),reviewDue=getDueReviews().length,streak=getStreak(),next=getNextLesson();
  const projectIds=Object.keys(PROJECTS).sort((a,b)=>{const pa=projectProgress(a),pb=projectProgress(b),rank=x=>x>0&&x<100?0:x===0?1:2;return rank(pa)-rank(pb)||pb-pa;}).slice(0,2);
  document.title='My Learning OS';
+ if(!document.getElementById('calm-dashboard-styles')){
+  const style=document.createElement('style');style.id='calm-dashboard-styles';style.textContent=`
+   .home-welcome{margin:8px 0 18px;padding:2px 1px}
+   .home-welcome>small{font-size:.68rem;letter-spacing:.11em;font-weight:800;color:var(--garden-clay,#a96f4c)}
+   .home-welcome h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(1.8rem,5vw,2.25rem);font-weight:400;line-height:1.15;margin:5px 0}
+   .home-welcome p{margin:5px 0 0;color:#776d62;font-size:.94rem}
+   .home-overview{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:10px;margin:12px 0 26px}
+   .home-progress,.home-overview .home-review{background:#fffdf9;border:1px solid var(--garden-line,#e7dfd4);border-radius:15px;padding:14px;min-width:0}
+   .home-progress-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;color:#62584e;font-size:.82rem}
+   .home-progress-top strong{font-family:Georgia,serif;font-size:1.45rem;font-weight:400;color:var(--garden-clay,#a96f4c)}
+   .home-progress .bar{height:6px;margin-bottom:8px}
+   .home-progress>small{font-size:.75rem;color:#776d62}
+   .home-overview .home-review{margin:0;box-shadow:none}
+   .home-overview .home-review strong{font-size:.85rem}
+   .home-overview .home-review small{font-size:.74rem}
+   .home-section{margin:22px 0 26px}
+   .home-section-heading{margin-bottom:10px}
+   .home-section-heading h2{font-size:1.35rem}
+   .home-subject-grid{gap:9px}
+   .home-subject,.home-project{box-shadow:none}
+   .home-weekly{display:none!important}
+   @media(max-width:420px){.home-overview{grid-template-columns:1fr 1fr;gap:8px}.home-progress,.home-overview .home-review{padding:11px}.home-progress-top{font-size:.76rem}.home-progress-top strong{font-size:1.25rem}.home-progress>small{font-size:.68rem}.home-overview .home-review{gap:7px}.home-overview .home-review>span:first-child{font-size:1.25rem}.home-overview .home-review strong{font-size:.78rem}.home-overview .home-review small{font-size:.68rem}}
+  `;document.head.appendChild(style);
+ }
  document.getElementById('app').innerHTML=nav()+`
- <section class="hero home-hero reflecta-hero"><div class="reflecta-copy"><span class="reflecta-kicker">YOUR PERSONAL KNOWLEDGE GARDEN</span><h1>Read.<br>Connect.<br>Grow<span>.</span></h1><p>Organize ideas like a tree.<br>From big themes to small insights, depth made simple.</p><ul><li>♧ &nbsp; Tree-like knowledge</li><li>▤ &nbsp; Focused learning</li><li>☷ &nbsp; Thoughtful notes</li><li>⌘ &nbsp; Meaningful connections</li></ul><a class="reflecta-start" href="#learning-areas">Start your journey <span>→</span></a></div><div class="reflecta-art" aria-label="A visual map of connected learning ideas"><div class="tree-orbit orbit-one"></div><div class="tree-orbit orbit-two"></div><div class="tree-trunk">✺</div><div class="tree-node tree-parent"><small>PARENT</small><strong>Human Growth</strong><span>Patterns that shape how we learn and change.</span><b>12 child nodes · 8 articles</b></div><div class="tree-node tree-current"><small>CURRENT</small><strong>Learning</strong><span>How ideas build a meaningful life.</span><b>6 child nodes · 5 articles</b></div><div class="tree-node tree-child"><small>CHILD</small><strong>Curiosity ✧</strong><span>The spark that drives us to ask questions.</span><b>8 notes</b></div><div class="tree-caption">Knowledge becomes wisdom when ideas connect.</div></div></section><section class="reflecta-section-label"><span>YOUR LEARNING JOURNEY</span><span>One idea at a time ✦</span></section>
- ${next?`<a class="continue-card" href="/subjects/${next.name.toLowerCase()}/#lesson-${next.i}"><span class="continue-icon">${next.icon}</span><span class="continue-copy"><small>YOUR NEXT STEP</small><strong>Continue learning</strong><span>${next.name} · Lesson ${next.i+1}: ${esc(next.lesson[0])}</span></span><b>Continue →</b></a>`:'<section class="continue-card all-done"><span class="continue-icon">🎉</span><span class="continue-copy"><small>AMAZING PROGRESS</small><strong>All lessons completed!</strong><span>Choose a subject to revisit or explore a project.</span></span><b>Explore →</b></section>'}
- <section class="home-focus">
-  <div><small>YOUR PROGRESS</small><strong>${pct}%</strong><span>${st.lessons} of ${st.total} lessons completed</span><div class="bar"><div style="width:${pct}%"></div></div></div>
-  <a class="home-review" href="/review.html"><span>🧠</span><span><strong>${reviewDue} to review</strong><small>${streak} day learning streak</small></span><b>→</b></a>
+ <section class="home-welcome">
+  <small>MY LEARNING SPACE</small>
+  <h1>Welcome back.</h1>
+  <p>One small step at a time.</p>
  </section>
- <section class="home-weekly"><div class="weekly-heading"><div><small>YOUR LAST 7 DAYS</small><strong>A little progress adds up</strong></div><span>📅</span></div><div class="weekly-stats"><div><strong>${week.lessons}</strong><span>lessons completed</span></div><div><strong>${week.projects}</strong><span>projects progressed</span></div><div><strong>${week.days}/7</strong><span>active days</span></div></div></section>
- <section class="home-section"><div class="home-section-heading"><div><small class="muted">LEARN BY DOING</small><h2>My Projects</h2></div><a href="/projects.html">View all →</a></div>
+ ${next?`<a class="continue-card" href="/subjects/${next.name.toLowerCase()}/#lesson-${next.i}"><span class="continue-icon">${next.icon}</span><span class="continue-copy"><small>YOUR NEXT STEP</small><strong>Continue learning</strong><span>${next.name} · Lesson ${next.i+1}: ${esc(next.lesson[0])}</span></span><b>Continue →</b></a>`:'<section class="continue-card all-done"><span class="continue-icon">🎉</span><span class="continue-copy"><small>GREAT WORK</small><strong>All lessons completed</strong><span>Choose a subject to revisit or explore a project.</span></span><b>Explore →</b></section>'}
+ <section class="home-overview" aria-label="Learning progress">
+  <div class="home-progress"><div class="home-progress-top"><span>Overall progress</span><strong>${pct}%</strong></div><div class="bar"><div style="width:${pct}%"></div></div><small>${st.lessons} of ${st.total} lessons completed</small></div>
+  <a class="home-review" href="/review.html"><span>🧠</span><span><strong>${reviewDue} to review</strong><small>${streak} day streak</small></span><b>→</b></a>
+ </section>
+ <section class="home-section" id="learning-areas">
+  <div class="home-section-heading"><div><small class="muted">CHOOSE WHAT TO EXPLORE</small><h2>Learning areas</h2></div></div>
+  <div class="home-subject-grid">${Object.entries(SUBJECTS).map(([n,d])=>`<a class="home-subject" href="/subjects/${n.toLowerCase()}/"><span>${d.icon}</span><strong>${n}</strong><small>${subjectProgress(n)}% complete</small><div class="bar"><div style="width:${subjectProgress(n)}%"></div></div></a>`).join('')}</div>
+ </section>
+ <section class="home-section">
+  <div class="home-section-heading"><div><small class="muted">LEARN BY DOING</small><h2>My projects</h2></div><a href="/projects.html">View all →</a></div>
   <div class="home-projects">${projectIds.map(id=>{const d=PROJECTS[id],p=projectState(id),done=(p.completed||[]).length,progress=projectProgress(id);return `<a class="home-project" href="/projects.html?project=${id}"><span class="home-project-icon">${d.icon}</span><span class="home-project-info"><strong>${d.title}</strong><small>${done}/${d.steps.length} steps · ${progress}%</small><span class="home-project-bar"><span style="width:${progress}%"></span></span></span><b>›</b></a>`}).join('')}</div>
  </section>
- <section class="home-section" id="learning-areas"><div class="home-section-heading"><div><small class="muted">EXPLORE A SUBJECT</small><h2>Learning Areas</h2></div></div>
- <div class="home-subject-grid">${Object.entries(SUBJECTS).map(([n,d])=>`<a class="home-subject" href="/subjects/${n.toLowerCase()}/"><span>${d.icon}</span><strong>${n}</strong><small>${subjectProgress(n)}% complete</small><div class="bar"><div style="width:${subjectProgress(n)}%"></div></div></a>`).join('')}</div></section>
  <details class="home-details"><summary>✨ Curiosity Lab</summary><div class="curiosity-panel"><p class="muted">A quick question to connect ideas and explore something new.</p><div id="curiosityCard" class="curiosity-card"><div class="curiosity-meta" id="curiosityMeta"></div><div class="curiosity-question" id="questionBox">Loading a question…</div><div class="curiosity-clue" id="curiosityClue"></div><div class="curiosity-actions"><button class="button" onclick="showCuriosityClue()">💡 Give me a clue</button><button class="button secondary" onclick="newQuestion()">↻ New question</button><a id="curiosityLesson" class="button secondary" href="#">Explore lesson →</a></div></div></div></details>
- <details class="home-details"><summary>📝 My Notes</summary><div class="home-notes"><p class="muted">Capture an idea or connection. Notes stay in this browser.</p><textarea class="note" id="homeNote" placeholder="An idea I want to remember…">${esc(state().notes.home||'')}</textarea><div class="lesson-actions"><button onclick="saveHomeNote()">Save notes</button></div></div></details>
+ <details class="home-details"><summary>📝 My notes</summary><div class="home-notes"><p class="muted">Capture an idea or connection. Notes stay in this browser.</p><textarea class="note" id="homeNote" placeholder="An idea I want to remember…">${esc(state().notes.home||'')}</textarea><div class="lesson-actions"><button onclick="saveHomeNote()">Save notes</button></div></div></details>
  <footer>My Learning OS · Learn → Connect → Question → Understand</footer>`;
  newQuestion();
 }
