@@ -1,0 +1,45 @@
+(()=> {
+const KEY="myLearningOS.v2";
+const S=[
+{id:"Biology",icon:"🧬",x:450,y:100,t:["What is life?","Cells: the basic unit","DNA and heredity","Evolution by natural selection"]},
+{id:"History",icon:"🏛️",x:175,y:190,t:["How do historians study the past?","Prehistory and archaeology","Agriculture and civilization","Empires and exchange"]},
+{id:"Physics",icon:"⚛️",x:725,y:190,t:["What does physics study?","Motion and speed","Energy","Gravity and orbits"]},
+{id:"Chemistry",icon:"🧪",x:690,y:410,t:["What is matter made of?","Atoms and elements","Chemical bonds","Chemical reactions"]},
+{id:"Economics",icon:"📈",x:450,y:500,t:["What is economics?","Supply and demand","Incentives","Trade and specialization"]},
+{id:"Business",icon:"💼",x:175,y:410,t:["What is a business?","Revenue, costs and profit","Understanding customers","Testing a business idea"]},
+{id:"Philosophy",icon:"💭",x:300,y:305,t:["What is philosophy?","How do we know?","Ethics and choices","Arguments and reasoning"]},
+{id:"Technology",icon:"💻",x:600,y:305,t:["What is technology?","How does the internet work?","What is an algorithm?","What is artificial intelligence?"]}
+];
+const L=[
+["Biology","Chemistry","Living things rely on chemical reactions."],["Biology","Earth History","Evolution unfolds across geological time."],["Biology","Philosophy","Biology provides evidence about life and knowledge."],["Physics","Chemistry","Atomic structure and bonds rely on physical principles."],["Physics","Technology","Engineering applies ideas about forces, energy and materials."],["History","Technology","Inventions change societies, and societies shape technology."],["History","Economics","Trade and resources influence historical events."],["History","Philosophy","Ideas shape laws, values and institutions."],["Business","Economics","Businesses operate within markets."],["Business","Technology","Digital tools help test ideas and serve customers."],["Technology","Philosophy","AI raises questions about evidence and responsibility."],["Chemistry","Earth History","Rocks and minerals preserve Earth's history."]
+];
+const esc=v=>String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
+const st=()=>{try{return JSON.parse(localStorage.getItem(KEY))||{}}catch{return {}}};
+const count=id=>(st().completed?.[id]||[]).length;
+const status=id=>count(id)===0?"Not started":count(id)>=4?"Mastered":"Learning";
+let selected="Biology",filter="Explore",query="",zoom=1;
+const app=document.getElementById("app");
+function render(){
+let visible=S.filter(s=>(s.id+" "+s.t.join(" ")).toLowerCase().includes(query.toLowerCase())).filter(s=>filter!=="Review"||(count(s.id)>0&&count(s.id)<4)).filter(s=>filter!=="My Progress"||count(s.id)>0);
+if(!visible.some(s=>s.id===selected)&&visible.length)selected=visible[0].id;
+const a=S.find(s=>s.id===selected)||S[0],by=Object.fromEntries(S.map(s=>[s.id,s]));
+const lines=L.filter(l=>by[l[0]]&&by[l[1]]).map(l=>'<line class="ku-line '+((l[0]===selected||l[1]===selected)?"related":"")+'" x1="'+by[l[0]].x+'" y1="'+by[l[0]].y+'" x2="'+by[l[1]].x+'" y2="'+by[l[1]].y+'"/>').join("");
+const nodes=S.map(s=>'<g tabindex="0" role="button" aria-label="Explore '+s.id+'" data-subject="'+s.id+'" class="ku-node '+(status(s.id)==="Mastered"?"mastered":status(s.id)==="Learning"?"learning":"new")+' '+(s.id===selected?"selected":"")+'" transform="translate('+s.x+' '+s.y+')"><rect x="-78" y="-35" width="156" height="70" rx="18"/><text class="ku-icon" y="-7">'+s.icon+'</text><text class="ku-name" y="15">'+s.id+'</text><text class="ku-status" y="27">'+status(s.id)+'</text></g>').join("");
+const related=L.filter(l=>l[0]===a.id||l[1]===a.id);
+app.innerHTML='<div class="topbar"><a class="brand" href="/">🧠 My Learning OS</a><nav class="nav"><a href="/">Home</a><a href="/search.html">Search</a><a href="/projects.html">Projects</a><a href="/review.html">Review</a><a class="active" href="/knowledge.html">Knowledge Map</a></nav></div>'+ 
+'<nav class="mobile-nav"><a href="/"><span>⌂</span><small>Home</small></a><a href="/#learning-areas"><span>▦</span><small>Learn</small></a><a href="/projects.html"><span>◫</span><small>Projects</small></a><a href="/review.html"><span>↻</span><small>Review</small></a><details class="mobile-more"><summary><span>•••</span><small>More</small></summary><div class="mobile-more-menu"><a href="/search.html">🔎 Search</a><a href="/knowledge.html">🗺️ Knowledge Map</a><a href="/tutor.html">👩‍🏫 Tutor</a></div></details></nav>'+
+'<main class="ku-page"><header class="ku-heading"><span class="eyebrow">YOUR PERSONAL LEARNING SPACE</span><h1>Knowledge Universe</h1><p>Explore what you’re learning and discover how ideas connect.</p></header>'+
+'<section class="ku-stats"><div><strong>'+S.length+'</strong><span>subjects</span></div><div><strong>'+S.reduce((n,s)=>n+count(s.id),0)+'</strong><span>lessons completed</span></div><div><strong>'+S.filter(s=>status(s.id)==="Mastered").length+'</strong><span>subjects mastered</span></div></section>'+
+'<section class="ku-panel"><div class="ku-panel-head"><div><h2>Your knowledge map</h2><p>Tap a subject node to explore its lessons and connections.</p></div><div class="ku-zoom"><button data-zoom="-1">−</button><button data-zoom="1">+</button><button data-reset>Reset</button></div></div>'+
+'<div class="ku-map-viewport"><div class="ku-map-canvas" style="transform:scale('+zoom+')"><svg viewBox="60 35 780 525" aria-label="Interactive subject connection map">'+lines+'<g class="ku-center"><circle cx="450" cy="305" r="44"/><text x="450" y="300">🧠</text><text x="450" y="320">My Knowledge</text></g>'+nodes+'</svg></div></div><div class="ku-legend"><span>● Not started</span><span>● Learning</span><span>● Mastered</span></div></section>'+
+'<section class="ku-panel"><div class="ku-panel-head"><div><h2>Explore topics</h2><p>Choose a topic to open its existing lesson.</p></div></div><label class="ku-search">⌕ <input id="ku-search" type="search" value="'+esc(query)+'" placeholder="Search subjects or topics…"></label><div class="ku-filters"><button data-filter="Explore" class="'+(filter==="Explore"?"active":"")+'">Explore</button><button data-filter="Review" class="'+(filter==="Review"?"active":"")+'">Review</button><button data-filter="My Progress" class="'+(filter==="My Progress"?"active":"")+'">My Progress</button></div>'+
+'<div class="ku-columns"><div class="ku-subject-list">'+(visible.length?visible.map(s=>'<button class="ku-subject-row '+(s.id===selected?"active":"")+'" data-subject="'+s.id+'"><span class="ku-subject-icon">'+s.icon+'</span><span class="ku-subject-copy"><strong>'+s.id+'</strong><small>'+count(s.id)+'/4 lessons · '+status(s.id)+'</small><span class="ku-progress"><i style="width:'+(count(s.id)*25)+'%"></i></span></span><b>›</b></button>').join(""):'<p>No subjects match. Try Explore or clear your search.</p>')+'</div>'+
+'<div class="ku-detail"><div class="ku-detail-top"><span class="ku-detail-icon">'+a.icon+'</span><span class="ku-status-pill">'+status(a.id)+'</span></div><h3>'+a.id+'</h3><p class="ku-detail-intro">Explore lessons and see how this subject connects with other fields.</p><div class="ku-topic-list">'+a.t.map((t,i)=>'<a class="ku-topic '+(count(a.id)>i?"done":"")+'" href="/subjects/'+a.id.toLowerCase()+'/#lesson-'+i+'"><span class="ku-topic-check">'+(count(a.id)>i?"✓":i+1)+'</span><span><strong>'+esc(t)+'</strong><small>'+(count(a.id)>i?"Lesson completed":"Open lesson")+'</small></span><b>↗</b></a>').join("")+'</div><div class="ku-connections"><h4>Connected ideas</h4>'+(related.length?related.map(l=>{const other=l[0]===a.id?l[1]:l[0];return '<button class="ku-connection" data-subject="'+other+'"><strong>↔ '+other+'</strong><small>'+esc(l[2])+'</small><b>›</b></button>'}).join(""):'<p>More connections will appear as the map grows.</p>')+'</div></div></div></section><p class="ku-footnote">Progress is based on completed lessons saved in this browser. Mastered currently means all four lessons are completed.</p></main>';
+app.querySelectorAll("[data-subject]").forEach(el=>{const go=()=>{selected=el.dataset.subject;render();if(window.matchMedia("(max-width:700px)").matches)app.querySelector(".ku-detail").scrollIntoView({behavior:"smooth",block:"start"});};el.addEventListener("click",go);el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}})});
+app.querySelectorAll("[data-filter]").forEach(el=>el.addEventListener("click",()=>{filter=el.dataset.filter;render()}));
+app.querySelector("#ku-search").addEventListener("input",e=>{query=e.target.value;render();const q=app.querySelector("#ku-search");q.focus();q.setSelectionRange(query.length,query.length)});
+app.querySelectorAll("[data-zoom]").forEach(el=>el.addEventListener("click",()=>{zoom=Math.max(.7,Math.min(1.3,zoom+Number(el.dataset.zoom)*.1));render()}));
+app.querySelector("[data-reset]").addEventListener("click",()=>{zoom=1;query="";filter="Explore";selected="Biology";render()});
+}
+render();
+})();
