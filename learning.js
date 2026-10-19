@@ -192,26 +192,30 @@ function renderHome(){
  document.title='My Learning OS';
  if(!document.getElementById('calm-dashboard-styles')){
   const style=document.createElement('style');style.id='calm-dashboard-styles';style.textContent=`
-   .home-welcome{margin:3px 0 12px;padding:1px}
-   .home-welcome>small{font-size:.68rem;letter-spacing:.11em;font-weight:800;color:var(--garden-clay,#a96f4c)}
-   .home-welcome h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(1.75rem,5vw,2.15rem);font-weight:400;line-height:1.12;margin:4px 0}
-   .home-welcome p{margin:5px 0 0;color:#776d62;font-size:.94rem}
-   .home-overview{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:9px;margin:10px 0 22px}
-   .home-progress,.home-overview .home-review{background:#fffdf9;border:1px solid var(--garden-line,#e7dfd4);border-radius:14px;padding:11px;min-width:0}
-   .home-progress-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;color:#62584e;font-size:.82rem}
-   .home-progress-top strong{font-family:Georgia,serif;font-size:1.3rem;font-weight:400;color:var(--garden-clay,#a96f4c)}
-   .home-progress .bar{height:5px;margin-bottom:7px}
-   .home-progress>small{font-size:.71rem;color:#776d62}
-   .home-overview .home-review{margin:0;box-shadow:none;gap:7px}
-   .home-overview .home-review strong{font-size:.8rem;line-height:1.25}
-   .home-overview .home-review small{font-size:.7rem;line-height:1.25}
+   .topbar{margin-bottom:8px}
+   .home-welcome{margin:0 0 9px;padding:0 1px}
+   .home-welcome>small{font-size:.65rem;letter-spacing:.1em;font-weight:800;color:var(--garden-clay,#a96f4c)}
+   .home-welcome h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(1.7rem,4.8vw,2.05rem);font-weight:400;line-height:1.1;margin:3px 0}
+   .home-welcome p{margin:3px 0 0;color:#776d62;font-size:.88rem}
+   .home-overview{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:8px;margin:8px 0 18px}
+   .home-progress,.home-overview .home-review{background:#fffdf9;border:1px solid var(--garden-line,#e7dfd4);border-radius:13px;padding:9px;min-width:0}
+   .home-progress-top{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-bottom:7px;color:#62584e;font-size:.76rem}
+   .home-progress-top strong{font-family:Georgia,serif;font-size:1.2rem;font-weight:400;color:var(--garden-clay,#a96f4c)}
+   .home-progress .bar{height:5px;margin-bottom:6px}
+   .home-progress>small{font-size:.68rem;color:#776d62}
+   .home-overview .home-review{margin:0;box-shadow:none;gap:6px;align-items:center}
+   .home-overview .home-review>span:first-child{font-size:1.15rem;flex-shrink:0}
+   .home-overview .home-review>span:nth-child(2){min-width:0}
+   .home-overview .home-review strong{font-size:.76rem;line-height:1.15;white-space:normal}
+   .home-overview .home-review small{font-size:.66rem;line-height:1.2}
+   .home-overview .home-review>b{font-size:1.05rem;flex-shrink:0}
    .home-section{margin:22px 0 26px}
    .home-section-heading{margin-bottom:10px}
    .home-section-heading h2{font-size:1.35rem}
    .home-subject-grid{gap:9px}
    .home-subject,.home-project{box-shadow:none}
    .home-weekly{display:none!important}
-   @media(max-width:420px){.home-overview{grid-template-columns:1fr 1fr;gap:8px}.home-progress,.home-overview .home-review{padding:11px}.home-progress-top{font-size:.76rem}.home-progress-top strong{font-size:1.25rem}.home-progress>small{font-size:.68rem}.home-overview .home-review{gap:7px}.home-overview .home-review>span:first-child{font-size:1.25rem}.home-overview .home-review strong{font-size:.75rem}.home-overview .home-review small{font-size:.66rem}}
+   @media(max-width:420px){.home-overview{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:7px}.home-progress,.home-overview .home-review{padding:8px}.home-progress-top{font-size:.7rem}.home-progress-top strong{font-size:1.1rem}.home-progress>small{font-size:.64rem}.home-overview .home-review{gap:5px}.home-overview .home-review>span:first-child{font-size:1.05rem}.home-overview .home-review strong{font-size:.7rem}.home-overview .home-review small{font-size:.62rem}}
   `;document.head.appendChild(style);
  }
  document.getElementById('app').innerHTML=nav()+`
