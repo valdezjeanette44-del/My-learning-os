@@ -168,11 +168,11 @@ function lessonQuizQuestions(name,i,variant=0){
  const fact1=String(l[1]||"").trim(),fact2=String(l[2]||"").trim(),scenario=data[0],scenarioAnswer=data[1],wrongScenario=data.slice(2),transfer=QUIZ_TRANSFER_BANK[name]?.[title];
  if(!transfer)throw new Error("Missing distinct transfer question for "+name+" / "+title);
  const specs=[
- {skill:"concept",q:"Core idea: which statement best explains "+title.toLowerCase()+"?",correct:fact1,wrong:mis,why:"The core idea is: "+fact1},
- {skill:"key fact",q:"Which key detail is accurate?",correct:fact2,wrong:[...mis.slice(1),...mis.slice(0,1)],why:"The key detail is: "+fact2},
- {skill:"application",q:scenario,correct:scenarioAnswer,wrong:wrongScenario,why:"In this scenario, "+scenarioAnswer},
- {skill:"misconception",q:"Which claim shows a common misconception about "+title.toLowerCase()+"?",correct:mis[0]||wrongScenario[0],wrong:[...mis.slice(1),fact1,fact2],why:"That claim is a misconception. A more accurate understanding is: "+fact1},
- {skill:"transfer",q:transfer[0],correct:transfer[1],wrong:transfer.slice(2,5),why:transfer[1]}
+ {skill:"concept",q:"Which statement best describes the main idea of “"+title+"”?",correct:fact1,wrong:mis,why:"The lesson's central idea is: "+fact1},
+ {skill:"key fact",q:"Which key detail about “"+title+"” is accurate?",correct:fact2,wrong:[...mis.slice(1),...mis.slice(0,1)],why:"This detail matters because: "+fact2},
+ {skill:"application",q:scenario,correct:scenarioAnswer,wrong:wrongScenario,why:"Apply the lesson to this situation: "+scenarioAnswer},
+ {skill:"misconception",q:"Which statement reflects a common misconception about “"+title+"”?",correct:mis[0]||wrongScenario[0],wrong:[...mis.slice(1),fact1,fact2],why:"This is the misconception because it conflicts with the lesson's central idea: "+fact1},
+ {skill:"transfer",q:transfer[0],correct:transfer[1],wrong:transfer.slice(2,5),why:"The strongest explanation is: "+transfer[1]}
  ];
  function uniqueChoices(arr,correct){return arr.map(x=>String(x||"").trim()).filter((x,j,a)=>x&&x!==correct&&a.indexOf(x)===j)}
  return specs.map((spec,qi)=>{let wrong=uniqueChoices(spec.wrong||[],spec.correct).slice(0,3);for(const fallback of [...mis,...wrongScenario,fact1,fact2,scenarioAnswer]){if(wrong.length>=3)break;if(fallback!==spec.correct&&!wrong.includes(fallback))wrong.push(fallback)}if(wrong.length!==3)throw new Error("Not enough distinct choices: "+name+" / "+title+" / "+spec.skill);if(variant===1)wrong=wrong.slice(1).concat(wrong[0]);const options=[{text:spec.correct,correct:true},...wrong.map(text=>({text,correct:false,reason:spec.skill==="misconception"?"This is not the misconception the question asks for; compare it with the lesson's evidence-based explanation.":spec.skill==="application"?"This does not explain the scenario as well as the correct answer: "+scenarioAnswer:"This option is less accurate because it conflicts with the key idea: "+fact1}))];const shift=(i*3+qi*2+Object.keys(SUBJECTS).indexOf(name)+(variant?1:0))%4;return {skill:spec.skill,q:spec.q,options:options.slice(shift).concat(options.slice(0,shift)),explain:spec.why}});
