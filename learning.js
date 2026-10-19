@@ -162,9 +162,9 @@ Philosophy:{
 "Arguments and reasoning":["Someone says a policy works because it worked once in one town. What should you ask?","Ask whether one example is sufficient and whether other factors explain the outcome.","Accept it because one example proves a universal rule.","Reject it only because it is an opinion.","Ignore evidence and focus on the speaker's confidence."]
 }};
 function lessonQuizQuestions(name,i){
- const l=SUBJECTS[name].lessons[i],title=l[0],help=lessonHelp(title),data=QUIZ_AUDIT_BANK[name]?.[title];
+ const l=SUBJECTS[name].lessons[i],title=l[0],data=QUIZ_AUDIT_BANK[name]?.[title];
  if(!data) throw new Error("Missing audited quiz for "+name+" / "+title);
- const fact1=String(l[1]||"").trim(),fact2=String(l[2]||"").trim(),answer=String(help.answer||fact2||fact1).trim();
+ const fact1=String(l[1]||"").trim(),fact2=String(l[2]||"").trim();
  const scenario=data[0],scenarioAnswer=data[1],wrongScenario=data.slice(2);
  const commonWrong=[
   "This claim contradicts the evidence and explanation in the lesson.",
@@ -172,16 +172,17 @@ function lessonQuizQuestions(name,i){
   "This statement confuses the central concept with a different idea."
  ];
  const specs=[
-  {q:"Which statement best summarizes the main idea of this lesson?",correct:fact1,wrong:commonWrong,why:"The central idea is: "+fact1},
-  {q:"Which detail about "+title.toLowerCase()+" is accurate?",correct:fact2,wrong:commonWrong.slice().reverse(),why:"The lesson explains: "+fact2},
+  {q:"Which statement best summarizes the main idea of this lesson?",correct:fact1,wrong:wrongScenario,why:"The central idea is: "+fact1},
+  {q:"Which detail about "+title.toLowerCase()+" is accurate?",correct:fact2,wrong:wrongScenario.slice().reverse(),why:"The lesson explains: "+fact2},
   {q:scenario,correct:scenarioAnswer,wrong:wrongScenario,why:"The best answer is: "+scenarioAnswer},
   {q:"Which statement is a misconception rather than an accurate explanation of "+title.toLowerCase()+"?",correct:wrongScenario[0],wrong:[fact1,fact2,scenarioAnswer],why:"This is the misconception to avoid. Remember: "+fact1},
-  {q:"How do the main idea and key detail fit together?",correct:fact1+" "+fact2,wrong:wrongScenario,why:"Together, these ideas explain the topic: "+fact1+" "+fact2}
+  {q:"What general lesson does this real-world example illustrate?",correct:scenarioAnswer,wrong:[fact1,fact2,...wrongScenario].filter(x=>x!==scenarioAnswer),why:"The example illustrates this principle: "+scenarioAnswer}
  ];
  return specs.map((spec,qi)=>{
   const unique=arr=>arr.map(x=>String(x||"").trim()).filter((x,j,a)=>x&&x!==spec.correct&&a.indexOf(x)===j);
   let wrong=unique(spec.wrong).slice(0,3);
-  while(wrong.length<3){const fallback=commonWrong.find(x=>x!==spec.correct&&!wrong.includes(x));if(!fallback)throw new Error("Not enough unique answer choices: "+name+" / "+title);wrong.push(fallback)}
+  for(const fallback of [...wrongScenario,...commonWrong,fact1,fact2]){if(wrong.length>=3)break;if(fallback!==spec.correct&&!wrong.includes(fallback))wrong.push(fallback)}
+  if(wrong.length!==3)throw new Error("Not enough distinct choices: "+name+" / "+title);
   const options=[{text:spec.correct,correct:true},...wrong.map(text=>({text,correct:false}))];
   const shift=(i*3+qi*2+Object.keys(SUBJECTS).indexOf(name))%4;
   return {q:spec.q,options:options.slice(shift).concat(options.slice(0,shift)),explain:spec.why};
