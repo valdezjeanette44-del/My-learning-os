@@ -113,35 +113,42 @@ const QUIZ_MISCONCEPTIONS={
  }
 };
 function lessonQuizQuestions(name,i){
- const l=SUBJECTS[name].lessons[i],title=l[0],help=lessonHelp(title),mis=QUIZ_MISCONCEPTIONS[name]?.[title]||[
-  "The concept means the opposite of what the lesson explains.",
-  "The idea applies only in one unusual case and not in ordinary situations.",
-  "The claim is true without any evidence or reasoning."
+ const l=SUBJECTS[name].lessons[i],title=l[0],help=lessonHelp(title);
+ const fact1=String(l[1]||"").trim(),fact2=String(l[2]||"").trim(),scenario=String(l[3]||"").trim(),answer=String(help.answer||fact2||fact1).trim();
+ const bank=QUIZ_MISCONCEPTIONS[name]||{};
+ const mis=bank[title]||[
+  "The idea is true only because someone believes it, even without supporting evidence.",
+  "The concept works in exactly the opposite way from what the lesson explains.",
+  "The idea can never apply outside one narrow example."
  ];
- const fact1=String(l[1]||"").trim(),fact2=String(l[2]||"").trim(),answer=String(help.answer||fact2||fact1).trim();
+ const unique=(arr,exclude=[])=>arr.map(x=>String(x||"").trim()).filter((x,j,a)=>x&&!exclude.includes(x)&&a.indexOf(x)===j);
+ const plausible=unique([fact1,fact2,answer],[]);
+ const distractors=(correct,preferred)=>unique(preferred.concat(mis,fact1,fact2,answer),[correct]).slice(0,3);
+ const build=(q,correct,wrong,why)=>({q,correct,wrong:distractors(correct,wrong),why});
  const specs=[
-  {q:"Which statement best explains the main idea of this lesson?",correct:fact1,wrong:mis,why:"This is the central idea introduced in the lesson."},
-  {q:"Which statement about this topic is accurate?",correct:fact2,wrong:[mis[1],mis[2],mis[0]],why:"This detail is supported by the lesson's explanation."},
-  {q:help.hint?("A real-world question: "+l[3]):("How would you explain this concept in practice?"),correct:answer,wrong:[mis[2],mis[0],mis[1]],why:"This answer applies the lesson's concept to the question."},
-  {q:"Which common misunderstanding should you avoid?",correct:mis[0],wrong:[fact1,fact2,answer],why:"The selected statement is a misconception; the other choices express ideas supported by the lesson."},
-  {q:"Which explanation connects the evidence to the concept most accurately?",correct:fact2,wrong:[mis[0],mis[1],mis[2]],why:"A strong explanation uses the concept and evidence rather than an unsupported assumption."}
+  build("Core idea: which statement best describes "+title.toLowerCase()+"?",fact1,[...mis], "This is the lesson's central idea: "+fact1),
+  build("Which detail about "+title.toLowerCase()+" is accurate?",fact2,[mis[1],mis[2],mis[0]], "The lesson explains that "+fact2),
+  build(scenario||("How would you apply "+title.toLowerCase()+" in a real situation?"),answer,[mis[2],mis[0],mis[1]], "The best explanation is: "+answer),
+  build("Which statement shows a common misconception about "+title.toLowerCase()+"?",mis[0],[fact1,fact2,answer], "This is the misconception to avoid. Remember: "+fact1),
+  build("You want to explain "+title.toLowerCase()+" using evidence. Which statement is best supported?",fact2,[mis[0],mis[1],mis[2]], "Use the lesson's evidence and explanation: "+fact2)
  ];
  return specs.map((spec,qi)=>{
-  const options=[{text:spec.correct,correct:true},...spec.wrong.map(text=>({text,correct:false}))];
+  const wrong=spec.wrong.filter(x=>x&&x!==spec.correct);
+  while(wrong.length<3){const fallback="This claim is not supported by the lesson's explanation.";if(!wrong.includes(fallback)&&fallback!==spec.correct)wrong.push(fallback);else wrong.push("This conclusion does not follow from the evidence presented.");}
+  const options=[{text:spec.correct,correct:true},...wrong.slice(0,3).map(text=>({text,correct:false}))];
   const shift=(i*3+qi*2+Object.keys(SUBJECTS).indexOf(name))%4;
-  const rotated=options.slice(shift).concat(options.slice(0,shift));
-  return {q:spec.q,options:rotated,explain:spec.why};
+  return {q:spec.q,options:options.slice(shift).concat(options.slice(0,shift)),explain:spec.why};
  });
 }
 function lessonQuizHTML(name,i){
  const key=name+'-'+i,results=state().quizResults||{},saved=results[key],questions=lessonQuizQuestions(name,i);
  return `<section class="lesson-mcq" id="mcq-${i}">
-  <div class="mcq-heading"><div><span class="lesson-label">KNOWLEDGE CHECK</span><h3>Test your understanding</h3><p>5 multiple-choice questions · Choose one answer for each.</p></div><span class="mcq-score">${saved?'Best: '+saved.best+'/'+saved.total:'5 questions'}</span></div>
+  <div class="mcq-heading"><div><span class="lesson-label">KNOWLEDGE CHECK</span><h3>Test your understanding</h3><p>5 questions · Recall, apply, spot misconceptions and reason.</p></div><span class="mcq-score">${saved?'Best: '+saved.best+'/'+saved.total:'5 questions'}</span></div>
   <form onsubmit="submitLessonQuiz(event,'${name}',${i})">
-   ${questions.map((q,qi)=>`<fieldset class="mcq-question" id="mcq-question-${i}-${qi}"><legend>${qi+1}. ${esc(q.q)}</legend>${q.options.map((o,oi)=>`<label class="mcq-option"><input type="radio" name="mcq-${i}-${qi}" value="${oi}" ${saved&&saved.lastAnswers&&saved.lastAnswers[qi]===oi?'checked':''}><span>${esc(o.text)}</span></label>`).join('')}<p class="mcq-feedback" id="mcq-feedback-${i}-${qi}" hidden></p></fieldset>`).join('')}
-   <div class="lesson-actions"><button type="submit">Check my score</button><button class="button secondary" type="button" onclick="resetLessonQuiz(${i})">Try again</button></div>
+   ${questions.map((q,qi)=>`<fieldset class="mcq-question" id="mcq-question-${i}-${qi}"><legend>${qi+1}. ${esc(q.q)}</legend>${q.options.map((o,oi)=>`<label class="mcq-option"><input type="radio" name="mcq-${i}-${qi}" value="${oi}"><span>${esc(o.text)}</span></label>`).join('')}<p class="mcq-feedback" id="mcq-feedback-${i}-${qi}" hidden></p></fieldset>`).join('')}
+   <div class="lesson-actions"><button type="submit">Check my score</button><button class="button secondary" type="button" onclick="retryMissedLessonQuiz('${name}',${i})" id="mcq-retry-missed-${i}" hidden>Retry missed questions</button><button class="button secondary" type="button" onclick="resetLessonQuiz(${i})">Try again</button></div>
   </form>
-  <div class="mcq-result" id="mcq-result-${i}" role="status">${saved?'Last score: '+saved.correct+'/'+saved.total+' ('+Math.round(saved.correct/saved.total*100)+'%) · Attempts: '+saved.attempts:''}</div>
+  <div class="mcq-result" id="mcq-result-${i}" role="status">${saved?'Last score: '+saved.correct+'/'+saved.total+' ('+Math.round(saved.correct/saved.total*100)+'%) · Best: '+saved.best+'/'+saved.total+' · Attempts: '+saved.attempts:''}</div>
  </section>`;
 }
 function submitLessonQuiz(event,name,i){
@@ -150,22 +157,35 @@ function submitLessonQuiz(event,name,i){
  questions.forEach((q,qi)=>{const selected=document.querySelector('input[name="mcq-'+i+'-'+qi+'"]:checked');if(!selected)missing.push(qi+1);answers.push(selected?Number(selected.value):null)});
  const result=document.getElementById('mcq-result-'+i);
  if(missing.length){result.textContent='Please answer question'+(missing.length>1?'s ':' ')+missing.join(', ')+ ' before checking your score.';return}
- let correct=0;
+ let correct=0,missed=[];
  questions.forEach((q,qi)=>{
-  const chosen=answers[qi],isCorrect=q.options[chosen].correct;if(isCorrect)correct++;
+  const chosen=answers[qi],right=q.options.findIndex(o=>o.correct),isCorrect=q.options[chosen].correct;if(isCorrect)correct++;else missed.push(qi);
   const feedback=document.getElementById('mcq-feedback-'+i+'-'+qi);
   feedback.hidden=false;feedback.className='mcq-feedback '+(isCorrect?'correct':'incorrect');
-  feedback.textContent=(isCorrect?'✓ Correct. ':'✗ Not quite. Correct answer: ')+q.options.find(o=>o.correct).text+' '+q.explain;
+  feedback.textContent=(isCorrect?'✓ Correct. ':'✗ Not quite. Correct answer: ')+q.options[right].text+' Explanation: '+q.explain;
  });
  const s=state();s.quizResults=s.quizResults||{};const key=name+'-'+i,previous=s.quizResults[key]||{attempts:0,best:0};
- s.quizResults[key]={subject:name,index:i,correct,total:questions.length,best:Math.max(previous.best||0,correct),attempts:(previous.attempts||0)+1,lastAnswers:answers,lastScore:correct,updatedAt:new Date().toISOString()};
+ s.quizResults[key]={subject:name,index:i,correct,total:questions.length,best:Math.max(previous.best||0,correct),attempts:(previous.attempts||0)+1,lastAnswers:answers,lastScore:correct,missed,updatedAt:new Date().toISOString()};
  saveState(s);
  result.textContent='You got '+correct+' out of '+questions.length+' correct ('+Math.round(correct/questions.length*100)+'%). Best: '+s.quizResults[key].best+'/'+questions.length+' · Attempts: '+s.quizResults[key].attempts+'. Your score is saved on this device.';
- const score=document.querySelector('.mcq-score');if(score)score.textContent='Best: '+s.quizResults[key].best+'/'+questions.length;
+ const score=document.querySelector('#mcq-'+i+' .mcq-score');if(score)score.textContent='Best: '+s.quizResults[key].best+'/'+questions.length;
+ const retry=document.getElementById('mcq-retry-missed-'+i);if(retry)retry.hidden=missed.length===0;
+}
+function retryMissedLessonQuiz(name,i){
+ const s=state(),saved=s.quizResults?.[name+'-'+i],missed=saved?.missed||[];
+ if(!missed.length){resetLessonQuiz(i);return}
+ missed.forEach(qi=>{
+  document.querySelectorAll('#mcq-'+i+' input[name="mcq-'+i+'-'+qi+'"]').forEach(input=>input.checked=false);
+  const feedback=document.getElementById('mcq-feedback-'+i+'-'+qi);if(feedback){feedback.hidden=true;feedback.textContent='';}
+ });
+ const retry=document.getElementById('mcq-retry-missed-'+i);if(retry)retry.hidden=true;
+ const result=document.getElementById('mcq-result-'+i);if(result)result.textContent='Retry only the questions you missed, then check your score again.';
+ const first=document.getElementById('mcq-question-'+i+'-'+missed[0]);if(first)first.scrollIntoView({behavior:'smooth',block:'center'});
 }
 function resetLessonQuiz(i){
  document.querySelectorAll('#mcq-'+i+' input[type="radio"]').forEach(input=>input.checked=false);
  document.querySelectorAll('#mcq-'+i+' .mcq-feedback').forEach(el=>{el.hidden=true;el.textContent='';});
+ const retry=document.getElementById('mcq-retry-missed-'+i);if(retry)retry.hidden=true;
  const result=document.getElementById('mcq-result-'+i);if(result)result.textContent='Choose an answer for each question, then check your score.';
 }
 function lessonHTML(name,l,i,isDone){
