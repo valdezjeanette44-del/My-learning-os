@@ -180,7 +180,7 @@ function lessonQuizQuestions(name,i,variant=0){
  const fact1=String(l[1]||"").trim(),fact2=String(l[2]||"").trim(),scenario=data[0],scenarioAnswer=data[1],wrongScenario=data.slice(2),transfer=QUIZ_TRANSFER_BANK[name]?.[title];
  if(!transfer)throw new Error("Missing distinct transfer question for "+name+" / "+title);
  const cleanTitle=title.replace(/[?.!]+/g,""),misconceptionStem=QUIZ_MISCONCEPTION_STEMS[name]?.[title];
- if(!conceptStem||!misconceptionStem)throw new Error("Missing lesson-specific question stem for "+name+" / "+title);
+ if(!misconceptionStem)throw new Error("Missing lesson-specific misconception stem for "+name+" / "+title);
  const specs=[
   {skill:"understanding",q:"Which statement best captures the main idea of this lesson?",correct:fact1,wrong:mis,why:"The central idea is: "+fact1},
   {skill:"key fact",q:"Which key detail from this lesson is accurate?",correct:fact2,wrong:[...mis.slice(1),...mis.slice(0,1)],why:"This detail matters because: "+fact2},
