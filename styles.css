@@ -550,3 +550,11 @@ body{background:var(--garden-paper);color:var(--garden-ink)}
 .knowledge-map-footer{text-align:center;color:#81796e;font-size:.72rem;margin:8px 0}
 @media(min-width:600px){#app .knowledge-one-panel .knowledge-network{grid-template-columns:repeat(4,minmax(0,1fr))!important}#app .knowledge-one-panel .knowledge-connections{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
 @media(max-width:390px){.knowledge-mini-header h1{font-size:1.2rem}#app .knowledge-one-panel{padding:9px!important}#app .knowledge-one-panel button.knowledge-node{padding:7px!important}#app .knowledge-one-panel .knowledge-node strong{font-size:.77rem!important}#app .knowledge-one-panel .knowledge-node small{font-size:.61rem!important}#app .knowledge-one-panel button.knowledge-connection{padding:7px!important;min-height:52px!important}}
+
+
+/* Knowledge Map: real lesson progress on each subject node */
+#app .knowledge-one-panel .knowledge-progress{grid-column:1 / -1;display:flex;flex-direction:column;gap:4px;width:100%;margin-top:3px}
+#app .knowledge-one-panel .knowledge-progress-bar{display:block;width:100%;height:4px;overflow:hidden;border-radius:99px;background:#eee8df}
+#app .knowledge-one-panel .knowledge-progress-bar>span{display:block;height:100%;border-radius:99px;background:#b66b45;transition:width .2s ease}
+#app .knowledge-one-panel .knowledge-progress-label{display:block!important;font-size:.62rem!important;line-height:1.25!important;color:#75695e!important}
+#app .knowledge-one-panel button.knowledge-node:focus-visible{outline:3px solid #b66b45;outline-offset:2px}
