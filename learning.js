@@ -192,26 +192,26 @@ function renderHome(){
  document.title='My Learning OS';
  if(!document.getElementById('calm-dashboard-styles')){
   const style=document.createElement('style');style.id='calm-dashboard-styles';style.textContent=`
-   .home-welcome{margin:8px 0 18px;padding:2px 1px}
+   .home-welcome{margin:3px 0 12px;padding:1px}
    .home-welcome>small{font-size:.68rem;letter-spacing:.11em;font-weight:800;color:var(--garden-clay,#a96f4c)}
-   .home-welcome h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(1.8rem,5vw,2.25rem);font-weight:400;line-height:1.15;margin:5px 0}
+   .home-welcome h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(1.75rem,5vw,2.15rem);font-weight:400;line-height:1.12;margin:4px 0}
    .home-welcome p{margin:5px 0 0;color:#776d62;font-size:.94rem}
-   .home-overview{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:10px;margin:12px 0 26px}
-   .home-progress,.home-overview .home-review{background:#fffdf9;border:1px solid var(--garden-line,#e7dfd4);border-radius:15px;padding:14px;min-width:0}
+   .home-overview{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:9px;margin:10px 0 22px}
+   .home-progress,.home-overview .home-review{background:#fffdf9;border:1px solid var(--garden-line,#e7dfd4);border-radius:14px;padding:11px;min-width:0}
    .home-progress-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;color:#62584e;font-size:.82rem}
-   .home-progress-top strong{font-family:Georgia,serif;font-size:1.45rem;font-weight:400;color:var(--garden-clay,#a96f4c)}
-   .home-progress .bar{height:6px;margin-bottom:8px}
-   .home-progress>small{font-size:.75rem;color:#776d62}
-   .home-overview .home-review{margin:0;box-shadow:none}
-   .home-overview .home-review strong{font-size:.85rem}
-   .home-overview .home-review small{font-size:.74rem}
+   .home-progress-top strong{font-family:Georgia,serif;font-size:1.3rem;font-weight:400;color:var(--garden-clay,#a96f4c)}
+   .home-progress .bar{height:5px;margin-bottom:7px}
+   .home-progress>small{font-size:.71rem;color:#776d62}
+   .home-overview .home-review{margin:0;box-shadow:none;gap:7px}
+   .home-overview .home-review strong{font-size:.8rem;line-height:1.25}
+   .home-overview .home-review small{font-size:.7rem;line-height:1.25}
    .home-section{margin:22px 0 26px}
    .home-section-heading{margin-bottom:10px}
    .home-section-heading h2{font-size:1.35rem}
    .home-subject-grid{gap:9px}
    .home-subject,.home-project{box-shadow:none}
    .home-weekly{display:none!important}
-   @media(max-width:420px){.home-overview{grid-template-columns:1fr 1fr;gap:8px}.home-progress,.home-overview .home-review{padding:11px}.home-progress-top{font-size:.76rem}.home-progress-top strong{font-size:1.25rem}.home-progress>small{font-size:.68rem}.home-overview .home-review{gap:7px}.home-overview .home-review>span:first-child{font-size:1.25rem}.home-overview .home-review strong{font-size:.78rem}.home-overview .home-review small{font-size:.68rem}}
+   @media(max-width:420px){.home-overview{grid-template-columns:1fr 1fr;gap:8px}.home-progress,.home-overview .home-review{padding:11px}.home-progress-top{font-size:.76rem}.home-progress-top strong{font-size:1.25rem}.home-progress>small{font-size:.68rem}.home-overview .home-review{gap:7px}.home-overview .home-review>span:first-child{font-size:1.25rem}.home-overview .home-review strong{font-size:.75rem}.home-overview .home-review small{font-size:.66rem}}
   `;document.head.appendChild(style);
  }
  document.getElementById('app').innerHTML=nav()+`
