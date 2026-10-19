@@ -122,15 +122,15 @@ function lessonQuizQuestions(name,i){
   "The idea can never apply outside one narrow example."
  ];
  const unique=(arr,exclude=[])=>arr.map(x=>String(x||"").trim()).filter((x,j,a)=>x&&!exclude.includes(x)&&a.indexOf(x)===j);
- const plausible=unique([fact1,fact2,answer],[]);
+ const combined=[fact1,fact2].filter(Boolean).join(" ");
  const distractors=(correct,preferred)=>unique(preferred.concat(mis,fact1,fact2,answer),[correct]).slice(0,3);
  const build=(q,correct,wrong,why)=>({q,correct,wrong:distractors(correct,wrong),why});
  const specs=[
-  build("Core idea: which statement best describes "+title.toLowerCase()+"?",fact1,[...mis], "This is the lesson's central idea: "+fact1),
-  build("Which detail about "+title.toLowerCase()+" is accurate?",fact2,[mis[1],mis[2],mis[0]], "The lesson explains that "+fact2),
-  build(scenario||("How would you apply "+title.toLowerCase()+" in a real situation?"),answer,[mis[2],mis[0],mis[1]], "The best explanation is: "+answer),
-  build("Which statement shows a common misconception about "+title.toLowerCase()+"?",mis[0],[fact1,fact2,answer], "This is the misconception to avoid. Remember: "+fact1),
-  build("You want to explain "+title.toLowerCase()+" using evidence. Which statement is best supported?",fact2,[mis[0],mis[1],mis[2]], "Use the lesson's evidence and explanation: "+fact2)
+  build("Which statement best summarizes the main idea of this lesson about "+title.toLowerCase()+"?",fact1,[...mis], "The lesson's main idea is: "+fact1),
+  build("Which detail about "+title.toLowerCase()+" is accurate?",fact2,[mis[1],mis[2],mis[0]], "This detail is accurate because the lesson explains: "+fact2),
+  build(scenario||("How would you apply "+title.toLowerCase()+" in a real situation?"),answer,[mis[2],mis[0],mis[1]], "For this situation, the best explanation is: "+answer),
+  build("Which statement is a misconception, rather than a fact, about "+title.toLowerCase()+"?",mis[0],[fact1,fact2,answer], "This is the misconception to avoid. A more accurate starting point is: "+fact1),
+  build("Which explanation best connects the lesson's main idea with an important detail?",combined,[mis[0],mis[1],mis[2]], "This answer connects the two key ideas: "+fact1+" "+fact2)
  ];
  return specs.map((spec,qi)=>{
   const wrong=spec.wrong.filter(x=>x&&x!==spec.correct);
