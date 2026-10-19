@@ -61,7 +61,32 @@ app.innerHTML='<div class="topbar"><a class="brand" href="/">🧠 My Learning OS
 '<div class="ku-detail"><div class="ku-detail-top"><span class="ku-detail-icon">'+a.icon+'</span><span class="ku-status-pill">'+status(a.id)+'</span></div><h3>'+a.id+'</h3><p class="ku-detail-intro">'+count(a.id)+' of 4 lessons completed. '+(due.some(r=>r.subject===a.id)?due.filter(r=>r.subject===a.id).length+' lesson review(s) due.':"Progress updates when you mark lessons complete in the lesson page.")+'</p><div class="ku-progress ku-detail-bar"><i style="width:'+(count(a.id)*25)+'%"></i></div><div class="ku-topic-list">'+a.t.map((t,i)=>'<a class="ku-topic '+(done(a.id).includes(i)?"done":"")+'" href="/subjects/'+a.id.toLowerCase()+'/#lesson-'+i+'"><span class="ku-topic-check">'+(done(a.id).includes(i)?"✓":i+1)+'</span><span><strong>'+esc(t)+'</strong><small>'+(done(a.id).includes(i)?"Lesson completed":"Open lesson")+(due.some(r=>r.subject===a.id&&r.index===i)?" · Review due":"")+'</small></span><b>↗</b></a>').join("")+'</div><div class="ku-connections"><h4>Connected ideas</h4>'+(related.length?related.map(({l,i})=>{const other=l[0]===a.id?l[1]:l[0];return '<button class="ku-connection" data-connection="'+i+'"><strong>↔ '+other+'</strong><small>'+esc(l[2])+'</small><b>›</b></button>'}).join(""):'<p>More connections will appear as the map grows.</p>')+'</div></div></div></section><p class="ku-footnote">Progress reflects lesson completions saved in this browser. “Courses completed” means all four lessons are marked complete; it does not claim mastery. Review labels use your saved review schedule.</p></main>';
 function showConnection(i,scroll){activeConnection=i;render();if(scroll&&window.matchMedia("(max-width:700px)").matches)app.querySelector("#ku-connection-detail")?.scrollIntoView({behavior:"smooth",block:"nearest"});}
 app.querySelectorAll("[data-subject]").forEach(el=>{const go=()=>{selected=el.dataset.subject;activeConnection=-1;render();if(window.matchMedia("(max-width:700px)").matches)app.querySelector(".ku-detail")?.scrollIntoView({behavior:"smooth",block:"start"});};el.addEventListener("click",go);el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}})});
-app.querySelectorAll("[data-connection]").forEach(el=>{const go=()=>showConnection(Number(el.dataset.connection),true);el.addEventListener("click",go);el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}})});
+const mapSvg=app.querySelector(".ku-map-canvas svg");
+mapSvg?.addEventListener("click",e=>{
+ if(e.target.closest("[data-subject]"))return;
+ const marked=e.target.closest("[data-connection]");
+ if(marked&&mapSvg.contains(marked)){showConnection(Number(marked.dataset.connection),true);return;}
+ // Safari/iPhone fallback: detect the nearest connection geometrically even if
+ // SVG stroke hit-testing fails on the tapped line.
+ const matrix=mapSvg.getScreenCTM();
+ if(!matrix)return;
+ const point=mapSvg.createSVGPoint();point.x=e.clientX;point.y=e.clientY;
+ const p=point.matrixTransform(matrix.inverse());
+ let nearest=-1,best=Infinity;
+ L.forEach((line,i)=>{
+  const one=by[line[0]],two=by[line[1]],dx=two.x-one.x,dy=two.y-one.y;
+  const len2=dx*dx+dy*dy;
+  const t=Math.max(0,Math.min(1,((p.x-one.x)*dx+(p.y-one.y)*dy)/len2));
+  const px=one.x+t*dx,py=one.y+t*dy,dist=Math.hypot(p.x-px,p.y-py);
+  if(dist<best){best=dist;nearest=i;}
+ });
+ if(nearest>=0&&best<=30)showConnection(nearest,true);
+});
+mapSvg?.addEventListener("keydown",e=>{
+ const marked=e.target.closest("[data-connection]");
+ if(marked&&(e.key==="Enter"||e.key===" ")){e.preventDefault();showConnection(Number(marked.dataset.connection),true);}
+});
+app.querySelectorAll(".ku-connections [data-connection]").forEach(el=>el.addEventListener("click",()=>showConnection(Number(el.dataset.connection),true)));
 app.querySelectorAll("[data-filter]").forEach(el=>el.addEventListener("click",()=>{filter=el.dataset.filter;render()}));
 app.querySelector("#ku-search").addEventListener("input",e=>{query=e.target.value;render();const q=app.querySelector("#ku-search");q.focus();q.setSelectionRange(query.length,query.length)});
 app.querySelectorAll("[data-zoom]").forEach(el=>el.addEventListener("click",()=>{zoom=Math.max(.7,Math.min(1.3,zoom+Number(el.dataset.zoom)*.1));render()}));
