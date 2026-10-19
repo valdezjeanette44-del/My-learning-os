@@ -167,11 +167,12 @@ function lessonQuizQuestions(name,i,variant=0){
  if(!data)throw new Error("Missing audited quiz for "+name+" / "+title);
  const fact1=String(l[1]||"").trim(),fact2=String(l[2]||"").trim(),scenario=data[0],scenarioAnswer=data[1],wrongScenario=data.slice(2),transfer=QUIZ_TRANSFER_BANK[name]?.[title];
  if(!transfer)throw new Error("Missing distinct transfer question for "+name+" / "+title);
+ const cleanTitle=title.replace(/[?.!]+$/,"");
  const specs=[
- {skill:"concept",q:"Which statement best describes the main idea of “"+title+"”?",correct:fact1,wrong:mis,why:"The lesson's central idea is: "+fact1},
- {skill:"key fact",q:"Which key detail about “"+title+"” is accurate?",correct:fact2,wrong:[...mis.slice(1),...mis.slice(0,1)],why:"This detail matters because: "+fact2},
+ {skill:"concept",q:"What is the main idea of this lesson?",correct:fact1,wrong:mis,why:"The lesson's central idea is: "+fact1},
+ {skill:"key fact",q:"Which specific detail from "+cleanTitle+" is correct?",correct:fact2,wrong:[...mis.slice(1),...mis.slice(0,1)],why:"This detail matters because: "+fact2},
  {skill:"application",q:scenario,correct:scenarioAnswer,wrong:wrongScenario,why:"Apply the lesson to this situation: "+scenarioAnswer},
- {skill:"misconception",q:"Which statement reflects a common misconception about “"+title+"”?",correct:mis[0]||wrongScenario[0],wrong:[...mis.slice(1),fact1,fact2],why:"This is the misconception because it conflicts with the lesson's central idea: "+fact1},
+ {skill:"misconception",q:"Which statement is a misconception?",correct:mis[0]||wrongScenario[0],wrong:[...mis.slice(1),fact1,fact2],why:"This is the misconception because it conflicts with the lesson's central idea: "+fact1},
  {skill:"transfer",q:transfer[0],correct:transfer[1],wrong:transfer.slice(2,5),why:"The strongest explanation is: "+transfer[1]}
  ];
  function uniqueChoices(arr,correct){return arr.map(x=>String(x||"").trim()).filter((x,j,a)=>x&&x!==correct&&a.indexOf(x)===j)}
