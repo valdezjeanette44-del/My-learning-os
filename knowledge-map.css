@@ -9,3 +9,9 @@
 .ku-map-canvas svg .ku-line-hit{stroke:rgba(79,70,229,.015);stroke-width:34;stroke-linecap:round;fill:none;pointer-events:stroke}
 .ku-map-canvas svg .ku-line-visible{pointer-events:none}
 .ku-map-canvas svg .ku-link:active .ku-line-visible{stroke:#4f46e5;stroke-width:5}
+
+/* Reliable connection taps: thick hit area plus SVG-coordinate fallback */
+.ku-map-canvas svg .ku-link{cursor:pointer;pointer-events:all;touch-action:manipulation}
+.ku-map-canvas svg .ku-line-hit{stroke:rgba(79,70,229,.025);stroke-width:38;stroke-linecap:round;fill:none;pointer-events:stroke}
+.ku-map-canvas svg .ku-line-visible{pointer-events:none}
+.ku-map-canvas svg .ku-link:focus .ku-line-visible{stroke:#4f46e5;stroke-width:5}
