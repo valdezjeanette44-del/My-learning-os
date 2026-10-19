@@ -31,8 +31,6 @@ function renderSubject(name){
  renderQuiz(name);
  const nextLesson=getNextLesson(),cont=document.getElementById("continueLearning");
  if(cont) cont.innerHTML=nextLesson?'<p class="muted">'+esc(nextLesson.name)+' · Lesson '+(nextLesson.i+1)+'</p><h3>'+esc(nextLesson.lesson[0])+'</h3><p class="muted">'+esc(nextLesson.lesson[1])+'</p><a class="button" href="/subjects/'+nextLesson.name.toLowerCase()+'/#lesson-'+nextLesson.i+'">Continue →</a>':'<p>🎉 You have completed every lesson currently in the course.</p>';
- const goal=document.getElementById("dailyGoalCard"),gc=getDailyCount(),gg=getDailyGoal();
- if(goal) goal.innerHTML='<p><strong>'+gc+'</strong> of <strong>'+gg+'</strong> learning actions</p><div class="bar"><div style="width:'+Math.min(100,Math.round(gc/gg*100))+'%"></div></div><div class="goal-buttons"><button class="button secondary" onclick="setDailyGoal(1)">1</button><button class="button secondary" onclick="setDailyGoal(2)">2</button><button class="button secondary" onclick="setDailyGoal(3)">3</button></div><small class="muted">Choose a small daily goal that feels realistic.</small>';
 }
 function lessonHelp(title){
  const data={
