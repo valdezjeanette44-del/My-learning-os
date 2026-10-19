@@ -62,32 +62,73 @@ function lessonHelp(title){
  const pair=data[title]||["Identify the main idea, then ask what causes the result in the example.","A good answer states the main idea and explains the cause-and-effect connection in your own words."];
  return {hint:pair[0],answer:pair[1]};
 }
+const QUIZ_MISCONCEPTIONS={
+ Physics:{
+  "What does physics study?":["Physics studies only planets and stars, not everyday objects.","Physics relies on opinions rather than observations or experiments.","Physics describes events but never looks for patterns or mathematical models."],
+  "Motion and speed":["Speed includes direction, while velocity only measures distance per time.","An object moving at constant speed must also be moving in a straight line.","An object is at rest whenever no force acts on it, even if it is already moving."],
+  "Energy":["Energy is used up and disappears whenever an object stops moving.","Only moving objects can have energy.","Potential energy and kinetic energy are exactly the same thing."],
+  "Gravity and orbits":["The Moon stays in orbit because gravity does not reach it.","An orbit means an object is not affected by gravity.","The Moon would orbit Earth in the same way even if it had no sideways motion."]
+ },
+ Chemistry:{
+  "What is matter made of?":["Melting creates a completely new substance every time.","Atoms disappear when a material changes state.","All molecules contain atoms of different elements."],
+  "Atoms and elements":["An element is defined by its number of neutrons.","Atoms of the same element always have different numbers of protons.","The periodic table is arranged only by the size of atoms."],
+  "Chemical bonds":["Ionic bonds form when atoms share electrons equally.","Covalent bonds happen only when electrons are transferred completely.","Atoms bond because they are trying to become living things."],
+  "Chemical reactions":["Atoms are destroyed and new atoms appear during ordinary chemical reactions.","The number of each type of atom can change when an equation is balanced.","Reactants and products are always the same substances."]
+ },
+ Biology:{
+  "What is life?":["Plants are not alive because they do not move from place to place.","Living things do not need energy if they remain in one place.","Every living organism must be made of many cells."],
+  "Cells: the basic unit":["All cells have a nucleus.","A cell membrane lets every substance pass freely in and out.","Prokaryotic cells contain a nucleus, but eukaryotic cells do not."],
+  "DNA and heredity":["DNA directly determines every trait without environmental or developmental effects.","Every gene codes for one protein and nothing else.","Traits are inherited because organisms choose which DNA to pass on."],
+  "Evolution by natural selection":["Individuals evolve because they need a trait during their lifetime.","Natural selection gives organisms traits because they are trying to adapt.","Evolution always moves toward greater complexity."]
+ },
+ History:{
+  "How do historians study the past?":["A written source is always more reliable than an object or oral account.","A source tells the whole truth regardless of who created it.","Historians should use only sources that agree with each other."],
+  "Prehistory and archaeology":["Archaeologists can know exactly what a person thought from a tool alone.","Prehistory means that no evidence from the period exists.","A stone tool's location and wear tell archaeologists nothing useful."],
+  "Agriculture and civilization":["Farming immediately made every community healthier and more equal.","Agriculture changed food production but had no effect on settlement size.","Civilizations appeared only because people stopped trading."],
+  "Empires and exchange":["Trade routes carried goods but never ideas or diseases.","Empires affected all people in the same way and involved no coercion.","Cultural exchange always happened peacefully and equally."]
+ },
+ Economics:{
+  "What is economics?":["Scarcity means a society has absolutely no resources.","Opportunity cost is the money price only, never time or another choice.","A choice has no opportunity cost if it feels enjoyable."],
+  "Supply and demand":["When demand rises, prices must always fall.","Supply means how much buyers want to purchase at each price.","A shortage means sellers have more units available than buyers want."],
+  "Incentives":["People respond only to money and never to rules or social consequences.","An incentive always produces the exact behavior its designer intended.","Changing the cost of an action cannot affect anyone's choices."],
+  "Trade and specialization":["Both sides can benefit from trade only if they produce the same goods.","Comparative advantage means being best at producing everything.","Specialization always reduces productivity and makes trade unnecessary."]
+ },
+ Business:{
+  "What is a business?":["A business creates value only when it sells the most expensive product.","Customer needs are unimportant if the owner likes the product.","Revenue alone guarantees that a business is profitable."],
+  "Revenue, costs and profit":["Profit is the total amount of money received from sales.","A business with high revenue must have high profit.","Delivery, advertising and other operating expenses do not affect profit."],
+  "Understanding customers":["The best way to learn customer needs is to assume everyone wants what the seller likes.","Compliments from friends prove that a product will sell well.","A business should avoid observing how customers currently solve a problem."],
+  "Testing a business idea":["Ordering the largest possible stock is the best first test of demand.","A product page cannot provide useful evidence until thousands of people see it.","Customer feedback should be ignored if it challenges the original idea."]
+ },
+ Technology:{
+  "What is technology?":["Technology refers only to electronic devices and computers.","A tool is useful even if it does not help with a task or problem.","Technology works without knowledge, design or processes."],
+  "How does the internet work?":["A website is stored entirely inside the phone of every person who visits it.","Servers are unnecessary because browsers create every website themselves.","Data travels across the internet without shared protocols or addressing."],
+  "What is an algorithm?":["An algorithm is a random set of actions with no defined goal.","The order of steps never matters in a procedure.","An algorithm must always be written in a programming language."],
+  "What is artificial intelligence?":["AI understands every answer exactly as a human does.","A confident AI answer is automatically true.","AI can work only when every possible answer has been manually written in advance."]
+ },
+ Philosophy:{
+  "What is philosophy?":["Philosophy accepts claims without examining reasons or assumptions.","Philosophy asks only questions that can be answered with a measurement.","A philosophical argument is strong simply because many people agree with it."],
+  "How do we know?":["A belief is justified whenever it happens to be true, even by luck.","Evidence is unnecessary if a person feels certain.","Two people cannot have different levels of justification for the same belief."],
+  "Ethics and choices":["Ethics is only about obeying laws, never about values or duties.","A good outcome means the decision was necessarily fair to everyone.","People who share a goal must always agree on the right action."],
+  "Arguments and reasoning":["An opinion becomes a strong argument when it is stated confidently.","A conclusion is supported even if the reasons are unrelated to it.","If the conclusion is popular, the premises do not need checking."]
+ }
+};
 function lessonQuizQuestions(name,i){
- const lessons=SUBJECTS[name].lessons,l=lessons[i],help=lessonHelp(l[0]);
- const lessonFacts=[l[1],l[2],help.answer].map(x=>String(x||'').trim()).filter(Boolean);
- const nearby=lessons.filter((other,j)=>j!==i).map(other=>({title:other[0],facts:[other[1],other[2],lessonHelp(other[0]).answer].filter(Boolean)}));
- const distractorPool=[];
- nearby.forEach(item=>item.facts.forEach(f=>{if(f&&!lessonFacts.includes(f)&&!distractorPool.includes(f))distractorPool.push(f)}));
- const pickDistractors=(correct,offset)=>{
-  const pool=distractorPool.filter(x=>x!==correct);
-  const chosen=[];
-  for(let n=0;n<pool.length&&chosen.length<3;n++){
-   const candidate=pool[(offset+n*3)%pool.length];
-   if(candidate&&candidate!==correct&&!chosen.includes(candidate))chosen.push(candidate);
-  }
-  while(chosen.length<3)chosen.push("This explanation does not match the evidence or concept described in this lesson.");
-  return chosen;
- };
- const questionSpecs=[
-  {q:"Which statement best explains the central idea of “"+l[0]+"”?",correct:lessonFacts[0],why:"This expresses the main concept of the lesson."},
-  {q:"Which detail from this lesson is accurate?",correct:lessonFacts[1]||lessonFacts[0],why:"This detail is directly supported by the lesson."},
-  {q:"Imagine you are explaining “"+l[0]+"” to a friend. Which explanation would help them understand it?",correct:help.answer||lessonFacts[1]||lessonFacts[0],why:"This explanation connects the concept to the lesson's example or reasoning."},
-  {q:"Which conclusion is best supported by what you learned about “"+l[0]+"”?",correct:lessonFacts[1]||lessonFacts[0],why:"The conclusion follows from the lesson's key explanation."},
-  {q:"A student makes a claim about “"+l[0]+"”. Which response shows the strongest understanding?",correct:help.answer||lessonFacts[0],why:"This response uses the lesson's concept and reasoning rather than a memorized label."}
+ const l=SUBJECTS[name].lessons[i],title=l[0],help=lessonHelp(title),mis=QUIZ_MISCONCEPTIONS[name]?.[title]||[
+  "The concept means the opposite of what the lesson explains.",
+  "The idea applies only in one unusual case and not in ordinary situations.",
+  "The claim is true without any evidence or reasoning."
  ];
- return questionSpecs.map((spec,qi)=>{
-  const options=[{text:spec.correct,correct:true},...pickDistractors(spec.correct,i*7+qi*5).map(text=>({text,correct:false}))];
-  const shift=(i*3+qi*2+Object.keys(SUBJECTS).indexOf(name))%options.length;
+ const fact1=String(l[1]||"").trim(),fact2=String(l[2]||"").trim(),answer=String(help.answer||fact2||fact1).trim();
+ const specs=[
+  {q:"Which statement best explains the main idea of this lesson?",correct:fact1,wrong:mis,why:"This is the central idea introduced in the lesson."},
+  {q:"Which statement about this topic is accurate?",correct:fact2,wrong:[mis[1],mis[2],mis[0]],why:"This detail is supported by the lesson's explanation."},
+  {q:help.hint?("A real-world question: "+l[3]):("How would you explain this concept in practice?"),correct:answer,wrong:[mis[2],mis[0],mis[1]],why:"This answer applies the lesson's concept to the question."},
+  {q:"Which common misunderstanding should you avoid?",correct:mis[0],wrong:[fact1,fact2,answer],why:"The selected statement is a misconception; the other choices express ideas supported by the lesson."},
+  {q:"Which explanation connects the evidence to the concept most accurately?",correct:fact2,wrong:[mis[0],mis[1],mis[2]],why:"A strong explanation uses the concept and evidence rather than an unsupported assumption."}
+ ];
+ return specs.map((spec,qi)=>{
+  const options=[{text:spec.correct,correct:true},...spec.wrong.map(text=>({text,correct:false}))];
+  const shift=(i*3+qi*2+Object.keys(SUBJECTS).indexOf(name))%4;
   const rotated=options.slice(shift).concat(options.slice(0,shift));
   return {q:spec.q,options:rotated,explain:spec.why};
  });
