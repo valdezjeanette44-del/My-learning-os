@@ -225,10 +225,10 @@ function retryMissedLessonQuiz(name,i){
  const s=state(),key=name+'-'+i,saved=s.quizResults?.[key],missed=saved?.missed||[];
  if(!missed.length){resetLessonQuiz(i);return}
  window.quizRetryVariant=window.quizRetryVariant||{};window.quizRetryVariant[key]=1;
- const section=document.getElementById('mcq-'+i);if(section){section.outerHTML=lessonQuizHTML(name,i);}
+ const alternate=lessonQuizQuestions(name,i,1);
  missed.forEach(qi=>{
-  document.querySelectorAll('#mcq-'+i+' input[name="mcq-'+i+'-'+qi+'"]').forEach(input=>input.checked=false);
-  const feedback=document.getElementById('mcq-feedback-'+i+'-'+qi);if(feedback){feedback.hidden=true;feedback.textContent='';}
+  const field=document.getElementById('mcq-question-'+i+'-'+qi),q=alternate[qi];
+  if(field&&q){field.innerHTML='<legend>'+(qi+1)+'. '+esc(q.q)+'</legend>'+q.options.map((o,oi)=>'<label class="mcq-option"><input type="radio" name="mcq-'+i+'-'+qi+'" value="'+oi+'"><span>'+esc(o.text)+'</span></label>').join('')+'<p class="mcq-feedback" id="mcq-feedback-'+i+'-'+qi+'" hidden></p>';}
  });
  const retry=document.getElementById('mcq-retry-missed-'+i);if(retry)retry.hidden=true;
  const result=document.getElementById('mcq-result-'+i);if(result)result.textContent='Retry only the questions you missed, then check your score again.';
