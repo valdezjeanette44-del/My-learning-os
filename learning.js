@@ -62,33 +62,34 @@ function lessonHelp(title){
  const pair=data[title]||["Identify the main idea, then ask what causes the result in the example.","A good answer states the main idea and explains the cause-and-effect connection in your own words."];
  return {hint:pair[0],answer:pair[1]};
 }
-const MCQ_DISTRACTORS=[
- "It is mainly about memorizing names without understanding relationships.",
- "It happens only by chance and cannot be investigated with evidence.",
- "It means the same thing in every situation, regardless of context.",
- "It is unrelated to the causes or effects described in the lesson.",
- "It can be explained only by opinion, without observations or reasons.",
- "It always has one simple cause and never changes over time.",
- "It describes a different process that does not answer the lesson's question.",
- "It requires ignoring evidence that does not fit an initial guess."
-];
 function lessonQuizQuestions(name,i){
- const l=SUBJECTS[name].lessons[i],help=lessonHelp(l[0]);
- const facts=[l[1],l[2],help.answer];
- const stems=[
-  {q:"Which statement best captures the main idea of this lesson?",correct:facts[0],explain:"This is the lesson's central idea."},
-  {q:"Which detail is specifically supported by the lesson?",correct:facts[1],explain:"This detail comes from the lesson's explanation."},
-  {q:"Which answer best responds to the lesson's think-about-it question?",correct:help.answer,explain:"This answer applies the lesson's idea to the question."},
-  {q:"Which statement would be the strongest takeaway from this lesson?",correct:facts[0],explain:"The main idea is the most reliable takeaway."},
-  {q:"Which explanation is consistent with what you learned?",correct:facts[1],explain:"This explanation is directly supported by the lesson."}
+ const lessons=SUBJECTS[name].lessons,l=lessons[i],help=lessonHelp(l[0]);
+ const lessonFacts=[l[1],l[2],help.answer].map(x=>String(x||'').trim()).filter(Boolean);
+ const nearby=lessons.filter((other,j)=>j!==i).map(other=>({title:other[0],facts:[other[1],other[2],lessonHelp(other[0]).answer].filter(Boolean)}));
+ const distractorPool=[];
+ nearby.forEach(item=>item.facts.forEach(f=>{if(f&&!lessonFacts.includes(f)&&!distractorPool.includes(f))distractorPool.push(f)}));
+ const pickDistractors=(correct,offset)=>{
+  const pool=distractorPool.filter(x=>x!==correct);
+  const chosen=[];
+  for(let n=0;n<pool.length&&chosen.length<3;n++){
+   const candidate=pool[(offset+n*3)%pool.length];
+   if(candidate&&candidate!==correct&&!chosen.includes(candidate))chosen.push(candidate);
+  }
+  while(chosen.length<3)chosen.push("This explanation does not match the evidence or concept described in this lesson.");
+  return chosen;
+ };
+ const questionSpecs=[
+  {q:"Which statement best explains the central idea of “"+l[0]+"”?",correct:lessonFacts[0],why:"This expresses the main concept of the lesson."},
+  {q:"Which detail from this lesson is accurate?",correct:lessonFacts[1]||lessonFacts[0],why:"This detail is directly supported by the lesson."},
+  {q:"Imagine you are explaining “"+l[0]+"” to a friend. Which explanation would help them understand it?",correct:help.answer||lessonFacts[1]||lessonFacts[0],why:"This explanation connects the concept to the lesson's example or reasoning."},
+  {q:"Which conclusion is best supported by what you learned about “"+l[0]+"”?",correct:lessonFacts[1]||lessonFacts[0],why:"The conclusion follows from the lesson's key explanation."},
+  {q:"A student makes a claim about “"+l[0]+"”. Which response shows the strongest understanding?",correct:help.answer||lessonFacts[0],why:"This response uses the lesson's concept and reasoning rather than a memorized label."}
  ];
- return stems.map((item,qi)=>{
-  const distractors=MCQ_DISTRACTORS.filter(x=>x!==item.correct).slice((i+qi)%4,(i+qi)%4+3);
-  while(distractors.length<3)distractors.push(MCQ_DISTRACTORS[(i+qi+distractors.length)%MCQ_DISTRACTORS.length]);
-  const options=[item.correct,...distractors].map((text,j)=>({text,correct:j===0}));
-  const shift=(i+qi*3+Object.keys(SUBJECTS).indexOf(name))%options.length;
+ return questionSpecs.map((spec,qi)=>{
+  const options=[{text:spec.correct,correct:true},...pickDistractors(spec.correct,i*7+qi*5).map(text=>({text,correct:false}))];
+  const shift=(i*3+qi*2+Object.keys(SUBJECTS).indexOf(name))%options.length;
   const rotated=options.slice(shift).concat(options.slice(0,shift));
-  return {q:item.q,options:rotated,explain:item.explain};
+  return {q:spec.q,options:rotated,explain:spec.why};
  });
 }
 function lessonQuizHTML(name,i){
