@@ -9,6 +9,7 @@ function nav(){return '<div class="topbar"><a class="brand" href="/">🧠 My Lea
 function renderSubject(name){
  const d=SUBJECTS[name],s=state(),done=s.completed[name]||[],p=subjectProgress(name);
  document.title=name+' | My Learning OS';
+ ensureQuizStyles();
  document.getElementById('app').innerHTML=nav()+`<main class="hero"><a class="back" href="/">← Back to Learning Areas</a><h1>${d.icon} ${name}</h1><p class="muted">${d.desc}</p></main>
  <section class="panel"><div class="stats"><div class="stat"><strong>${done.length}</strong><span>lessons done</span></div><div class="stat"><strong>${d.lessons.length}</strong><span>lessons</span></div><div class="stat"><strong>${p}%</strong><span>progress</span></div><div class="stat"><strong>${s.scores[name]?.score||0}%</strong><span>quiz</span></div></div><div class="bar" style="margin-top:16px"><div style="width:${p}%"></div></div></section>
  <section class="panel course-panel"><div class="course-heading"><div><h2>Your lessons</h2><p class="muted">Open one lesson at a time. You can go at your own pace.</p></div><span class="course-count">${done.length}/${d.lessons.length}</span></div><div id="lessons">${d.lessons.map((l,i)=>lessonHTML(name,l,i,done.includes(i))).join('')}</div></section>
@@ -61,6 +62,70 @@ function lessonHelp(title){
  const pair=data[title]||["Identify the main idea, then ask what causes the result in the example.","A good answer states the main idea and explains the cause-and-effect connection in your own words."];
  return {hint:pair[0],answer:pair[1]};
 }
+const MCQ_DISTRACTORS=[
+ "It is mainly about memorizing names without understanding relationships.",
+ "It happens only by chance and cannot be investigated with evidence.",
+ "It means the same thing in every situation, regardless of context.",
+ "It is unrelated to the causes or effects described in the lesson.",
+ "It can be explained only by opinion, without observations or reasons.",
+ "It always has one simple cause and never changes over time.",
+ "It describes a different process that does not answer the lesson's question.",
+ "It requires ignoring evidence that does not fit an initial guess."
+];
+function lessonQuizQuestions(name,i){
+ const l=SUBJECTS[name].lessons[i],help=lessonHelp(l[0]);
+ const facts=[l[1],l[2],help.answer];
+ const stems=[
+  {q:"Which statement best captures the main idea of this lesson?",correct:facts[0],explain:"This is the lesson's central idea."},
+  {q:"Which detail is specifically supported by the lesson?",correct:facts[1],explain:"This detail comes from the lesson's explanation."},
+  {q:"Which answer best responds to the lesson's think-about-it question?",correct:help.answer,explain:"This answer applies the lesson's idea to the question."},
+  {q:"Which statement would be the strongest takeaway from this lesson?",correct:facts[0],explain:"The main idea is the most reliable takeaway."},
+  {q:"Which explanation is consistent with what you learned?",correct:facts[1],explain:"This explanation is directly supported by the lesson."}
+ ];
+ return stems.map((item,qi)=>{
+  const distractors=MCQ_DISTRACTORS.filter(x=>x!==item.correct).slice((i+qi)%4,(i+qi)%4+3);
+  while(distractors.length<3)distractors.push(MCQ_DISTRACTORS[(i+qi+distractors.length)%MCQ_DISTRACTORS.length]);
+  const options=[item.correct,...distractors].map((text,j)=>({text,correct:j===0}));
+  const shift=(i+qi*3+Object.keys(SUBJECTS).indexOf(name))%options.length;
+  const rotated=options.slice(shift).concat(options.slice(0,shift));
+  return {q:item.q,options:rotated,explain:item.explain};
+ });
+}
+function lessonQuizHTML(name,i){
+ const key=name+'-'+i,results=state().quizResults||{},saved=results[key],questions=lessonQuizQuestions(name,i);
+ return `<section class="lesson-mcq" id="mcq-${i}">
+  <div class="mcq-heading"><div><span class="lesson-label">KNOWLEDGE CHECK</span><h3>Test your understanding</h3><p>5 multiple-choice questions · Choose one answer for each.</p></div><span class="mcq-score">${saved?'Best: '+saved.best+'/'+saved.total:'5 questions'}</span></div>
+  <form onsubmit="submitLessonQuiz(event,'${name}',${i})">
+   ${questions.map((q,qi)=>`<fieldset class="mcq-question" id="mcq-question-${i}-${qi}"><legend>${qi+1}. ${esc(q.q)}</legend>${q.options.map((o,oi)=>`<label class="mcq-option"><input type="radio" name="mcq-${i}-${qi}" value="${oi}" ${saved&&saved.lastAnswers&&saved.lastAnswers[qi]===oi?'checked':''}><span>${esc(o.text)}</span></label>`).join('')}<p class="mcq-feedback" id="mcq-feedback-${i}-${qi}" hidden></p></fieldset>`).join('')}
+   <div class="lesson-actions"><button type="submit">Check my score</button><button class="button secondary" type="button" onclick="resetLessonQuiz(${i})">Try again</button></div>
+  </form>
+  <div class="mcq-result" id="mcq-result-${i}" role="status">${saved?'Last score: '+saved.correct+'/'+saved.total+' ('+Math.round(saved.correct/saved.total*100)+'%) · Attempts: '+saved.attempts:''}</div>
+ </section>`;
+}
+function submitLessonQuiz(event,name,i){
+ event.preventDefault();
+ const questions=lessonQuizQuestions(name,i),answers=[],missing=[];
+ questions.forEach((q,qi)=>{const selected=document.querySelector('input[name="mcq-'+i+'-'+qi+'"]:checked');if(!selected)missing.push(qi+1);answers.push(selected?Number(selected.value):null)});
+ const result=document.getElementById('mcq-result-'+i);
+ if(missing.length){result.textContent='Please answer question'+(missing.length>1?'s ':' ')+missing.join(', ')+ ' before checking your score.';return}
+ let correct=0;
+ questions.forEach((q,qi)=>{
+  const chosen=answers[qi],isCorrect=q.options[chosen].correct;if(isCorrect)correct++;
+  const feedback=document.getElementById('mcq-feedback-'+i+'-'+qi);
+  feedback.hidden=false;feedback.className='mcq-feedback '+(isCorrect?'correct':'incorrect');
+  feedback.textContent=(isCorrect?'✓ Correct. ':'✗ Not quite. Correct answer: ')+q.options.find(o=>o.correct).text+' '+q.explain;
+ });
+ const s=state();s.quizResults=s.quizResults||{};const key=name+'-'+i,previous=s.quizResults[key]||{attempts:0,best:0};
+ s.quizResults[key]={subject:name,index:i,correct,total:questions.length,best:Math.max(previous.best||0,correct),attempts:(previous.attempts||0)+1,lastAnswers:answers,lastScore:correct,updatedAt:new Date().toISOString()};
+ saveState(s);
+ result.textContent='You got '+correct+' out of '+questions.length+' correct ('+Math.round(correct/questions.length*100)+'%). Best: '+s.quizResults[key].best+'/'+questions.length+' · Attempts: '+s.quizResults[key].attempts+'. Your score is saved on this device.';
+ const score=document.querySelector('.mcq-score');if(score)score.textContent='Best: '+s.quizResults[key].best+'/'+questions.length;
+}
+function resetLessonQuiz(i){
+ document.querySelectorAll('#mcq-'+i+' input[type="radio"]').forEach(input=>input.checked=false);
+ document.querySelectorAll('#mcq-'+i+' .mcq-feedback').forEach(el=>{el.hidden=true;el.textContent='';});
+ const result=document.getElementById('mcq-result-'+i);if(result)result.textContent='Choose an answer for each question, then check your score.';
+}
 function lessonHTML(name,l,i,isDone){
  const teaching=teacherContent(name,l);
  const r=state().review?.[name+'-'+i],due=r&&new Date(r.nextReview)<=new Date();
@@ -79,6 +144,7 @@ function lessonHTML(name,l,i,isDone){
    <div class="lesson-actions"><button onclick="checkAnswer('${name}',${i})">Check my answer</button><button class="button secondary" onclick="showModelAnswer('${name}',${i})">Show example answer</button></div>
    <div id="feedback-${i}" class="feedback" hidden></div>
   </div>
+  ${lessonQuizHTML(name,i)}
   <button class="text-action" onclick="toggleExplanation(${i})">Explain this more simply</button>
   <p id="explain-${i}" class="simple-explanation" hidden><strong>In simple words</strong><br>${esc(l[1])}<br><br><strong>Try this example</strong><br>${esc(l[2])}<br><br><strong>Why it matters</strong><br>Connect the idea to something you can observe in everyday life. Then explain it in your own words.</p>
   <section class="self-check"><span class="lesson-label">CAN I EXPLAIN IT?</span><p>Without looking at the example answer, could you explain the main idea to a friend?</p><div class="lesson-actions"><button class="button secondary" onclick="setSelfCheck('${name}',${i},true)">✓ I can explain it</button><button class="button secondary" onclick="setSelfCheck('${name}',${i},false)">↻ I need another try</button></div><p id="self-check-${i}" class="self-check-status">${esc(state().selfChecks?.[name]?.[i]===true?'✓ You marked this as understood.':state().selfChecks?.[name]?.[i]===false?'Keep practising. You can come back to this later.':'')}</p></section>
@@ -87,6 +153,26 @@ function lessonHTML(name,l,i,isDone){
   ${due?`<div class="review-prompt"><strong>🧠 This concept is due for review.</strong><div class="lesson-actions"><button onclick="finishReview('${name}',${i},true)">✓ I remembered it</button><button class="button secondary" onclick="finishReview('${name}',${i},false)">↻ I need more practice</button></div></div>`:''}
  </div>
  </article>`;
+}
+function ensureQuizStyles(){
+ if(document.getElementById('lesson-mcq-styles'))return;
+ const style=document.createElement('style');style.id='lesson-mcq-styles';style.textContent=`
+ .lesson-mcq{margin:18px 0;padding:16px;border:1px solid var(--garden-line,#e5ddd2);border-radius:16px;background:#fffdf9}
+ .mcq-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px}
+ .mcq-heading h3{margin:4px 0;font-size:1.12rem}
+ .mcq-heading p{margin:4px 0;color:#766b60;font-size:.84rem}
+ .mcq-score{flex-shrink:0;font-size:.75rem;font-weight:750;color:var(--garden-clay,#a96f4c);background:#f5e8da;border-radius:99px;padding:6px 9px}
+ .mcq-question{border:0;border-top:1px solid #eee4d8;padding:13px 0;margin:0;min-width:0}
+ .mcq-question legend{font-weight:750;padding:0 0 8px;white-space:normal}
+ .mcq-option{display:flex;align-items:flex-start;gap:9px;padding:10px 11px;margin:7px 0;border:1px solid #e8dfd5;border-radius:11px;background:#fff;cursor:pointer;font-size:.9rem;line-height:1.4}
+ .mcq-option input{margin-top:4px;accent-color:var(--garden-clay,#b96f47);flex-shrink:0}
+ .mcq-option:has(input:checked){border-color:var(--garden-clay,#b96f47);background:#fbf1e7}
+ .mcq-feedback{font-size:.82rem;line-height:1.45;padding:10px;border-radius:10px;margin:8px 0 0}
+ .mcq-feedback.correct{background:#edf7ef;color:#245c39}
+ .mcq-feedback.incorrect{background:#fff0eb;color:#8b3526}
+ .mcq-result{font-weight:750;margin-top:12px;font-size:.9rem;color:#5d5146}
+ @media(max-width:420px){.lesson-mcq{padding:12px}.mcq-heading{gap:6px}.mcq-heading h3{font-size:1rem}.mcq-score{font-size:.68rem;padding:5px 7px}.mcq-option{font-size:.85rem;padding:9px}}
+ `;document.head.appendChild(style);
 }
 function toggleHint(i){const e=document.getElementById('hint-'+i);if(e)e.hidden=!e.hidden;}
 function checkAnswer(name,i){
