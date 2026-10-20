@@ -180,24 +180,22 @@ function lessonQuizQuestions(name,i,variant=0){
  const cleanTitle=title.replace(/[?.!]+/g,""),misconceptionStem=QUIZ_MISCONCEPTION_STEMS[name]?.[title];
  if(!misconceptionStem)throw new Error("Missing lesson-specific misconception stem for "+name+" / "+title);
  const specs=[
-  {skill:"understanding",q:"Which statement best captures the main idea of this lesson?",correct:fact1,wrong:mis,why:"The central idea is: "+fact1},
-  {skill:"key fact",q:"Which key detail from this lesson is accurate?",correct:fact2,wrong:[...mis.slice(1),...mis.slice(0,1)],why:"This detail matters because: "+fact2},
-  {skill:"application",q:scenario,correct:scenarioAnswer,wrong:wrongScenario,why:"Apply the lesson to this situation: "+scenarioAnswer},
-  {skill:"misconception",q:misconceptionStem,correct:mis[0]||wrongScenario[0],wrong:[...mis.slice(1),fact1,fact2],why:"This claim is a misconception because it conflicts with the lesson's evidence-based explanation: "+fact1},
-  {skill:"transfer",q:transfer[0],correct:transfer[1],wrong:transfer.slice(2,5),why:"The strongest explanation is: "+transfer[1]}
+  {skill:"remember",q:"Which statement best captures the main idea of this lesson?",correct:fact1,wrong:mis,why:"Remember: "+fact1},
+  {skill:"understand",q:scenario,correct:scenarioAnswer,wrong:wrongScenario,why:"Understand the situation: "+scenarioAnswer},
+  {skill:"apply",q:transfer[0],correct:transfer[1],wrong:transfer.slice(2,5),why:"Apply the lesson: "+transfer[1]}
  ];
  function uniqueChoices(arr,correct){return arr.map(x=>String(x||"").trim()).filter((x,j,a)=>x&&x!==correct&&a.indexOf(x)===j)}
  return specs.map((spec,qi)=>{let wrong=uniqueChoices(spec.wrong||[],spec.correct).slice(0,3);for(const fallback of [...mis,...wrongScenario,fact1,fact2,scenarioAnswer]){if(wrong.length>=3)break;if(fallback!==spec.correct&&!wrong.includes(fallback))wrong.push(fallback)}if(wrong.length!==3)throw new Error("Not enough distinct choices: "+name+" / "+title+" / "+spec.skill);if(variant===1)wrong=wrong.slice(1).concat(wrong[0]);const options=[{text:spec.correct,correct:true},...wrong.map(text=>({text,correct:false,reason:spec.skill==="misconception"?"This statement is not the targeted misconception; compare it with the lesson's evidence-based explanation.":spec.skill==="application"?"This does not explain the scenario as well as the correct answer: "+scenarioAnswer:"This option is less accurate because it conflicts with the key idea: "+fact1}))];const shift=(i*3+qi*2+Object.keys(SUBJECTS).indexOf(name)+(variant?1:0))%4;return {skill:spec.skill,q:spec.q,options:options.slice(shift).concat(options.slice(0,shift)),explain:spec.why}});
 }
 function lessonQuizHTML(name,i){
- const key=name+'-'+i,results=state().quizResults||{},saved=results[key],questions=lessonQuizQuestions(name,i,window.quizRetryVariant?.[key]||0);
+ const key=name+'-'+i,results=state().quizResults||{},saved=results[key],questions=lessonQuizQuestions(name,i,window.quizRetryVariant?.[key]||0),comparableSaved=saved&&saved.total===questions.length?saved:null;
  return `<section class="lesson-mcq" id="mcq-${i}">
-  <div class="mcq-heading"><div><span class="lesson-label">KNOWLEDGE CHECK</span><h3>Test your understanding</h3><p>5 questions · Recall, apply, spot misconceptions and reason.</p></div><span class="mcq-score">${saved?'Best: '+saved.best+'/'+saved.total:'5 questions'}</span></div>
+  <div class="mcq-heading"><div><span class="lesson-label">KNOWLEDGE CHECK</span><h3>Test your understanding</h3><p>3 questions · Remember, understand and apply.</p></div><span class="mcq-score">${comparableSaved?'Best: '+saved.best+'/'+saved.total:questions.length+' questions'}</span></div>
   <form onsubmit="submitLessonQuiz(event,'${name}',${i})">
    ${questions.map((q,qi)=>`<fieldset class="mcq-question" id="mcq-question-${i}-${qi}"><legend>${qi+1}. ${esc(q.q)}</legend>${q.options.map((o,oi)=>`<label class="mcq-option"><input type="radio" name="mcq-${i}-${qi}" value="${oi}"><span>${esc(o.text)}</span></label>`).join('')}<p class="mcq-feedback" id="mcq-feedback-${i}-${qi}" hidden></p></fieldset>`).join('')}
    <div class="lesson-actions"><button type="submit">Check my score</button><button class="button secondary" type="button" onclick="retryMissedLessonQuiz('${name}',${i})" id="mcq-retry-missed-${i}" hidden>Retry missed questions</button><button class="button secondary" type="button" onclick="resetLessonQuiz(${i})">Try again</button></div>
   </form>
-  <div class="mcq-result" id="mcq-result-${i}" role="status">${saved?'Last score: '+saved.correct+'/'+saved.total+' ('+Math.round(saved.correct/saved.total*100)+'%) · Best: '+saved.best+'/'+saved.total+' · Attempts: '+saved.attempts:''}</div>
+  <div class="mcq-result" id="mcq-result-${i}" role="status">${comparableSaved?'Last score: '+saved.correct+'/'+saved.total+' ('+Math.round(saved.correct/saved.total*100)+'%) · Best: '+saved.best+'/'+saved.total+' · Attempts: '+saved.attempts:''}</div>
  </section>`;
 }
 function submitLessonQuiz(event,name,i){
@@ -214,7 +212,7 @@ function submitLessonQuiz(event,name,i){
   feedback.textContent=isCorrect?'✓ Correct. Why: '+q.explain:'✗ Your answer: '+q.options[chosen].text+'. Why it does not fit: '+(q.options[chosen].reason||('This conflicts with the lesson’s key idea: '+SUBJECTS[name].lessons[i][1]))+' Correct answer: '+q.options[right].text+'. Why it works: '+q.explain;
  });
  const s=state();s.quizResults=s.quizResults||{};const key=name+'-'+i,previous=s.quizResults[key]||{attempts:0,best:0};
- const skillNames=questions.map(q=>q.skill||'understanding');const missedSkills=missed.map(qi=>skillNames[qi]);const best=Math.max(previous.best||0,correct);const mastered=correct===questions.length;const reviewDays=mastered?7:1;s.quizResults[key]={...previous,subject:name,index:i,correct,total:questions.length,best,attempts:(previous.attempts||0)+1,lastAnswers:answers,lastScore:correct,missed,missedSkills,mastered,conceptsToReview:[...new Set(missedSkills)],nextReviewAt:new Date(Date.now()+reviewDays*86400000).toISOString(),updatedAt:new Date().toISOString()};
+ const skillNames=questions.map(q=>q.skill||'understanding');const missedSkills=missed.map(qi=>skillNames[qi]);const comparableBest=previous.total===questions.length?(previous.best||0):0;const best=Math.max(comparableBest,correct);const mastered=correct===questions.length;const reviewDays=mastered?7:1;s.quizResults[key]={...previous,subject:name,index:i,correct,total:questions.length,best,attempts:(previous.attempts||0)+1,lastAnswers:answers,lastScore:correct,missed,missedSkills,mastered,conceptsToReview:[...new Set(missedSkills)],nextReviewAt:new Date(Date.now()+reviewDays*86400000).toISOString(),updatedAt:new Date().toISOString()};
  saveState(s);
  result.textContent='You got '+correct+' out of '+questions.length+' correct ('+Math.round(correct/questions.length*100)+'%). Best: '+s.quizResults[key].best+'/'+questions.length+' · Attempts: '+s.quizResults[key].attempts+'. Your score is saved on this device.';
  const score=document.querySelector('#mcq-'+i+' .mcq-score');if(score)score.textContent='Best: '+s.quizResults[key].best+'/'+questions.length;
