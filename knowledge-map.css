@@ -15,3 +15,16 @@
 .ku-map-canvas svg .ku-line-hit{stroke:rgba(79,70,229,.025);stroke-width:38;stroke-linecap:round;fill:none;pointer-events:stroke}
 .ku-map-canvas svg .ku-line-visible{pointer-events:none}
 .ku-map-canvas svg .ku-link:focus .ku-line-visible{stroke:#4f46e5;stroke-width:5}
+
+/* Knowledge Universe: clear, always-available connection controls for touch screens */
+.ku-all-connections{margin-top:14px;padding:14px;border:1px solid #e3e0fb;border-radius:15px;background:linear-gradient(145deg,#fbfaff,#f7f8ff)}
+.ku-all-connections h3{margin:0 0 5px;font-size:1rem;color:#242044}
+.ku-all-connections>p{margin:0 0 12px;color:#687385;font-size:.8rem;line-height:1.45}
+.ku-all-connection-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.ku-all-connection{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0;padding:11px;border:1px solid #e4e4f4;border-radius:12px;background:#fff;color:#25233b;text-align:left;cursor:pointer;touch-action:manipulation;min-height:90px}
+.ku-all-connection:active,.ku-all-connection:focus-visible{border-color:#8b80e8;background:#f5f3ff;outline:2px solid #a5b4fc;outline-offset:1px}
+.ku-all-connection>span{font-size:1rem}
+.ku-all-connection strong{font-size:.76rem;line-height:1.35}
+.ku-all-connection small{font-size:.69rem;line-height:1.4;color:#687385}
+@media(max-width:700px){.ku-all-connections{padding:11px}.ku-all-connection-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.ku-all-connection{padding:10px;min-height:96px}.ku-all-connection strong{font-size:.74rem}}
+@media(max-width:380px){.ku-all-connection-grid{grid-template-columns:1fr}.ku-all-connection{min-height:0}}
