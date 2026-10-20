@@ -2,37 +2,24 @@
 
 **Branch:** `phase-1/reliability-fixes`  
 **Base commit:** `8ab272e5341a39701314a2f7fd091b713686bca8`  
-**Scope:** Low-risk static-page cache consistency fix.
+**Scope:** Shared asset consistency and repeatable static integrity checks.
 
-## Change made
+## Changes made
 
-The following pages previously referenced `styles.css?v=3` while the homepage, subject pages, and Knowledge Map referenced `styles.css?v=10`:
+- Aligned `styles.css?v=3` to `styles.css?v=10` on `projects.html`, `review.html`, `search.html`, and `tutor.html`.
+- Added `tests/static-integrity.test.mjs`, using Node's built-in test runner to check expected entry pages and shared asset references.
+- Added a GitHub Actions workflow to run those static checks on pull requests and pushes to `main` or `phase-1/**`.
 
-- `projects.html`
-- `review.html`
-- `search.html`
-- `tutor.html`
+## Checks covered
 
-Updated those four references to `styles.css?v=10` so all 14 HTML entry pages use the same cache-busting version for the shared stylesheet. This reduces the chance that a browser serves a stale stylesheet on some pages after CSS changes.
+- All 14 known HTML entry pages exist.
+- All 14 reference `styles.css?v=10`.
+- All 14 reference `learning.js?v=27`.
+- The Knowledge Map page references `knowledge-map.js?v=8`.
+- Core shared assets exist.
 
-## Validation performed
+## Important limits
 
-- Fetched all 14 HTML entry pages from this branch after the edits.
-- Confirmed every page references `styles.css?v=10`.
-- Confirmed all pages continue to reference `learning.js?v=27`.
-- Confirmed `knowledge.html` still references `knowledge-map.js?v=8`.
-- No changes were made to `main`, the recovery checkpoint, the Tutor API, or user progress storage.
+These are static integrity checks, not browser end-to-end tests. They do not verify quiz correctness, actual button behavior, localStorage persistence, responsive layout, or Knowledge Map line selection. Those still require functional tests and a manual iPhone Safari smoke test.
 
-## Not yet verified
-
-- No live deployment or browser/device regression test has been run for this branch.
-- This branch has not been merged into `main`; production is unchanged.
-- The tutor still requires `OPENAI_API_KEY` in Vercel to generate AI responses. That setup is intentionally deferred.
-
-## Manual smoke test before merging
-
-1. Open Home and each of the eight subject pages.
-2. Open Projects, Review, Search, and Knowledge Map.
-3. Check the layout and navigation on iPhone Safari after a hard refresh/reload.
-4. Confirm lesson progress and notes remain intact.
-5. Verify Tutor UI loads and continues to show the expected configuration message until API setup is intentionally completed.
+No changes have been made to `main` or the production deployment. The Tutor API remains intentionally deferred pending API-key setup.
