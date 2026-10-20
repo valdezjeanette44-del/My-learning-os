@@ -209,7 +209,7 @@ function submitLessonQuiz(event,name,i){
   const chosen=answers[qi],right=q.options.findIndex(o=>o.correct),isCorrect=q.options[chosen].correct;if(isCorrect)correct++;else missed.push(qi);
   const feedback=document.getElementById('mcq-feedback-'+i+'-'+qi);
   feedback.hidden=false;feedback.className='mcq-feedback '+(isCorrect?'correct':'incorrect');
-  feedback.textContent=isCorrect?'✓ Correct. Why: '+q.explain:'✗ Your answer: '+q.options[chosen].text+'. Why it does not fit: '+(q.options[chosen].reason||('This conflicts with the lesson’s key idea: '+SUBJECTS[name].lessons[i][1]))+' Correct answer: '+q.options[right].text+'. Why it works: '+q.explain;
+  const conceptExplanation=whyItWorks(name,SUBJECTS[name].lessons[i]);feedback.textContent=isCorrect?'✓ Correct. '+conceptExplanation:'✗ Not quite. Correct answer: '+q.options[right].text+'. '+conceptExplanation;
  });
  const s=state();s.quizResults=s.quizResults||{};const key=name+'-'+i,previous=s.quizResults[key]||{attempts:0,best:0};
  const skillNames=questions.map(q=>q.skill||'understanding');const missedSkills=missed.map(qi=>skillNames[qi]);const comparableBest=previous.total===questions.length?(previous.best||0):0;const best=Math.max(comparableBest,correct);const mastered=correct===questions.length;const reviewDays=mastered?7:1;s.quizResults[key]={...previous,subject:name,index:i,correct,total:questions.length,best,attempts:(previous.attempts||0)+1,lastAnswers:answers,lastScore:correct,missed,missedSkills,mastered,conceptsToReview:[...new Set(missedSkills)],nextReviewAt:new Date(Date.now()+reviewDays*86400000).toISOString(),updatedAt:new Date().toISOString()};
