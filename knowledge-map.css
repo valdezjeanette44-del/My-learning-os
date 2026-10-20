@@ -28,3 +28,17 @@
 .ku-all-connection small{font-size:.69rem;line-height:1.4;color:#687385}
 @media(max-width:700px){.ku-all-connections{padding:11px}.ku-all-connection-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.ku-all-connection{padding:10px;min-height:96px}.ku-all-connection strong{font-size:.74rem}}
 @media(max-width:380px){.ku-all-connection-grid{grid-template-columns:1fr}.ku-all-connection{min-height:0}}
+
+/* Graph/list switch inspired by the Knowledge Universe concept */
+.ku-view-toggle{display:flex;gap:4px;width:min(100%,360px);margin:0 auto 14px;padding:4px;border:1px solid #e7e3f8;background:#f1effb;border-radius:999px}
+.ku-view-toggle button{flex:1;border:0;border-radius:999px;padding:10px 12px;background:transparent;color:#6c6682;font-size:.82rem;font-weight:750;cursor:pointer;min-height:40px;touch-action:manipulation}
+.ku-view-toggle button.active{background:#7652df;color:#fff;box-shadow:0 3px 9px #6d4bd52b}
+.ku-list-view{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:0 0 14px}
+.ku-list-card{display:flex;align-items:center;gap:10px;min-width:0;padding:12px;border:1px solid #e5e7ef;border-radius:14px;background:#fff;color:#202638;text-align:left;cursor:pointer;touch-action:manipulation}
+.ku-list-card.active{border-color:#a99aef;background:#f7f4ff}
+.ku-list-card-icon{display:grid;place-items:center;flex:0 0 40px;height:40px;border-radius:13px;background:#f1edff;font-size:1.3rem}
+.ku-list-card-copy{display:grid;gap:5px;flex:1;min-width:0}
+.ku-list-card-copy strong{font-size:.86rem}
+.ku-list-card-copy small{font-size:.7rem;color:#727b8d;line-height:1.35}
+.ku-list-card>b{color:#8b83a8}
+@media(max-width:700px){.ku-view-toggle{margin-bottom:11px}.ku-list-view{grid-template-columns:1fr;gap:7px}.ku-list-card{padding:11px}}
