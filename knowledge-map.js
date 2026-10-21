@@ -99,6 +99,24 @@ mapSvg?.addEventListener("click",e=>{
  });
  if(nearest>=0&&best<=30)showConnection(nearest,true);
 });
+mapSvg?.addEventListener("touchend",e=>{
+ const touch=e.changedTouches&&e.changedTouches[0];
+ if(!touch||!mapSvg)return;
+ const matrix=mapSvg.getScreenCTM();
+ if(!matrix)return;
+ const point=mapSvg.createSVGPoint();
+ point.x=touch.clientX;point.y=touch.clientY;
+ const p=point.matrixTransform(matrix.inverse());
+ let nearest=-1,best=Infinity;
+ L.forEach((line,i)=>{
+  const one=by[line[0]],two=by[line[1]];
+  const dx=two.x-one.x,dy=two.y-one.y,len2=dx*dx+dy*dy;
+  const t=Math.max(0,Math.min(1,((p.x-one.x)*dx+(p.y-one.y)*dy)/len2));
+  const dist=Math.hypot(p.x-(one.x+t*dx),p.y-(one.y+t*dy));
+  if(dist<best){best=dist;nearest=i;}
+ });
+ if(nearest>=0&&best<=60)showConnection(nearest,true);
+},{passive:true});
 mapSvg?.addEventListener("keydown",e=>{
  const marked=e.target.closest("[data-connection]");
  if(marked&&(e.key==="Enter"||e.key===" ")){e.preventDefault();showConnection(Number(marked.dataset.connection),true);}
