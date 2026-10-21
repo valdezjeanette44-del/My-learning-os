@@ -63,41 +63,27 @@ function showConnection(i,scroll){activeConnection=i;render();if(scroll&&window.
 app.querySelectorAll("[data-subject]").forEach(el=>{const go=()=>{selected=el.dataset.subject;activeConnection=-1;render();if(window.matchMedia("(max-width:700px)").matches)app.querySelector(".ku-detail")?.scrollIntoView({behavior:"smooth",block:"start"});};el.addEventListener("click",go);el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}})});
 const mapSvg=app.querySelector(".ku-map-canvas svg");
 let mapPointerStart=null;
+const connectionAtPoint=(clientX,clientY)=>{
+ const matrix=mapSvg?.getScreenCTM();if(!matrix)return -1;
+ const point=mapSvg.createSVGPoint();point.x=clientX;point.y=clientY;
+ const p=point.matrixTransform(matrix.inverse());
+ let nearest=-1,best=Infinity;
+ L.forEach((line,i)=>{
+  const one=by[line[0]],two=by[line[1]],dx=two.x-one.x,dy=two.y-one.y,len2=dx*dx+dy*dy;
+  const t=Math.max(0,Math.min(1,((p.x-one.x)*dx+(p.y-one.y)*dy)/len2));
+  const dist=Math.hypot(p.x-(one.x+t*dx),p.y-(one.y+t*dy));
+  if(dist<best){best=dist;nearest=i;}
+ });
+ return best<=70?nearest:-1;
+};
 mapSvg?.addEventListener("pointerdown",e=>{mapPointerStart={x:e.clientX,y:e.clientY};});
 mapSvg?.addEventListener("pointerup",e=>{
  const start=mapPointerStart;mapPointerStart=null;
  if(!start||Math.hypot(e.clientX-start.x,e.clientY-start.y)>12)return;
  if(e.target.closest("[data-subject]"))return;
  const marked=e.target.closest("[data-connection]");
- if(marked&&mapSvg.contains(marked)){showConnection(Number(marked.dataset.connection),true);return;}
- const matrix=mapSvg.getScreenCTM();if(!matrix)return;
- const point=mapSvg.createSVGPoint();point.x=e.clientX;point.y=e.clientY;
- const p=point.matrixTransform(matrix.inverse());
- let nearest=-1,best=Infinity;
- L.forEach((line,i)=>{const one=by[line[0]],two=by[line[1]],dx=two.x-one.x,dy=two.y-one.y,len2=dx*dx+dy*dy;
- const t=Math.max(0,Math.min(1,((p.x-one.x)*dx+(p.y-one.y)*dy)/len2));
- const dist=Math.hypot(p.x-(one.x+t*dx),p.y-(one.y+t*dy));if(dist<best){best=dist;nearest=i;}});
- if(nearest>=0&&best<=58)showConnection(nearest,true);
-});
-mapSvg?.addEventListener("click",e=>{
- if(e.target.closest("[data-subject]"))return;
- const marked=e.target.closest("[data-connection]");
- if(marked&&mapSvg.contains(marked)){showConnection(Number(marked.dataset.connection),true);return;}
- // Safari/iPhone fallback: detect the nearest connection geometrically even if
- // SVG stroke hit-testing fails on the tapped line.
- const matrix=mapSvg.getScreenCTM();
- if(!matrix)return;
- const point=mapSvg.createSVGPoint();point.x=e.clientX;point.y=e.clientY;
- const p=point.matrixTransform(matrix.inverse());
- let nearest=-1,best=Infinity;
- L.forEach((line,i)=>{
-  const one=by[line[0]],two=by[line[1]],dx=two.x-one.x,dy=two.y-one.y;
-  const len2=dx*dx+dy*dy;
-  const t=Math.max(0,Math.min(1,((p.x-one.x)*dx+(p.y-one.y)*dy)/len2));
-  const px=one.x+t*dx,py=one.y+t*dy,dist=Math.hypot(p.x-px,p.y-py);
-  if(dist<best){best=dist;nearest=i;}
- });
- if(nearest>=0&&best<=58)showConnection(nearest,true);
+ const index=marked&&mapSvg.contains(marked)?Number(marked.dataset.connection):connectionAtPoint(e.clientX,e.clientY);
+ if(index>=0)showConnection(index,true);
 });
 mapSvg?.addEventListener("keydown",e=>{
  const marked=e.target.closest("[data-connection]");
