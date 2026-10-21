@@ -31,7 +31,7 @@ const done=id=>{const raw=state().completed?.[id];return Array.isArray(raw)?[...
 const count=id=>done(id).length;
 const status=id=>count(id)===0?"Not started":count(id)===4?"Lessons complete":"Learning";
 const dueReviews=()=>{const s=state(),now=Date.now();return Object.values(s.review||{}).filter(r=>r&&S.some(x=>x.id===r.subject)&&Number.isInteger(r.index)&&r.index>=0&&r.index<4&&Number.isFinite(Date.parse(r.nextReview))&&Date.parse(r.nextReview)<=now)};
-let selected="Biology",filter="Explore",query="",zoom=1,activeConnection=-1,viewMode="Graph";
+let selected="Biology",filter="Explore",query="",zoom=1,activeConnection=-1,viewMode=window.matchMedia("(max-width:700px)").matches?"List":"Graph";
 const app=document.getElementById("app");
 function render(){
 const st=state(),due=dueReviews();
