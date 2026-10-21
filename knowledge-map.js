@@ -77,7 +77,7 @@ mapSvg?.addEventListener("pointerup",e=>{
  L.forEach((line,i)=>{const one=by[line[0]],two=by[line[1]],dx=two.x-one.x,dy=two.y-one.y,len2=dx*dx+dy*dy;
  const t=Math.max(0,Math.min(1,((p.x-one.x)*dx+(p.y-one.y)*dy)/len2));
  const dist=Math.hypot(p.x-(one.x+t*dx),p.y-(one.y+t*dy));if(dist<best){best=dist;nearest=i;}});
- if(nearest>=0&&best<=34)showConnection(nearest,true);
+ if(nearest>=0&&best<=58)showConnection(nearest,true);
 });
 mapSvg?.addEventListener("click",e=>{
  if(e.target.closest("[data-subject]"))return;
@@ -97,7 +97,7 @@ mapSvg?.addEventListener("click",e=>{
   const px=one.x+t*dx,py=one.y+t*dy,dist=Math.hypot(p.x-px,p.y-py);
   if(dist<best){best=dist;nearest=i;}
  });
- if(nearest>=0&&best<=30)showConnection(nearest,true);
+ if(nearest>=0&&best<=58)showConnection(nearest,true);
 });
 mapSvg?.addEventListener("touchend",e=>{
  const touch=e.changedTouches&&e.changedTouches[0];
@@ -115,7 +115,7 @@ mapSvg?.addEventListener("touchend",e=>{
   const dist=Math.hypot(p.x-(one.x+t*dx),p.y-(one.y+t*dy));
   if(dist<best){best=dist;nearest=i;}
  });
- if(nearest>=0&&best<=60)showConnection(nearest,true);
+ if(nearest>=0&&best<=70)showConnection(nearest,true);
 },{passive:true});
 mapSvg?.addEventListener("keydown",e=>{
  const marked=e.target.closest("[data-connection]");
