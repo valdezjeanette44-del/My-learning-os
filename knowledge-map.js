@@ -45,7 +45,7 @@ const coursesComplete=S.filter(s=>count(s.id)===4).length;
 const active=activeConnection>=0?L[activeConnection]:null;
 const lineMarkup=L.map((l,i)=>{
 const one=by[l[0]],two=by[l[1]],isActive=i===activeConnection,isRelated=l[0]===selected||l[1]===selected;
-return '<g class="ku-link '+(isActive?"is-active ":"")+(isRelated?"is-related":"")+'" data-connection="'+i+'" tabindex="0" role="button" aria-label="Tap to explain the connection between '+l[0]+' and '+l[1]+'" pointer-events="all"><line class="ku-line-visible" x1="'+one.x+'" y1="'+one.y+'" x2="'+two.x+'" y2="'+two.y+'"/><line class="ku-line-hit" x1="'+one.x+'" y1="'+one.y+'" x2="'+two.x+'" y2="'+two.y+'" pointer-events="stroke"/></g>';
+return '<g class="ku-link '+(isActive?"is-active ":"")+(isRelated?"is-related":"")+'" data-connection="'+i+'" tabindex="0" role="button" aria-label="Tap to explain the connection between '+l[0]+' and '+l[1]+'" pointer-events="all"><line class="ku-line-visible" x1="'+one.x+'" y1="'+one.y+'" x2="'+two.x+'" y2="'+two.y+'"/><line class="ku-line-hit" x1="'+one.x+'" y1="'+one.y+'" x2="'+two.x+'" y2="'+two.y+'" stroke="transparent" stroke-width="32" stroke-linecap="round" pointer-events="stroke"/></g>';
 }).join("");
 const nodes=S.map(s=>'<g tabindex="0" role="button" aria-label="Explore '+s.id+'" data-subject="'+s.id+'" class="ku-node '+(count(s.id)===4?"complete":count(s.id)>0?"learning":"new")+' '+(s.id===selected?"selected":"")+'" transform="translate('+s.x+' '+s.y+')"><rect x="-78" y="-35" width="156" height="70" rx="18"/><text class="ku-icon" y="-7">'+s.icon+'</text><text class="ku-name" y="15">'+s.id+'</text><text class="ku-status" y="27">'+status(s.id)+'</text></g>').join("");
 const related=L.map((l,i)=>({l,i})).filter(x=>x.l[0]===a.id||x.l[1]===a.id);
