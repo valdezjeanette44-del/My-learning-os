@@ -42,3 +42,30 @@
 .ku-list-card-copy small{font-size:.7rem;color:#727b8d;line-height:1.35}
 .ku-list-card>b{color:#8b83a8}
 @media(max-width:700px){.ku-view-toggle{margin-bottom:11px}.ku-list-view{grid-template-columns:1fr;gap:7px}.ku-list-card{padding:11px}}
+
+
+/* Mobile graph panning: keep the graph wider than the viewport and allow native two-axis touch scrolling. */
+.ku-map-viewport {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-x pan-y;
+}
+.ku-map-canvas {
+  transform-origin: top left;
+}
+.ku-map-canvas svg {
+  touch-action: pan-x pan-y;
+}
+@media (max-width: 700px) {
+  .ku-map-canvas {
+    width: 780px;
+    min-width: 780px;
+  }
+  .ku-map-canvas svg {
+    width: 780px;
+    min-width: 780px;
+    height: 525px;
+    max-height: none;
+  }
+}
