@@ -62,7 +62,7 @@ test("each lesson generates three valid quiz questions with one correct and thre
       const questions = lessonQuizQuestions(subject, lessonIndex);
       assert.equal(questions.length, 3, `${subject} lesson ${lessonIndex + 1} should generate three quiz questions`);
       assert.deepEqual(
-        questions.map(question => question.skill),
+        Array.from(questions, question => question.skill),
         ["remember", "understand", "apply"],
         `${subject} lesson ${lessonIndex + 1} should cover recall, understanding, and application`,
       );
@@ -90,7 +90,8 @@ test("quiz submission displays option-specific feedback and saves attempt result
   assert.ok(start >= 0 && end > start, "quiz submission handler should exist");
   const handler = learning.slice(start, end);
   assert.match(handler, /\.correct/);
-  assert.match(handler, /\.reason/);
+  assert.match(handler, /q\.options\[chosen\]\.reason/);
+  assert.match(handler, /chosenReason/);
   assert.match(handler, /\.explain/);
   assert.match(handler, /quizResults/);
   assert.match(handler, /saveState/);
