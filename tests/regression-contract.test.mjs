@@ -84,17 +84,89 @@ test("each lesson generates three valid quiz questions with one correct and thre
   }
 });
 
-test("quiz submission displays option-specific feedback and saves attempt results", () => {
+test("quiz submission gives correct feedback, explains incorrect answers, and persists scores", () => {
   const start = learning.indexOf("function submitLessonQuiz(");
   const end = learning.indexOf("\nfunction ", start + 1);
+  const subjectStart = learning.indexOf("const SUBJECTS=");
+  const subjectEnd = learning.indexOf(";\nconst KEY=", subjectStart);
+  const quizStart = learning.indexOf("const QUIZ_MISCONCEPTIONS=");
+  const quizEnd = learning.indexOf("function lessonQuizHTML", quizStart);
   assert.ok(start >= 0 && end > start, "quiz submission handler should exist");
-  const handler = learning.slice(start, end);
-  assert.match(handler, /\.correct/);
-  assert.match(handler, /q\.options\[chosen\]\.reason/);
-  assert.match(handler, /chosenReason/);
-  assert.match(handler, /\.explain/);
-  assert.match(handler, /quizResults/);
-  assert.match(handler, /saveState/);
+  assert.ok(subjectStart >= 0 && subjectEnd > subjectStart, "course data block should be present");
+  assert.ok(quizStart >= 0 && quizEnd > quizStart, "quiz data and builder should be present");
+
+  const harness = vm.runInNewContext(
+    `${learning.slice(subjectStart, subjectEnd + 1)}\n${learning.slice(quizStart, quizEnd)}\n${learning.slice(start, end)}\n({ SUBJECTS, lessonQuizQuestions, submitLessonQuiz })`,
+    Object.create(null),
+    { timeout: 1000 },
+  );
+  const questions = harness.lessonQuizQuestions("Physics", 0);
+  const saved = {};
+  const feedback = questions.map(() => ({ hidden: true, className: "", textContent: "" }));
+  const result = { textContent: "" };
+  const score = { textContent: "" };
+  const retry = { hidden: true };
+  const selected = new Map(questions.map((q, i) => [
+    `input[name="mcq-0-${i}"]:checked`,
+    String(q.options.findIndex(option => option.correct)),
+  ]));
+  const elements = {
+    "mcq-result-0": result,
+    "mcq-score-0": score,
+    "mcq-retry-missed-0": retry,
+  };
+  questions.forEach((_, i) => { elements[`mcq-feedback-0-${i}`] = feedback[i]; });
+  const context = vm.createContext({
+    window: {},
+    document: {
+      querySelector: selector => {
+        if (selector === "#mcq-0 .mcq-score") return score;
+        const value = selected.get(selector);
+        return value === undefined ? null : { value };
+      },
+      getElementById: id => elements[id] || null,
+    },
+    state: () => structuredClone(saved),
+    saveState: next => {
+      for (const key of Object.keys(saved)) delete saved[key];
+      Object.assign(saved, structuredClone(next));
+    },
+    Date,
+    Math,
+    Set,
+    String,
+  });
+  vm.runInContext(
+    `const SUBJECTS = ${JSON.stringify(harness.SUBJECTS)};\nconst lessonQuizQuestions = ${harness.lessonQuizQuestions.toString()};\nconst submitLessonQuiz = ${harness.submitLessonQuiz.toString()};`,
+    context,
+  );
+  // The quiz builder references the misconception bank, so execute the original quiz declarations in the harness instead.
+  // Feedback is exercised against the actual handler and actual question data, not source-text markers.
+  const runActual = vm.runInNewContext(
+    `${learning.slice(subjectStart, subjectEnd + 1)}\n${learning.slice(quizStart, quizEnd)}\n${learning.slice(start, end)}\nsubmitLessonQuiz`,
+    context,
+    { timeout: 1000 },
+  );
+  runActual({ preventDefault() {} }, "Physics", 0);
+  assert.equal(feedback.every(item => item.hidden === false), true, "feedback should appear for every answered question");
+  assert.equal(feedback.every(item => item.className.endsWith("correct")), true, "correct answers should receive correct styling");
+  assert.ok(feedback.every(item => item.textContent.startsWith("✓ Correct.")), "correct answers should receive positive feedback");
+  assert.equal(saved.quizResults["Physics-0"].correct, questions.length, "all correct answers should be scored");
+  assert.equal(saved.quizResults["Physics-0"].total, questions.length, "saved total should match the question count");
+  assert.equal(saved.quizResults["Physics-0"].attempts, 1, "the attempt count should be saved");
+  assert.equal(saved.quizResults["Physics-0"].mastered, true, "a perfect attempt should be marked mastered");
+  assert.match(result.textContent, /Your score is saved on this device/);
+
+  selected.set('input[name="mcq-0-0"]:checked', String(questions[0].options.findIndex(option => !option.correct)));
+  runActual({ preventDefault() {} }, "Physics", 0);
+  assert.ok(feedback[0].className.endsWith("incorrect"), "an incorrect answer should receive incorrect styling");
+  assert.ok(feedback[0].textContent.startsWith("✗ Not quite."), "an incorrect answer should receive corrective feedback");
+  assert.match(feedback[0].textContent, /Correct answer:/, "incorrect feedback should reveal the correct answer");
+  assert.ok(feedback[0].textContent.length > 40, "incorrect feedback should include a useful explanation");
+  assert.equal(saved.quizResults["Physics-0"].correct, questions.length - 1, "score should reflect one incorrect answer");
+  assert.equal(saved.quizResults["Physics-0"].attempts, 2, "a subsequent attempt should increment the attempt count");
+  assert.deepEqual(Array.from(saved.quizResults["Physics-0"].missed), [0], "missed question indices should be saved");
+  assert.equal(retry.hidden, false, "retry control should appear when questions were missed");
 });
 
 test("saved learning state keeps the established local-storage key", () => {
