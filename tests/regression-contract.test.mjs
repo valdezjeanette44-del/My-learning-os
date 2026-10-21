@@ -55,13 +55,20 @@ test("Knowledge Universe retains its expected subject connections and interactio
   assert.match(knowledgeMap, /data-connection/);
 });
 
-test("homepage retains links to the core learning routes", () => {
+test("homepage retains literal links to the core navigation routes", () => {
   for (const route of [
-    "/subjects/biology/", "/subjects/business/", "/subjects/chemistry/",
-    "/subjects/economics/", "/subjects/history/", "/subjects/philosophy/",
-    "/subjects/physics/", "/subjects/technology/",
     "/knowledge.html", "/projects.html", "/review.html", "/search.html",
   ]) {
     assert.ok(homepage.includes(route), `homepage should link to ${route}`);
+  }
+});
+
+test("all eight dedicated subject pages exist", async () => {
+  const { access } = await import("node:fs/promises");
+  for (const subject of [
+    "biology", "business", "chemistry", "economics",
+    "history", "philosophy", "physics", "technology",
+  ]) {
+    await access(`subjects/${subject}/index.html`);
   }
 });
