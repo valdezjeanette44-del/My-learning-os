@@ -86,9 +86,9 @@ test("each lesson generates three valid quiz questions with one correct and thre
 
 test("quiz submission gives correct feedback, explains incorrect answers, and persists scores", () => {
   const start = learning.indexOf("function submitLessonQuiz(");
-  const end = learning.indexOf("\\nfunction ", start + 1);
+  const end = learning.indexOf("\nfunction ", start + 1);
   const subjectStart = learning.indexOf("const SUBJECTS=");
-  const subjectEnd = learning.indexOf(";\\nconst KEY=", subjectStart);
+  const subjectEnd = learning.indexOf(";\nconst KEY=", subjectStart);
   const quizStart = learning.indexOf("const QUIZ_MISCONCEPTIONS=");
   const quizEnd = learning.indexOf("function lessonQuizHTML", quizStart);
   assert.ok(start >= 0 && end > start, "quiz submission handler should exist");
@@ -121,7 +121,7 @@ test("quiz submission gives correct feedback, explains incorrect answers, and pe
     Date, Math, Set, String,
   });
   const actualSubmit = vm.runInContext(
-    `${learning.slice(subjectStart, subjectEnd + 1)}\\n${learning.slice(quizStart, quizEnd)}\\n${learning.slice(start, end)}\\nsubmitLessonQuiz`,
+    `${learning.slice(subjectStart, subjectEnd + 1)}\n${learning.slice(quizStart, quizEnd)}\n${learning.slice(start, end)}\nsubmitLessonQuiz`,
     context,
     { timeout: 1000 },
   );
