@@ -10,7 +10,7 @@ const homepage = await readFile("index.html", "utf8");
 function loadCourseAndQuizContracts(source) {
   const subjectStart = source.indexOf("const SUBJECTS=");
   const subjectEnd = source.indexOf(";\nconst KEY=", subjectStart);
-  const quizStart = source.indexOf("const QUIZ_AUDIT_BANK=");
+  const quizStart = source.indexOf("const QUIZ_MISCONCEPTIONS=");
   const quizEnd = source.indexOf("function lessonQuizHTML", quizStart);
 
   assert.ok(subjectStart >= 0 && subjectEnd > subjectStart, "course data block should be present");
