@@ -55,12 +55,9 @@ test("Knowledge Universe retains its expected subject connections and interactio
   assert.match(knowledgeMap, /data-connection/);
 });
 
-test("homepage retains literal links to the core navigation routes", () => {
-  for (const route of [
-    "/knowledge.html", "/projects.html", "/review.html", "/search.html",
-  ]) {
-    assert.ok(homepage.includes(route), `homepage should link to ${route}`);
-  }
+test("homepage mounts the app and loads its shared learning script", () => {
+  assert.match(homepage, /id="app"/);
+  assert.match(homepage, /learning\.js\?v=\d+/);
 });
 
 test("all eight dedicated subject pages exist", async () => {
