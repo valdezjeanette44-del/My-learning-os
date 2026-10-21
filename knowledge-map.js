@@ -31,7 +31,7 @@ const done=id=>{const raw=state().completed?.[id];return Array.isArray(raw)?[...
 const count=id=>done(id).length;
 const status=id=>count(id)===0?"Not started":count(id)===4?"Lessons complete":"Learning";
 const dueReviews=()=>{const s=state(),now=Date.now();return Object.values(s.review||{}).filter(r=>r&&S.some(x=>x.id===r.subject)&&Number.isInteger(r.index)&&r.index>=0&&r.index<4&&Number.isFinite(Date.parse(r.nextReview))&&Date.parse(r.nextReview)<=now)};
-let selected="Biology",filter="Explore",query="",zoom=1,activeConnection=-1,viewMode="Graph";
+let selected="Biology",filter="Explore",query="",zoom=1,activeConnection=-1,viewMode=window.matchMedia("(max-width:700px)").matches?"List":"Graph";
 const app=document.getElementById("app");
 function render(){
 const st=state(),due=dueReviews();
@@ -45,7 +45,7 @@ const coursesComplete=S.filter(s=>count(s.id)===4).length;
 const active=activeConnection>=0?L[activeConnection]:null;
 const lineMarkup=L.map((l,i)=>{
 const one=by[l[0]],two=by[l[1]],isActive=i===activeConnection,isRelated=l[0]===selected||l[1]===selected;
-return '<g class="ku-link '+(isActive?"is-active ":"")+(isRelated?"is-related":"")+'" data-connection="'+i+'" tabindex="0" role="button" aria-label="Tap to explain the connection between '+l[0]+' and '+l[1]+'" pointer-events="all"><line class="ku-line-visible" x1="'+one.x+'" y1="'+one.y+'" x2="'+two.x+'" y2="'+two.y+'"/><line class="ku-line-hit" x1="'+one.x+'" y1="'+one.y+'" x2="'+two.x+'" y2="'+two.y+'" pointer-events="stroke"/></g>';
+return '<g class="ku-link '+(isActive?"is-active ":"")+(isRelated?"is-related":"")+'" data-connection="'+i+'" tabindex="0" role="button" aria-label="Tap to explain the connection between '+l[0]+' and '+l[1]+'" pointer-events="all"><line class="ku-line-visible" x1="'+one.x+'" y1="'+one.y+'" x2="'+two.x+'" y2="'+two.y+'"/><line class="ku-line-hit" x1="'+one.x+'" y1="'+one.y+'" x2="'+two.x+'" y2="'+two.y+'" stroke="transparent" stroke-width="32" stroke-linecap="round" pointer-events="stroke"/></g>';
 }).join("");
 const nodes=S.map(s=>'<g tabindex="0" role="button" aria-label="Explore '+s.id+'" data-subject="'+s.id+'" class="ku-node '+(count(s.id)===4?"complete":count(s.id)>0?"learning":"new")+' '+(s.id===selected?"selected":"")+'" transform="translate('+s.x+' '+s.y+')"><rect x="-78" y="-35" width="156" height="70" rx="18"/><text class="ku-icon" y="-7">'+s.icon+'</text><text class="ku-name" y="15">'+s.id+'</text><text class="ku-status" y="27">'+status(s.id)+'</text></g>').join("");
 const related=L.map((l,i)=>({l,i})).filter(x=>x.l[0]===a.id||x.l[1]===a.id);
@@ -63,41 +63,27 @@ function showConnection(i,scroll){activeConnection=i;render();if(scroll&&window.
 app.querySelectorAll("[data-subject]").forEach(el=>{const go=()=>{selected=el.dataset.subject;activeConnection=-1;render();if(window.matchMedia("(max-width:700px)").matches)app.querySelector(".ku-detail")?.scrollIntoView({behavior:"smooth",block:"start"});};el.addEventListener("click",go);el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}})});
 const mapSvg=app.querySelector(".ku-map-canvas svg");
 let mapPointerStart=null;
+const connectionAtPoint=(clientX,clientY)=>{
+ const matrix=mapSvg?.getScreenCTM();if(!matrix)return -1;
+ const point=mapSvg.createSVGPoint();point.x=clientX;point.y=clientY;
+ const p=point.matrixTransform(matrix.inverse());
+ let nearest=-1,best=Infinity;
+ L.forEach((line,i)=>{
+  const one=by[line[0]],two=by[line[1]],dx=two.x-one.x,dy=two.y-one.y,len2=dx*dx+dy*dy;
+  const t=Math.max(0,Math.min(1,((p.x-one.x)*dx+(p.y-one.y)*dy)/len2));
+  const dist=Math.hypot(p.x-(one.x+t*dx),p.y-(one.y+t*dy));
+  if(dist<best){best=dist;nearest=i;}
+ });
+ return best<=70?nearest:-1;
+};
 mapSvg?.addEventListener("pointerdown",e=>{mapPointerStart={x:e.clientX,y:e.clientY};});
 mapSvg?.addEventListener("pointerup",e=>{
  const start=mapPointerStart;mapPointerStart=null;
  if(!start||Math.hypot(e.clientX-start.x,e.clientY-start.y)>12)return;
  if(e.target.closest("[data-subject]"))return;
  const marked=e.target.closest("[data-connection]");
- if(marked&&mapSvg.contains(marked)){showConnection(Number(marked.dataset.connection),true);return;}
- const matrix=mapSvg.getScreenCTM();if(!matrix)return;
- const point=mapSvg.createSVGPoint();point.x=e.clientX;point.y=e.clientY;
- const p=point.matrixTransform(matrix.inverse());
- let nearest=-1,best=Infinity;
- L.forEach((line,i)=>{const one=by[line[0]],two=by[line[1]],dx=two.x-one.x,dy=two.y-one.y,len2=dx*dx+dy*dy;
- const t=Math.max(0,Math.min(1,((p.x-one.x)*dx+(p.y-one.y)*dy)/len2));
- const dist=Math.hypot(p.x-(one.x+t*dx),p.y-(one.y+t*dy));if(dist<best){best=dist;nearest=i;}});
- if(nearest>=0&&best<=34)showConnection(nearest,true);
-});
-mapSvg?.addEventListener("click",e=>{
- if(e.target.closest("[data-subject]"))return;
- const marked=e.target.closest("[data-connection]");
- if(marked&&mapSvg.contains(marked)){showConnection(Number(marked.dataset.connection),true);return;}
- // Safari/iPhone fallback: detect the nearest connection geometrically even if
- // SVG stroke hit-testing fails on the tapped line.
- const matrix=mapSvg.getScreenCTM();
- if(!matrix)return;
- const point=mapSvg.createSVGPoint();point.x=e.clientX;point.y=e.clientY;
- const p=point.matrixTransform(matrix.inverse());
- let nearest=-1,best=Infinity;
- L.forEach((line,i)=>{
-  const one=by[line[0]],two=by[line[1]],dx=two.x-one.x,dy=two.y-one.y;
-  const len2=dx*dx+dy*dy;
-  const t=Math.max(0,Math.min(1,((p.x-one.x)*dx+(p.y-one.y)*dy)/len2));
-  const px=one.x+t*dx,py=one.y+t*dy,dist=Math.hypot(p.x-px,p.y-py);
-  if(dist<best){best=dist;nearest=i;}
- });
- if(nearest>=0&&best<=30)showConnection(nearest,true);
+ const index=marked&&mapSvg.contains(marked)?Number(marked.dataset.connection):connectionAtPoint(e.clientX,e.clientY);
+ if(index>=0)showConnection(index,true);
 });
 mapSvg?.addEventListener("keydown",e=>{
  const marked=e.target.closest("[data-connection]");
