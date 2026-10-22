@@ -87,6 +87,20 @@ test("each lesson generates three valid quiz questions with one correct and thre
   }
 });
 
+test("shared quiz feedback removes duplicated answer explanations", () => {
+  const start = learning.indexOf("function lessonQuizFeedbackText(");
+  const end = learning.indexOf("\\nfunction submitLessonQuiz(", start);
+  assert.ok(start >= 0 && end > start);
+  const format = vm.runInNewContext(learning.slice(start, end) + "\\nlessonQuizFeedbackText", Object.create(null), { timeout: 1000 });
+  const answer = "Some people may take specialized jobs because not everyone must produce food full time.";
+  const question = { explain: answer, options: [{ text: answer, correct: true }, { text: "Trade becomes impossible.", correct: false }] };
+  assert.equal(format(question, false), "✗ Not quite. Correct answer: " + answer);
+  question.explain = "The correct answer is " + answer;
+  assert.equal(format(question, false), "✗ Not quite. Correct answer: " + answer);
+  question.explain = "Farming could support settled communities, but outcomes varied.";
+  assert.equal(format(question, false), "✗ Not quite. Correct answer: " + answer + " Farming could support settled communities, but outcomes varied.");
+});
+
 test("quiz submission gives correct feedback, explains incorrect answers, and persists scores", () => {
   const start = learning.indexOf("function submitLessonQuiz(");
   const end = learning.indexOf("\nfunction ", start + 1);
