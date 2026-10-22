@@ -14,8 +14,8 @@
 
 - All 14 known HTML entry pages exist.
 - All 14 reference `styles.css?v=10`.
-- All 14 reference `learning.js?v=27`.
-- The Knowledge Map page references `knowledge-map.js?v=8`.
+- The 13 standard entry pages reference `learning.js?v=27`; `knowledge.html` intentionally uses its dedicated `knowledge-map.js?v=8` renderer to avoid rendering the same app container twice.
+- The Knowledge Map page references `knowledge-map.js?v=8` and `knowledge-map.css?v=8`, without also loading the shared `learning.js` renderer.
 - Core shared assets exist.
 
 ## Important limits
