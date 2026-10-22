@@ -40,8 +40,8 @@ test("all entry pages use the same shared stylesheet cache version", async () =>
   }
 });
 
-test("all entry pages use the expected shared learning script version", async () => {
-  for (const path of entryPages) {
+test("all pages that use the shared learning app load its expected script version", async () => {
+  for (const path of entryPages.filter((path) => path !== "knowledge.html")) {
     const html = await readFile(path, "utf8");
     assert.match(
       html,
@@ -51,10 +51,12 @@ test("all entry pages use the expected shared learning script version", async ()
   }
 });
 
-test("Knowledge Map entry loads its dedicated script", async () => {
+test("Knowledge Map uses its dedicated script without booting the shared app twice", async () => {
   const html = await readFile("knowledge.html", "utf8");
   assert.match(html, /knowledge-map\.js\?v=8(?:["'])/);
-  await access("knowledge-map.js");
+  assert.doesNotMatch(html, /learning\.js\?v=\d+(?:["'])/, "Knowledge Map should not load learning.js because its dedicated script renders the page");
+  assert.match(html, /knowledge-map\.css\?v=8(?:["'])/);
+  await Promise.all(["knowledge-map.js", "knowledge-map.css"].map((path) => access(path)));
 });
 
 test("core shared assets exist", async () => {
