@@ -241,8 +241,8 @@ function lessonQuizQuestions(name,i,variant=0){
  if(!misconceptionStem)throw new Error("Missing lesson-specific misconception stem for "+name+" / "+title);
  const specs=[
   {skill:"remember",q:"Which statement about "+(QUIZ_TOPIC_LABELS[name]?.[title]||cleanTitle.toLowerCase())+" is correct?",correct:fact1,wrong:mis,why:QUIZ_CONCEPT_NOTES[name]?.[title]||fact2},
-  {skill:"understand",q:scenario,correct:scenarioAnswer,wrong:wrongScenario,why:QUIZ_CONCEPT_NOTES[name]?.[title]||scenarioAnswer},
-  {skill:"apply",q:transfer[0],correct:transfer[1],wrong:transfer.slice(2,5),why:QUIZ_CONCEPT_NOTES[name]?.[title]||transfer[1]}
+  {skill:"understand",q:scenario,correct:scenarioAnswer,wrong:wrongScenario,why:scenarioAnswer},
+  {skill:"apply",q:transfer[0],correct:transfer[1],wrong:transfer.slice(2,5),why:transfer[1]}
  ];
  function uniqueChoices(arr,correct){return arr.map(x=>String(x||"").trim()).filter((x,j,a)=>x&&x!==correct&&a.indexOf(x)===j)}
  return specs.map((spec,qi)=>{let wrong=uniqueChoices(spec.wrong||[],spec.correct).slice(0,3);for(const fallback of [...mis,...wrongScenario,fact1,fact2,scenarioAnswer]){if(wrong.length>=3)break;if(fallback!==spec.correct&&!wrong.includes(fallback))wrong.push(fallback)}if(wrong.length!==3)throw new Error("Not enough distinct choices: "+name+" / "+title+" / "+spec.skill);if(variant===1)wrong=wrong.slice(1).concat(wrong[0]);const options=[{text:spec.correct,correct:true},...wrong.map(text=>({text,correct:false,reason:spec.skill==="understand"?"This does not explain the situation as well as the correct answer: "+scenarioAnswer:spec.skill==="apply"?"This does not fit the new situation as well as: "+transfer[1]:"This option is less accurate because it conflicts with the key idea: "+fact1}))];const shift=(i*3+qi*2+Object.keys(SUBJECTS).indexOf(name)+(variant?1:0))%4;return {skill:spec.skill,q:spec.q,options:options.slice(shift).concat(options.slice(0,shift)),explain:spec.why}});
@@ -258,6 +258,19 @@ function lessonQuizHTML(name,i){
   <div class="mcq-result" id="mcq-result-${i}" role="status">${comparableSaved?'Last score: '+saved.correct+'/'+saved.total+' ('+Math.round(saved.correct/saved.total*100)+'%) · Best: '+saved.best+'/'+saved.total+' · Attempts: '+saved.attempts:''}</div>
  </section>`;
 }
+function lessonQuizFeedbackText(question,isCorrect){
+ const right=question.options.findIndex(option=>option.correct);
+ const clean=value=>String(value||"").replace(/[.!?]+$/,"").trim();
+ const normalize=value=>String(value||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+ const correctAnswer=clean(question.options[right]?.text||"");
+ const explanation=clean(question.explain||correctAnswer);
+ const normalizedAnswer=normalize(correctAnswer),normalizedExplanation=normalize(explanation);
+ const explanationRepeatsAnswer=normalizedAnswer===normalizedExplanation
+  ||(normalizedAnswer.length>=28&&normalizedExplanation.includes(normalizedAnswer))
+  ||(normalizedExplanation.length>=28&&normalizedAnswer.includes(normalizedExplanation));
+ if(isCorrect)return "✓ Correct. "+(explanation||correctAnswer)+".";
+ return "✗ Not quite. Correct answer: "+correctAnswer+"."+(explanation&&!explanationRepeatsAnswer?" "+explanation+".":"");
+}
 function submitLessonQuiz(event,name,i){
  event.preventDefault();
  const quizKey=name+'-'+i,savedBefore=state().quizResults?.[quizKey],retrySet=new Set(savedBefore?.missed||[]),baseQuestions=lessonQuizQuestions(name,i),alternateQuestions=lessonQuizQuestions(name,i,1),questions=baseQuestions.map((q,qi)=>window.quizRetryVariant?.[quizKey]===1&&retrySet.has(qi)?alternateQuestions[qi]:q),answers=[],missing=[];
@@ -269,7 +282,7 @@ function submitLessonQuiz(event,name,i){
   const chosen=answers[qi],right=q.options.findIndex(o=>o.correct),isCorrect=q.options[chosen].correct;if(isCorrect)correct++;else missed.push(qi);
   const feedback=document.getElementById('mcq-feedback-'+i+'-'+qi);
   feedback.hidden=false;feedback.className='mcq-feedback '+(isCorrect?'correct':'incorrect');
-  const questionExplanation=String(q.explain||q.options[right].text).replace(/^(Remember|Understand the situation|Apply the lesson):\s*/,"").replace(/[.?!\s]+$/,"");const correctAnswer=String(q.options[right].text||'').replace(/[.?!\s]+$/,'');feedback.textContent=isCorrect?'✓ Correct. '+questionExplanation+'.':'✗ Not quite. Correct answer: '+correctAnswer+'. '+questionExplanation+'.';
+  feedback.textContent=lessonQuizFeedbackText(q,isCorrect);
  });
  const s=state();s.quizResults=s.quizResults||{};const key=name+'-'+i,previous=s.quizResults[key]||{attempts:0,best:0};
  const skillNames=questions.map(q=>q.skill||'understanding');const missedSkills=missed.map(qi=>skillNames[qi]);const comparableBest=previous.total===questions.length?(previous.best||0):0;const best=Math.max(comparableBest,correct);const mastered=correct===questions.length;const reviewDays=mastered?7:1;s.quizResults[key]={...previous,subject:name,index:i,correct,total:questions.length,best,attempts:(previous.attempts||0)+1,lastAnswers:answers,lastScore:correct,missed,missedSkills,mastered,conceptsToReview:[...new Set(missedSkills)],nextReviewAt:new Date(Date.now()+reviewDays*86400000).toISOString(),updatedAt:new Date().toISOString()};

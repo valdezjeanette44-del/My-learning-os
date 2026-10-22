@@ -70,6 +70,9 @@ test("each lesson generates three valid quiz questions with one correct and thre
         const label = `${subject} lesson ${lessonIndex + 1}, quiz question ${questionIndex + 1}`;
         assert.ok(question.q.trim(), `${label} should have a prompt`);
         assert.ok(question.explain.trim(), `${label} should have an explanation`);
+        if (question.skill === "understand" || question.skill === "apply") {
+          assert.equal(question.explain, question.options.find(option => option.correct).text, `${label} explanation should directly explain its own scenario/transfer answer`);
+        }
         assert.equal(question.options.length, 4, `${label} should have four answer choices`);
         assert.equal(question.options.filter(option => option.correct).length, 1, `${label} should have exactly one keyed correct choice`);
         const choiceTexts = question.options.map(option => option.text.trim());
@@ -84,11 +87,27 @@ test("each lesson generates three valid quiz questions with one correct and thre
   }
 });
 
+test("shared quiz feedback removes duplicated answer explanations", () => {
+  const start = learning.indexOf("function lessonQuizFeedbackText(");
+  const end = learning.indexOf("\nfunction submitLessonQuiz(", start);
+  assert.ok(start >= 0 && end > start);
+  const format = vm.runInNewContext(learning.slice(start, end) + "\nlessonQuizFeedbackText", Object.create(null), { timeout: 1000 });
+  const answer = "Some people may take specialized jobs because not everyone must produce food full time.";
+  const question = { explain: answer, options: [{ text: answer, correct: true }, { text: "Trade becomes impossible.", correct: false }] };
+  assert.equal(format(question, false), "✗ Not quite. Correct answer: " + answer);
+  question.explain = "The correct answer is " + answer;
+  assert.equal(format(question, false), "✗ Not quite. Correct answer: " + answer);
+  question.explain = "Farming could support settled communities, but outcomes varied.";
+  assert.equal(format(question, false), "✗ Not quite. Correct answer: " + answer + " Farming could support settled communities, but outcomes varied.");
+});
+
 test("quiz submission gives correct feedback, explains incorrect answers, and persists scores", () => {
   const start = learning.indexOf("function submitLessonQuiz(");
   const end = learning.indexOf("\nfunction ", start + 1);
   const subjectStart = learning.indexOf("const SUBJECTS=");
   const subjectEnd = learning.indexOf(";\nconst KEY=", subjectStart);
+  const feedbackStart = learning.indexOf("function lessonQuizFeedbackText(");
+  const feedbackEnd = learning.indexOf("\nfunction submitLessonQuiz(", feedbackStart);
   const quizStart = learning.indexOf("const QUIZ_MISCONCEPTIONS=");
   const quizEnd = learning.indexOf("function lessonQuizHTML", quizStart);
   assert.ok(start >= 0 && end > start, "quiz submission handler should exist");
@@ -121,7 +140,7 @@ test("quiz submission gives correct feedback, explains incorrect answers, and pe
     Date, Math, Set, String,
   });
   const actualSubmit = vm.runInContext(
-    `${learning.slice(subjectStart, subjectEnd + 1)}\n${learning.slice(quizStart, quizEnd)}\n${learning.slice(start, end)}\nsubmitLessonQuiz`,
+    `${learning.slice(subjectStart, subjectEnd + 1)}\n${learning.slice(quizStart, quizEnd)}\n${learning.slice(feedbackStart, feedbackEnd)}\n${learning.slice(start, end)}\nsubmitLessonQuiz`,
     context,
     { timeout: 1000 },
   );
@@ -135,6 +154,7 @@ test("quiz submission gives correct feedback, explains incorrect answers, and pe
   assert.ok(feedback.every(item => item.hidden === false), "feedback should appear for every answered question");
   assert.ok(feedback.every(item => item.className.endsWith("correct")), "correct answers should receive correct styling");
   assert.ok(feedback.every(item => item.textContent.startsWith("✓ Correct.")), "correct answers should receive positive feedback");
+  assert.ok(feedback.every(item => !/[.?!][.?!]/.test(item.textContent)), "feedback should not contain duplicate punctuation");
   assert.equal(saved.quizResults["Physics-0"].correct, questions.length, "all correct answers should be scored");
   assert.equal(saved.quizResults["Physics-0"].total, questions.length, "saved total should match the question count");
   assert.equal(saved.quizResults["Physics-0"].attempts, 1, "the attempt count should be saved");
@@ -147,7 +167,10 @@ test("quiz submission gives correct feedback, explains incorrect answers, and pe
   assert.ok(feedback[0].className.endsWith("incorrect"), "an incorrect answer should receive incorrect styling");
   assert.ok(feedback[0].textContent.startsWith("✗ Not quite."), "an incorrect answer should receive corrective feedback");
   assert.match(feedback[0].textContent, /Correct answer:/, "incorrect feedback should reveal the correct answer");
-  assert.ok(feedback[0].textContent.length > 40, "incorrect feedback should include an explanation");
+  assert.ok(feedback[0].textContent.length > 40, "incorrect feedback should include the correct answer");
+  const shownCorrectAnswer = questions[0].options.find(option => option.correct).text.replace(/[.!?]+$/g, "").trim();
+  assert.equal(feedback[0].textContent.split(shownCorrectAnswer).length - 1, 1, "incorrect feedback must not repeat the correct answer as its own explanation");
+  assert.ok(feedback.every(item => !/[.?!][.?!]/.test(item.textContent)), "feedback should not contain duplicate punctuation");
   assert.equal(saved.quizResults["Physics-0"].correct, questions.length - 1, "score should reflect one incorrect answer");
   assert.equal(saved.quizResults["Physics-0"].attempts, 2, "a subsequent attempt should increment the attempt count");
   assert.deepEqual(Array.from(saved.quizResults["Physics-0"].missed), [0], "missed question indices should be saved");
