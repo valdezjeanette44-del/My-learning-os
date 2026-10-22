@@ -241,8 +241,8 @@ function lessonQuizQuestions(name,i,variant=0){
  if(!misconceptionStem)throw new Error("Missing lesson-specific misconception stem for "+name+" / "+title);
  const specs=[
   {skill:"remember",q:"Which statement about "+(QUIZ_TOPIC_LABELS[name]?.[title]||cleanTitle.toLowerCase())+" is correct?",correct:fact1,wrong:mis,why:QUIZ_CONCEPT_NOTES[name]?.[title]||fact2},
-  {skill:"understand",q:scenario,correct:scenarioAnswer,wrong:wrongScenario,why:QUIZ_CONCEPT_NOTES[name]?.[title]||scenarioAnswer},
-  {skill:"apply",q:transfer[0],correct:transfer[1],wrong:transfer.slice(2,5),why:QUIZ_CONCEPT_NOTES[name]?.[title]||transfer[1]}
+  {skill:"understand",q:scenario,correct:scenarioAnswer,wrong:wrongScenario,why:scenarioAnswer},
+  {skill:"apply",q:transfer[0],correct:transfer[1],wrong:transfer.slice(2,5),why:transfer[1]}
  ];
  function uniqueChoices(arr,correct){return arr.map(x=>String(x||"").trim()).filter((x,j,a)=>x&&x!==correct&&a.indexOf(x)===j)}
  return specs.map((spec,qi)=>{let wrong=uniqueChoices(spec.wrong||[],spec.correct).slice(0,3);for(const fallback of [...mis,...wrongScenario,fact1,fact2,scenarioAnswer]){if(wrong.length>=3)break;if(fallback!==spec.correct&&!wrong.includes(fallback))wrong.push(fallback)}if(wrong.length!==3)throw new Error("Not enough distinct choices: "+name+" / "+title+" / "+spec.skill);if(variant===1)wrong=wrong.slice(1).concat(wrong[0]);const options=[{text:spec.correct,correct:true},...wrong.map(text=>({text,correct:false,reason:spec.skill==="understand"?"This does not explain the situation as well as the correct answer: "+scenarioAnswer:spec.skill==="apply"?"This does not fit the new situation as well as: "+transfer[1]:"This option is less accurate because it conflicts with the key idea: "+fact1}))];const shift=(i*3+qi*2+Object.keys(SUBJECTS).indexOf(name)+(variant?1:0))%4;return {skill:spec.skill,q:spec.q,options:options.slice(shift).concat(options.slice(0,shift)),explain:spec.why}});
