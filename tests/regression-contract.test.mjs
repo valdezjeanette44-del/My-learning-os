@@ -70,6 +70,9 @@ test("each lesson generates three valid quiz questions with one correct and thre
         const label = `${subject} lesson ${lessonIndex + 1}, quiz question ${questionIndex + 1}`;
         assert.ok(question.q.trim(), `${label} should have a prompt`);
         assert.ok(question.explain.trim(), `${label} should have an explanation`);
+        if (question.skill === "understand" || question.skill === "apply") {
+          assert.equal(question.explain, question.options.find(option => option.correct).text, `${label} explanation should directly explain its own scenario/transfer answer`);
+        }
         assert.equal(question.options.length, 4, `${label} should have four answer choices`);
         assert.equal(question.options.filter(option => option.correct).length, 1, `${label} should have exactly one keyed correct choice`);
         const choiceTexts = question.options.map(option => option.text.trim());
@@ -135,6 +138,7 @@ test("quiz submission gives correct feedback, explains incorrect answers, and pe
   assert.ok(feedback.every(item => item.hidden === false), "feedback should appear for every answered question");
   assert.ok(feedback.every(item => item.className.endsWith("correct")), "correct answers should receive correct styling");
   assert.ok(feedback.every(item => item.textContent.startsWith("✓ Correct.")), "correct answers should receive positive feedback");
+  assert.ok(feedback.every(item => !/[.?!][.?!]/.test(item.textContent)), "feedback should not contain duplicate punctuation");
   assert.equal(saved.quizResults["Physics-0"].correct, questions.length, "all correct answers should be scored");
   assert.equal(saved.quizResults["Physics-0"].total, questions.length, "saved total should match the question count");
   assert.equal(saved.quizResults["Physics-0"].attempts, 1, "the attempt count should be saved");
