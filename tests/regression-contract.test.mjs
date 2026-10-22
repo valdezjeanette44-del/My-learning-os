@@ -152,7 +152,7 @@ test("quiz submission gives correct feedback, explains incorrect answers, and pe
   assert.ok(feedback[0].textContent.startsWith("✗ Not quite."), "an incorrect answer should receive corrective feedback");
   assert.match(feedback[0].textContent, /Correct answer:/, "incorrect feedback should reveal the correct answer");
   assert.ok(feedback[0].textContent.length > 40, "incorrect feedback should include the correct answer");
-  const shownCorrectAnswer = questions[0].options.find(option => option.correct).text.replace(/[.?!\\s]+$/g, "");
+  const shownCorrectAnswer = questions[0].options.find(option => option.correct).text.replace(/[.!?]+$/g, "").trim();
   assert.equal(feedback[0].textContent.split(shownCorrectAnswer).length - 1, 1, "incorrect feedback must not repeat the correct answer as its own explanation");
   assert.ok(feedback.every(item => !/[.?!][.?!]/.test(item.textContent)), "feedback should not contain duplicate punctuation");
   assert.equal(saved.quizResults["Physics-0"].correct, questions.length - 1, "score should reflect one incorrect answer");
