@@ -24,7 +24,7 @@ function restoreSubjectScroll(name){
   const saved=JSON.parse(sessionStorage.getItem(SUBJECT_SCROLL_KEY)||"null");
   if(!saved||saved.name!==name)return;
   sessionStorage.removeItem(SUBJECT_SCROLL_KEY);
-  requestAnimationFrame(()=>window.scrollTo({top:Math.max(0,Number(saved.y)||0),left:0,behavior:"instant"}));
+  requestAnimationFrame(()=>window.scrollTo({top:Math.max(0,Number(saved.y)||0),left:0,behavior:"auto"}));
  }catch{}
 }
 window.addEventListener("pagehide",rememberSubjectScroll);
