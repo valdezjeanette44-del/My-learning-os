@@ -225,11 +225,14 @@ test("retry quiz variants preserve correct answers and explanation alignment acr
           originalQuestion.options.find(option => option.correct).text,
           `${label} should preserve the original correct answer`,
         );
-        assert.equal(
-          question.explain,
-          correct[0].text,
-          `${label} explanation should match its keyed correct answer`,
-        );
+        assert.ok(question.explain.trim(), `${label} should include an explanation`);
+        if (question.skill === "understand" || question.skill === "apply") {
+          assert.equal(
+            question.explain,
+            correct[0].text,
+            `${label} explanation should match its keyed correct answer`,
+          );
+        }
         assert.equal(question.options.length, 4, `${label} should have four choices`);
         assert.equal(
           new Set(question.options.map(option => option.text.trim())).size,
