@@ -501,7 +501,7 @@ function renderHome(){
  </section>
  <section class="home-section" id="learning-areas">
   <div class="home-section-heading"><div><small class="muted">CHOOSE WHAT TO EXPLORE</small><h2>Learning areas</h2></div></div>
-  <div class="home-subject-grid">${Object.entries(SUBJECTS).map(([n,d])=>`<a class="home-subject" href="/subjects/${n.toLowerCase()}/"><span>${d.icon}</span><strong>${n}</strong><small>${subjectProgress(n)}% complete</small><div class="bar"><div style="width:${subjectProgress(n)}%"></div></div></a>`).join('')}</div>
+  <div class="home-subject-grid">${Object.entries(SUBJECTS).map(([n,d])=>`<a class="home-subject" href="/subjects/${n.toLowerCase()}/" onclick="sessionStorage.setItem('myLearningOS.homeScroll',String(window.scrollY))"><span>${d.icon}</span><strong>${n}</strong><small>${subjectProgress(n)}% complete</small><div class="bar"><div style="width:${subjectProgress(n)}%"></div></div></a>`).join('')}</div>
  </section>
  <section class="home-section">
   <div class="home-section-heading"><div><small class="muted">LEARN BY DOING</small><h2>My projects</h2></div><a href="/projects.html">View all →</a></div>
@@ -510,6 +510,7 @@ function renderHome(){
  <details class="home-details"><summary>✨ Curiosity Lab</summary><div class="curiosity-panel"><p class="muted">A quick question to connect ideas and explore something new.</p><div id="curiosityCard" class="curiosity-card"><div class="curiosity-meta" id="curiosityMeta"></div><div class="curiosity-question" id="questionBox">Loading a question…</div><div class="curiosity-clue" id="curiosityClue"></div><div class="curiosity-actions"><button class="button" onclick="showCuriosityClue()">💡 Give me a clue</button><button class="button secondary" onclick="newQuestion()">↻ New question</button><a id="curiosityLesson" class="button secondary" href="#">Explore lesson →</a></div></div></div></details>
  <details class="home-details"><summary>📝 My notes</summary><div class="home-notes"><p class="muted">Capture an idea or connection. Notes stay in this browser.</p><textarea class="note" id="homeNote" placeholder="An idea I want to remember…">${esc(state().notes.home||'')}</textarea><div class="lesson-actions"><button onclick="saveHomeNote()">Save notes</button></div></div></details>
  <footer>My Learning OS · Learn → Connect → Question → Understand</footer>`;
+ const savedHomeScroll=sessionStorage.getItem('myLearningOS.homeScroll');if(savedHomeScroll!==null){sessionStorage.removeItem('myLearningOS.homeScroll');requestAnimationFrame(()=>window.scrollTo(0,Number(savedHomeScroll)||0));}
  newQuestion();
 }
 function newQuestion(){
