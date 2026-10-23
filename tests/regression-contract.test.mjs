@@ -204,3 +204,46 @@ test("all eight dedicated subject pages exist", async () => {
     await access(`subjects/${subject}/index.html`);
   }
 });
+
+
+test("retry quiz variants preserve correct answers and explanation alignment across all lessons", () => {
+  for (const subject of expectedSubjects) {
+    for (const [lessonIndex, lesson] of SUBJECTS[subject].lessons.entries()) {
+      const original = lessonQuizQuestions(subject, lessonIndex, 0);
+      const retry = lessonQuizQuestions(subject, lessonIndex, 1);
+      assert.equal(retry.length, original.length, `${subject} lesson ${lessonIndex + 1} retry should keep the same question count`);
+
+      for (const [questionIndex, question] of retry.entries()) {
+        const label = `${subject} lesson ${lessonIndex + 1}, retry question ${questionIndex + 1}`;
+        const originalQuestion = original[questionIndex];
+        const correct = question.options.filter(option => option.correct);
+        assert.equal(question.skill, originalQuestion.skill, `${label} should keep its learning skill`);
+        assert.equal(question.q, originalQuestion.q, `${label} should keep its question`);
+        assert.equal(correct.length, 1, `${label} should have exactly one correct answer`);
+        assert.equal(
+          correct[0].text,
+          originalQuestion.options.find(option => option.correct).text,
+          `${label} should preserve the original correct answer`,
+        );
+        assert.ok(question.explain.trim(), `${label} should include an explanation`);
+        if (question.skill === "understand" || question.skill === "apply") {
+          assert.equal(
+            question.explain,
+            correct[0].text,
+            `${label} explanation should match its keyed correct answer`,
+          );
+        }
+        assert.equal(question.options.length, 4, `${label} should have four choices`);
+        assert.equal(
+          new Set(question.options.map(option => option.text.trim())).size,
+          4,
+          `${label} should have four distinct choices`,
+        );
+        assert.ok(
+          question.options.filter(option => !option.correct).every(option => option.reason?.trim()),
+          `${label} should explain every incorrect choice`,
+        );
+      }
+    }
+  }
+});
