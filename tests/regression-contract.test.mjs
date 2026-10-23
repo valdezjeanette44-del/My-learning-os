@@ -247,3 +247,52 @@ test("retry quiz variants preserve correct answers and explanation alignment acr
     }
   }
 });
+
+
+test("all quiz variants produce clear feedback without duplicated punctuation or mismatched scenario explanations", () => {
+  const feedbackStart = learning.indexOf("function lessonQuizFeedbackText(");
+  const feedbackEnd = learning.indexOf("\nfunction submitLessonQuiz(", feedbackStart);
+  assert.ok(feedbackStart >= 0 && feedbackEnd > feedbackStart, "shared quiz feedback formatter should exist");
+  const formatFeedback = vm.runInNewContext(
+    learning.slice(feedbackStart, feedbackEnd) + "\nlessonQuizFeedbackText",
+    Object.create(null),
+    { timeout: 1000 },
+  );
+
+  for (const subject of expectedSubjects) {
+    for (const [lessonIndex, lesson] of SUBJECTS[subject].lessons.entries()) {
+      for (const variant of [0, 1]) {
+        const questions = lessonQuizQuestions(subject, lessonIndex, variant);
+        for (const [questionIndex, question] of questions.entries()) {
+          const label = `${subject} lesson ${lessonIndex + 1}, variant ${variant}, question ${questionIndex + 1}`;
+          const correctAnswer = question.options.find(option => option.correct);
+          assert.ok(correctAnswer, `${label} should have a keyed correct answer`);
+          assert.ok(question.explain.trim(), `${label} should include an explanation`);
+          if (question.skill === "understand" || question.skill === "apply") {
+            assert.equal(
+              question.explain,
+              correctAnswer.text,
+              `${label} explanation should match its scenario/transfer answer`,
+            );
+          }
+          for (const isCorrect of [true, false]) {
+            const feedback = formatFeedback(question, isCorrect);
+            assert.ok(!/[.?!][.?!]/.test(feedback), `${label} feedback should not contain duplicated punctuation: ${feedback}`);
+            if (isCorrect) {
+              assert.ok(feedback.startsWith("✓ Correct."), `${label} should show positive feedback`);
+            } else {
+              assert.ok(
+                feedback.startsWith("✗ Not quite. Correct answer:"),
+                `${label} should identify the correct answer after an incorrect choice`,
+              );
+              assert.ok(
+                feedback.includes(correctAnswer.text.replace(/[.!?]+$/, "")),
+                `${label} incorrect feedback should identify the keyed answer`,
+              );
+            }
+          }
+        }
+      }
+    }
+  }
+});
