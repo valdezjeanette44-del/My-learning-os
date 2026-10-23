@@ -13,6 +13,21 @@ const KEY="myLearningOS.v2";
 function state(){try{return JSON.parse(localStorage.getItem(KEY))||{completed:{},notes:{},scores:{}}}catch{return{completed:{},notes:{},scores:{}}}}
 function saveState(s){localStorage.setItem(KEY,JSON.stringify(s))}
 function esc(v){return String(v??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[m]))}
+const SUBJECT_SCROLL_KEY="myLearningOS.subjectScroll.v1";
+function rememberSubjectScroll(){
+ const name=document.body.dataset.subject;
+ if(!name)return;
+ try{sessionStorage.setItem(SUBJECT_SCROLL_KEY,JSON.stringify({name,y:window.scrollY||window.pageYOffset||0}));}catch{}
+}
+function restoreSubjectScroll(name){
+ try{
+  const saved=JSON.parse(sessionStorage.getItem(SUBJECT_SCROLL_KEY)||"null");
+  if(!saved||saved.name!==name)return;
+  sessionStorage.removeItem(SUBJECT_SCROLL_KEY);
+  requestAnimationFrame(()=>window.scrollTo({top:Math.max(0,Number(saved.y)||0),left:0,behavior:"auto"}));
+ }catch{}
+}
+window.addEventListener("pagehide",rememberSubjectScroll);
 function subjectProgress(name){const s=state(),n=SUBJECTS[name].lessons.length;return Math.round(((s.completed[name]||[]).length/n)*100)}
 function totalStats(){const s=state();let lessons=0,total=0,scores=0;Object.keys(SUBJECTS).forEach(k=>{total+=SUBJECTS[k].lessons.length;lessons+=(s.completed[k]||[]).length;if(s.scores[k])scores++});return{lessons,total,scores}}
 function nav(){return '<div class="topbar"><a class="brand" href="/">🧠 My Learning OS</a><nav class="nav" aria-label="Main navigation"><a href="/">Home</a><a href="/search.html">Search</a><a href="/projects.html">Projects</a><a href="/review.html">Review</a><a href="/knowledge.html">Knowledge Map</a><a href="/tutor.html">Tutor</a></nav></div><nav class="mobile-nav" aria-label="Quick navigation"><a href="/" aria-label="Home"><span>⌂</span><small>Home</small></a><a href="/#learning-areas" aria-label="Learning areas"><span>▦</span><small>Learn</small></a><a href="/projects.html" aria-label="Projects"><span>◫</span><small>Projects</small></a><a href="/review.html" aria-label="Review"><span>↻</span><small>Review</small></a><details class="mobile-more"><summary><span>•••</span><small>More</small></summary><div class="mobile-more-menu"><a href="/search.html">🔎 Search</a><a href="/knowledge.html">🗺️ Knowledge Map</a><a href="/tutor.html">👩‍🏫 Tutor</a></div></details></nav>'}
@@ -29,6 +44,7 @@ function renderSubject(name){
  <footer>My Learning OS · Learn → Connect → Question → Understand</footer>`;
  newQuestion();
  renderQuiz(name);
+ restoreSubjectScroll(name);
  const nextLesson=getNextLesson(),cont=document.getElementById("continueLearning");
  if(cont) cont.innerHTML=nextLesson?'<p class="muted">'+esc(nextLesson.name)+' · Lesson '+(nextLesson.i+1)+'</p><h3>'+esc(nextLesson.lesson[0])+'</h3><p class="muted">'+esc(nextLesson.lesson[1])+'</p><a class="button" href="/subjects/'+nextLesson.name.toLowerCase()+'/#lesson-'+nextLesson.i+'">Continue →</a>':'<p>🎉 You have completed every lesson currently in the course.</p>';
 }
