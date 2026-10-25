@@ -32,6 +32,8 @@ const count=id=>done(id).length;
 const status=id=>count(id)===0?"Not started":count(id)===4?"Lessons complete":"Learning";
 const dueReviews=()=>{const s=state(),now=Date.now();return Object.values(s.review||{}).filter(r=>r&&S.some(x=>x.id===r.subject)&&Number.isInteger(r.index)&&r.index>=0&&r.index<4&&Number.isFinite(Date.parse(r.nextReview))&&Date.parse(r.nextReview)<=now)};
 let selected="Biology",filter="Explore",query="",zoom=window.matchMedia("(max-width:700px)").matches?0.8:1,activeConnection=-1,viewMode="Graph";
+const restoreKey="myLearningOS.knowledgeMapPosition";let pendingRestore=null;
+try{const saved=sessionStorage.getItem(restoreKey);if(saved){pendingRestore=JSON.parse(saved);sessionStorage.removeItem(restoreKey);if(pendingRestore&&typeof pendingRestore==="object"){selected=S.some(s=>s.id===pendingRestore.selected)?pendingRestore.selected:selected;filter=["Explore","Review","My Progress"].includes(pendingRestore.filter)?pendingRestore.filter:filter;query=typeof pendingRestore.query==="string"?pendingRestore.query:query;zoom=Number.isFinite(pendingRestore.zoom)?Math.max(.7,Math.min(1.3,pendingRestore.zoom)):zoom;activeConnection=Number.isInteger(pendingRestore.activeConnection)?pendingRestore.activeConnection:-1;viewMode=["Graph","List"].includes(pendingRestore.viewMode)?pendingRestore.viewMode:viewMode;}}}catch{pendingRestore=null;}
 const app=document.getElementById("app");
 function render(){
 const st=state(),due=dueReviews();
@@ -97,5 +99,8 @@ app.querySelectorAll("[data-zoom]").forEach(el=>el.addEventListener("click",()=>
 app.querySelector("[data-reset]").addEventListener("click",()=>{zoom=window.matchMedia("(max-width:700px)").matches?0.8:1;query="";filter="Explore";selected="Biology";activeConnection=-1;viewMode="Graph";render()});
 app.querySelector("[data-close-connection]")?.addEventListener("click",()=>{activeConnection=-1;render()});
 }
+app.addEventListener("click",e=>{const link=e.target.closest('a[href^="/subjects/"]');if(!link)return;const viewport=app.querySelector(".ku-map-viewport");try{sessionStorage.setItem(restoreKey,JSON.stringify({pageY:window.scrollY,viewportLeft:viewport?.scrollLeft||0,viewportTop:viewport?.scrollTop||0,zoom,selected,filter,query,activeConnection,viewMode}));}catch{}});
 render();
+if(pendingRestore){requestAnimationFrame(()=>{window.scrollTo(0,Number(pendingRestore.pageY)||0);const viewport=app.querySelector(".ku-map-viewport");if(viewport){viewport.scrollLeft=Number(pendingRestore.viewportLeft)||0;viewport.scrollTop=Number(pendingRestore.viewportTop)||0;}});}
+
 })();
