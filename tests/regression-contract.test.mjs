@@ -451,6 +451,8 @@ test("Review page includes separately scheduled quiz reviews and distinguishes d
   assert.equal(items[1].subject, "Physics");
   assert.equal(items[1].due, false, "future quiz review date should be upcoming");
   assert.ok(learning.includes("Today's lesson review"), "lesson reviews should remain separately labelled");
-  assert.ok(learning.includes("Quiz reviews"), "quiz reviews should have their own section");
-  assert.ok(learning.includes("Next quiz review:"), "upcoming quiz review dates should be visible");
+  assert.ok(learning.includes("memory-dashboard"), "Review should use the memory dashboard layout");
+  assert.ok(learning.includes("Coming up"), "upcoming lesson and quiz reviews should have their own section");
+  assert.ok(learning.includes("formatDate(x.date.toISOString())"), "scheduled review dates should be visible");
+  assert.ok(learning.includes("Quiz review"), "quiz reviews should remain clearly labelled");
 });
