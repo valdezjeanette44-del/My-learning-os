@@ -412,3 +412,45 @@ test("completing a lesson persists progress and does not duplicate completion hi
   assert.equal(openCount, 2);
 });
 
+
+
+test("Review page includes separately scheduled quiz reviews and distinguishes due from upcoming", () => {
+  assert.ok(learning.includes("function getQuizReviewItems()"), "quiz review items should be derived from saved quiz results");
+  const start = learning.indexOf("function getQuizReviewItems()");
+  const end = learning.indexOf("function renderReview()", start);
+  assert.ok(end > start, "quiz review helper should be defined before Review rendering");
+  const helper = learning.slice(start, end);
+  const savedState = {
+    quizResults: {
+      "Physics-0": {
+        subject: "Physics", index: 0, lastScore: 3, total: 3,
+        nextReviewAt: "2026-11-01T12:00:00.000Z",
+      },
+      "Biology-0": {
+        subject: "Biology", index: 0, lastScore: 2, total: 3,
+        nextReviewAt: "2026-10-20T12:00:00.000Z",
+      },
+      "Unknown-0": {
+        subject: "Unknown", index: 0, nextReviewAt: "2026-10-20T12:00:00.000Z",
+      },
+    },
+  };
+  const context = vm.createContext({
+    state: () => savedState,
+    SUBJECTS,
+    Date: class extends Date {
+      constructor(...args) { super(...(args.length ? args : ["2026-10-25T12:00:00.000Z"])); }
+      static now() { return new Date("2026-10-25T12:00:00.000Z").getTime(); }
+    },
+    Number,
+  });
+  const items = vm.runInContext(helper + "\\ngetQuizReviewItems()", context, { timeout: 1000 });
+  assert.equal(items.length, 2, "unknown subjects should be ignored");
+  assert.equal(items[0].subject, "Biology");
+  assert.equal(items[0].due, true, "past quiz review date should be due");
+  assert.equal(items[1].subject, "Physics");
+  assert.equal(items[1].due, false, "future quiz review date should be upcoming");
+  assert.ok(learning.includes("Today's lesson review"), "lesson reviews should remain separately labelled");
+  assert.ok(learning.includes("Quiz reviews"), "quiz reviews should have their own section");
+  assert.ok(learning.includes("Next quiz review:"), "upcoming quiz review dates should be visible");
+});
