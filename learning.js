@@ -745,12 +745,29 @@ function showKnowledgeConnection(index){
  const x=connections[index],box=document.getElementById('knowledgeConnectionDetail');if(!x||!box)return;
  box.innerHTML='<span class="knowledge-detail-pill">'+esc(x.a)+' + '+esc(x.b)+'</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.detail)+'</p><div class="knowledge-example"><strong>🌍 Real-world example</strong><p>'+esc(x.example)+'</p></div>';
 }
+function getQuizReviewItems(){
+ const s=state(),now=new Date(),items=[];
+ Object.entries(s.quizResults||{}).forEach(([key,result])=>{
+  if(!result?.nextReviewAt||!result.subject||!Number.isInteger(result.index))return;
+  const subject=SUBJECTS[result.subject],lesson=subject?.lessons[result.index];
+  if(!lesson)return;
+  const nextReviewAt=new Date(result.nextReviewAt);
+  if(Number.isNaN(nextReviewAt.getTime()))return;
+  items.push({key,subject:result.subject,index:result.index,lesson,result,nextReviewAt,due:nextReviewAt<=now});
+ });
+ return items.sort((a,b)=>a.nextReviewAt-b.nextReviewAt);
+}
 function renderReview(){
- const due=getDueReviews(),s=state();
+ const due=getDueReviews(),s=state(),quizReviews=getQuizReviewItems(),dueQuizReviews=quizReviews.filter(x=>x.due),upcomingQuizReviews=quizReviews.filter(x=>!x.due);
  document.getElementById('app').innerHTML=nav()+`<section class="hero"><h1>🧠 Review</h1><p class="muted">Review concepts at increasing intervals so they stay in memory.</p></section>
- <section class="panel"><div class="review-summary"><div><strong>${due.length}</strong><span>due today</span></div><div><strong>${Object.keys(s.review||{}).length}</strong><span>scheduled</span></div><div><strong>${getStreak()}</strong><span>day streak</span></div></div></section>
- <section class="panel"><h2>Today's review</h2>${due.slice(0,8).map(x=>`<div class="review-card"><div><small>${SUBJECTS[x.n].icon} ${x.n} · Lesson ${x.i+1}</small><h3>${esc(x.l[0])}</h3><p class="muted">${esc(x.l[3])}</p></div><a class="button" href="/subjects/${x.n.toLowerCase()}/#lesson-${x.i}">Review →</a></div>`).join('')||'<div class="empty">🎉 Nothing is due right now. Complete another lesson and your next review will be scheduled automatically.</div>'}</section>
- <section class="panel"><h2>How your review grows</h2><p>After a lesson, the first review is scheduled for tomorrow. When you review successfully, the interval grows: 1 day → 3 days → 7 days → 14 days → 30 days.</p></section>
+ <section class="panel"><div class="review-summary"><div><strong>${due.length+dueQuizReviews.length}</strong><span>due today</span></div><div><strong>${Object.keys(s.review||{}).length+quizReviews.length}</strong><span>scheduled items</span></div><div><strong>${getStreak()}</strong><span>day streak</span></div></div></section>
+ <section class="panel"><h2>Today's lesson review</h2>${due.slice(0,8).map(x=>`<div class="review-card"><div><small>${SUBJECTS[x.n].icon} ${x.n} · Lesson ${x.i+1}</small><h3>${esc(x.l[0])}</h3><p class="muted">${esc(x.l[3])}</p></div><a class="button" href="/subjects/${x.n.toLowerCase()}/#lesson-${x.i}">Review →</a></div>`).join('')||'<div class="empty">🎉 No lesson reviews are due right now.</div>'}</section>
+ <section class="panel"><h2>Quiz reviews</h2><p class="muted">Quiz reviews use your last quiz result. A perfect score schedules another review in about 7 days; a quiz with missed answers schedules another attempt in about 1 day.</p>
+ ${dueQuizReviews.map(x=>`<div class="review-card"><div><small>${SUBJECTS[x.subject].icon} ${esc(x.subject)} · Quiz review · Lesson ${x.index+1}</small><h3>${esc(x.lesson[0])}</h3><p class="muted">Due now · Last score: ${x.result.lastScore??x.result.correct??0}/${x.result.total??3}</p></div><a class="button" href="/subjects/${x.subject.toLowerCase()}/#lesson-${x.index}">Review →</a></div>`).join('')}
+ ${upcomingQuizReviews.map(x=>`<div class="review-card"><div><small>${SUBJECTS[x.subject].icon} ${esc(x.subject)} · Quiz review · Lesson ${x.index+1}</small><h3>${esc(x.lesson[0])}</h3><p class="muted">Next quiz review: ${formatDate(x.nextReviewAt.toISOString())} · Last score: ${x.result.lastScore??x.result.correct??0}/${x.result.total??3}</p></div><a class="button secondary" href="/subjects/${x.subject.toLowerCase()}/#lesson-${x.index}">Open lesson →</a></div>`).join('')}
+ ${!quizReviews.length?'<div class="empty">No quiz reviews scheduled yet. Complete a lesson quiz to schedule one.</div>':''}
+ </section>
+ <section class="panel"><h2>How your lesson review grows</h2><p>After a lesson, the first review is scheduled for tomorrow. When you remember the idea, the interval grows: 1 day → 3 days → 7 days → 14 days → 30 days.</p></section>
  <footer>My Learning OS · Learn → Connect → Question → Understand</footer>`;
 }
 function addDays(date,days){const d=new Date(date);d.setDate(d.getDate()+days);return d}
