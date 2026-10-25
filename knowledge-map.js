@@ -37,6 +37,8 @@ const dueReviews=()=>{const s=state(),now=Date.now();return Object.values(s.revi
 let selected=S.some(s=>s.id===restoredView?.selected)?restoredView.selected:"Biology",filter="Explore",query="",zoom=Number.isFinite(restoredView?.zoom)?Math.max(.7,Math.min(1.3,restoredView.zoom)):(window.matchMedia("(max-width:700px)").matches?0.8:1),activeConnection=Number.isInteger(restoredView?.activeConnection)&&restoredView.activeConnection>=0&&restoredView.activeConnection<L.length?restoredView.activeConnection:-1,viewMode="Graph";
 const app=document.getElementById("app");
 function render(){
+const previousViewport=app.querySelector(".ku-map-viewport");
+const previousViewportLeft=previousViewport?.scrollLeft||0,previousViewportTop=previousViewport?.scrollTop||0;
 const st=state(),due=dueReviews();
 let visible=S.filter(s=>(s.id+" "+s.t.join(" ")).toLowerCase().includes(query.toLowerCase()));
 if(filter==="Review"){const ids=new Set(due.map(r=>r.subject));visible=visible.filter(s=>ids.has(s.id))}
@@ -104,6 +106,11 @@ app.querySelector("#ku-search").addEventListener("input",e=>{query=e.target.valu
 app.querySelectorAll("[data-zoom]").forEach(el=>el.addEventListener("click",()=>{zoom=Math.max(.7,Math.min(1.3,zoom+Number(el.dataset.zoom)*.1));render()}));
 app.querySelector("[data-reset]").addEventListener("click",()=>{zoom=window.matchMedia("(max-width:700px)").matches?0.8:1;query="";filter="Explore";selected="Biology";activeConnection=-1;viewMode="Graph";render()});
 app.querySelector("[data-close-connection]")?.addEventListener("click",()=>{activeConnection=-1;render()});
+// render() replaces the viewport DOM; preserve its native pan position across re-renders.
+const currentViewport=app.querySelector(".ku-map-viewport");
+if(currentViewport&&(previousViewportLeft||previousViewportTop)){
+ requestAnimationFrame(()=>{const viewport=app.querySelector(".ku-map-viewport");if(viewport){viewport.scrollLeft=previousViewportLeft;viewport.scrollTop=previousViewportTop;}});
+}
 }
 render();
 if(restoredView){
