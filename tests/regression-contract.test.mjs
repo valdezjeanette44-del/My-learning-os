@@ -159,6 +159,8 @@ test("quiz submission gives correct feedback, explains incorrect answers, and pe
   assert.equal(saved.quizResults["Physics-0"].total, questions.length, "saved total should match the question count");
   assert.equal(saved.quizResults["Physics-0"].attempts, 1, "the attempt count should be saved");
   assert.equal(saved.quizResults["Physics-0"].mastered, true, "a perfect attempt should be marked mastered");
+  const masteredReviewDays = (Date.parse(saved.quizResults["Physics-0"].nextReviewAt) - Date.now()) / 86400000;
+  assert.ok(masteredReviewDays > 6.9 && masteredReviewDays < 7.1, "a mastered quiz should schedule the next review about seven days later");
   assert.match(result.textContent, /Your score is saved on this device/);
 
   const incorrectIndex = questions[0].options.findIndex(option => !option.correct);
@@ -173,6 +175,8 @@ test("quiz submission gives correct feedback, explains incorrect answers, and pe
   assert.ok(feedback.every(item => !/[.?!][.?!]/.test(item.textContent)), "feedback should not contain duplicate punctuation");
   assert.equal(saved.quizResults["Physics-0"].correct, questions.length - 1, "score should reflect one incorrect answer");
   assert.equal(saved.quizResults["Physics-0"].attempts, 2, "a subsequent attempt should increment the attempt count");
+  const retryReviewDays = (Date.parse(saved.quizResults["Physics-0"].nextReviewAt) - Date.now()) / 86400000;
+  assert.ok(retryReviewDays > 0.9 && retryReviewDays < 1.1, "a quiz with missed questions should schedule the next review about one day later");
   assert.deepEqual(Array.from(saved.quizResults["Physics-0"].missed), [0], "missed question indices should be saved");
   assert.equal(retry.hidden, false, "retry control should appear when questions were missed");
 });
