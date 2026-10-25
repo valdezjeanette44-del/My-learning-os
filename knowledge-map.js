@@ -31,7 +31,7 @@ const done=id=>{const raw=state().completed?.[id];return Array.isArray(raw)?[...
 const count=id=>done(id).length;
 const status=id=>count(id)===0?"Not started":count(id)===4?"Lessons complete":"Learning";
 const dueReviews=()=>{const s=state(),now=Date.now();return Object.values(s.review||{}).filter(r=>r&&S.some(x=>x.id===r.subject)&&Number.isInteger(r.index)&&r.index>=0&&r.index<4&&Number.isFinite(Date.parse(r.nextReview))&&Date.parse(r.nextReview)<=now)};
-let selected="Biology",filter="Explore",query="",zoom=1,activeConnection=-1,viewMode=window.matchMedia("(max-width:700px)").matches?"List":"Graph";
+let selected="Biology",filter="Explore",query="",zoom=window.matchMedia("(max-width:700px)").matches?0.8:1,activeConnection=-1,viewMode="Graph";
 const app=document.getElementById("app");
 function render(){
 const st=state(),due=dueReviews();
@@ -59,7 +59,7 @@ app.innerHTML='<div class="topbar"><a class="brand" href="/">🧠 My Learning OS
 '<section class="ku-panel"><div class="ku-panel-head"><div><h2>Explore topics</h2><p>Open a lesson or focus on topics due for review.</p></div></div><label class="ku-search">⌕ <input id="ku-search" type="search" value="'+esc(query)+'" placeholder="Search subjects or topics…" aria-label="Search subjects or topics"></label><div class="ku-filters"><button data-filter="Explore" class="'+(filter==="Explore"?"active":"")+'">All subjects</button><button data-filter="Review" class="'+(filter==="Review"?"active":"")+'">Due for review ('+dueCount+')</button><button data-filter="My Progress" class="'+(filter==="My Progress"?"active":"")+'">Started learning</button></div>'+
 '<div class="ku-columns"><div class="ku-subject-list">'+(visible.length?visible.map(s=>'<button class="ku-subject-row '+(s.id===selected?"active":"")+'" data-subject="'+s.id+'"><span class="ku-subject-icon">'+s.icon+'</span><span class="ku-subject-copy"><strong>'+s.id+'</strong><small>'+count(s.id)+'/4 lessons · '+status(s.id)+(due.some(r=>r.subject===s.id)?" · Review due":"")+'</small><span class="ku-progress"><i style="width:'+(count(s.id)*25)+'%"></i></span></span><b>›</b></button>').join(""):'<p>No subjects match. Try All subjects or clear your search.</p>')+'</div>'+
 '<div class="ku-detail"><div class="ku-detail-top"><span class="ku-detail-icon">'+a.icon+'</span><span class="ku-status-pill">'+status(a.id)+'</span></div><h3>'+a.id+'</h3><p class="ku-detail-intro">'+count(a.id)+' of 4 lessons completed. '+(due.some(r=>r.subject===a.id)?due.filter(r=>r.subject===a.id).length+' lesson review(s) due.':"Progress updates when you mark lessons complete in the lesson page.")+'</p><div class="ku-progress ku-detail-bar"><i style="width:'+(count(a.id)*25)+'%"></i></div><div class="ku-topic-list">'+a.t.map((t,i)=>'<a class="ku-topic '+(done(a.id).includes(i)?"done":"")+'" href="/subjects/'+a.id.toLowerCase()+'/#lesson-'+i+'"><span class="ku-topic-check">'+(done(a.id).includes(i)?"✓":i+1)+'</span><span><strong>'+esc(t)+'</strong><small>'+(done(a.id).includes(i)?"Lesson completed":"Open lesson")+(due.some(r=>r.subject===a.id&&r.index===i)?" · Review due":"")+'</small></span><b>↗</b></a>').join("")+'</div><div class="ku-connections"><h4>Connected ideas</h4>'+(related.length?related.map(({l,i})=>{const other=l[0]===a.id?l[1]:l[0];return '<button class="ku-connection" data-connection="'+i+'"><strong>↔ '+other+'</strong><small>'+esc(l[2])+'</small><b>›</b></button>'}).join(""):'<p>More connections will appear as the map grows.</p>')+'</div></div></div></section><p class="ku-footnote">Progress reflects lesson completions saved in this browser. “Courses completed” means all four lessons are marked complete; it does not claim mastery. Review labels use your saved review schedule.</p></main>';
-function showConnection(i,scroll){activeConnection=i;render();if(scroll&&window.matchMedia("(max-width:700px)").matches)app.querySelector("#ku-connection-detail")?.scrollIntoView({behavior:"smooth",block:"nearest"});}
+function showConnection(i,scroll){const viewport=app.querySelector(".ku-map-viewport"),left=viewport?.scrollLeft||0,top=viewport?.scrollTop||0;activeConnection=i;render();const nextViewport=app.querySelector(".ku-map-viewport");if(nextViewport){nextViewport.scrollLeft=left;nextViewport.scrollTop=top;}if(scroll&&window.matchMedia("(max-width:700px)").matches)app.querySelector("#ku-connection-detail")?.scrollIntoView({behavior:"smooth",block:"nearest"});}
 app.querySelectorAll("[data-subject]").forEach(el=>{const go=()=>{selected=el.dataset.subject;activeConnection=-1;render();if(window.matchMedia("(max-width:700px)").matches)app.querySelector(".ku-detail")?.scrollIntoView({behavior:"smooth",block:"start"});};el.addEventListener("click",go);el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}})});
 const mapSvg=app.querySelector(".ku-map-canvas svg");
 let mapPointerStart=null;
@@ -83,7 +83,7 @@ mapSvg?.addEventListener("pointerup",e=>{
  if(e.target.closest("[data-subject]"))return;
  const marked=e.target.closest("[data-connection]");
  const index=marked&&mapSvg.contains(marked)?Number(marked.dataset.connection):connectionAtPoint(e.clientX,e.clientY);
- if(index>=0)showConnection(index,true);
+ if(index>=0)showConnection(index,false);
 });
 mapSvg?.addEventListener("keydown",e=>{
  const marked=e.target.closest("[data-connection]");
@@ -94,7 +94,7 @@ app.querySelectorAll("[data-view]").forEach(el=>el.addEventListener("click",()=>
 app.querySelectorAll("[data-filter]").forEach(el=>el.addEventListener("click",()=>{filter=el.dataset.filter;render()}));
 app.querySelector("#ku-search").addEventListener("input",e=>{query=e.target.value;render();const q=app.querySelector("#ku-search");q.focus();q.setSelectionRange(query.length,query.length)});
 app.querySelectorAll("[data-zoom]").forEach(el=>el.addEventListener("click",()=>{zoom=Math.max(.7,Math.min(1.3,zoom+Number(el.dataset.zoom)*.1));render()}));
-app.querySelector("[data-reset]").addEventListener("click",()=>{zoom=1;query="";filter="Explore";selected="Biology";activeConnection=-1;viewMode="Graph";render()});
+app.querySelector("[data-reset]").addEventListener("click",()=>{zoom=window.matchMedia("(max-width:700px)").matches?0.8:1;query="";filter="Explore";selected="Biology";activeConnection=-1;viewMode="Graph";render()});
 app.querySelector("[data-close-connection]")?.addEventListener("click",()=>{activeConnection=-1;render()});
 }
 render();
