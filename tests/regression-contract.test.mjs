@@ -353,10 +353,10 @@ test("subject and homepage notes are written to saved learning state", () => {
       },
       setTimeout: () => 0,
     });
-    const functionSource = learning.slice(
-      learning.indexOf("function " + functionName + "("),
-      learning.indexOf("\\n", learning.indexOf("function " + functionName + "(")),
-    );
+    const functionStart = learning.indexOf("function " + functionName + "(");
+    const nextBoundary = functionName === "saveNote" ? "function renderQuiz(" : "const PROJECTS=";
+    const functionEnd = learning.indexOf(nextBoundary, functionStart);
+    const functionSource = learning.slice(functionStart, functionEnd);
     assert.ok(functionSource.includes(functionName + "("), functionName + " should exist");
     vm.runInContext(functionSource + "\\n" + functionName + "();", context, { timeout: 1000 });
     return { savedState, persisted, elements };
