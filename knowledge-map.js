@@ -31,7 +31,7 @@ const done=id=>{const raw=state().completed?.[id];return Array.isArray(raw)?[...
 const count=id=>done(id).length;
 const status=id=>count(id)===0?"Not started":count(id)===4?"Lessons complete":"Learning";
 const dueReviews=()=>{const s=state(),now=Date.now();return Object.values(s.review||{}).filter(r=>r&&S.some(x=>x.id===r.subject)&&Number.isInteger(r.index)&&r.index>=0&&r.index<4&&Number.isFinite(Date.parse(r.nextReview))&&Date.parse(r.nextReview)<=now)};
-let selected="Biology",filter="Explore",query="",zoom=1,activeConnection=-1,viewMode=window.matchMedia("(max-width:700px)").matches?"List":"Graph";
+let selected="Biology",filter="Explore",query="",zoom=window.matchMedia("(max-width:700px)").matches?0.8:1,activeConnection=-1,viewMode="Graph";
 const app=document.getElementById("app");
 function render(){
 const st=state(),due=dueReviews();
@@ -83,7 +83,7 @@ mapSvg?.addEventListener("pointerup",e=>{
  if(e.target.closest("[data-subject]"))return;
  const marked=e.target.closest("[data-connection]");
  const index=marked&&mapSvg.contains(marked)?Number(marked.dataset.connection):connectionAtPoint(e.clientX,e.clientY);
- if(index>=0)showConnection(index,true);
+ if(index>=0)showConnection(index,false);
 });
 mapSvg?.addEventListener("keydown",e=>{
  const marked=e.target.closest("[data-connection]");
@@ -94,7 +94,7 @@ app.querySelectorAll("[data-view]").forEach(el=>el.addEventListener("click",()=>
 app.querySelectorAll("[data-filter]").forEach(el=>el.addEventListener("click",()=>{filter=el.dataset.filter;render()}));
 app.querySelector("#ku-search").addEventListener("input",e=>{query=e.target.value;render();const q=app.querySelector("#ku-search");q.focus();q.setSelectionRange(query.length,query.length)});
 app.querySelectorAll("[data-zoom]").forEach(el=>el.addEventListener("click",()=>{zoom=Math.max(.7,Math.min(1.3,zoom+Number(el.dataset.zoom)*.1));render()}));
-app.querySelector("[data-reset]").addEventListener("click",()=>{zoom=1;query="";filter="Explore";selected="Biology";activeConnection=-1;viewMode="Graph";render()});
+app.querySelector("[data-reset]").addEventListener("click",()=>{zoom=window.matchMedia("(max-width:700px)").matches?0.8:1;query="";filter="Explore";selected="Biology";activeConnection=-1;viewMode="Graph";render()});
 app.querySelector("[data-close-connection]")?.addEventListener("click",()=>{activeConnection=-1;render()});
 }
 render();
