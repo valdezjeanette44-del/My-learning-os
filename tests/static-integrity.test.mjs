@@ -62,3 +62,14 @@ test("Knowledge Map uses its dedicated script without booting the shared app twi
 test("core shared assets exist", async () => {
   await Promise.all(["learning.js", "styles.css", "knowledge-map.css"].map((path) => access(path)));
 });
+
+test("homepage scroll restoration saves position only when leaving Home", async () => {
+  const source = await readFile("learning.js", "utf8");
+  assert.match(source, /function saveHomeScrollOnLeave\(\)/);
+  assert.match(source, /window\.addEventListener\('pagehide',\s*saveHomeScrollOnLeave\)/);
+  assert.match(
+    source,
+    /if\(path===['"]\/['"]\|\|path===['"]\/index\.html['"]\)\s*\{\s*try\{sessionStorage\.setItem\(['"]myLearningOS\.homeScroll['"],String\(window\.scrollY\)\)/,
+    "scroll position should be saved only when leaving the homepage",
+  );
+});
