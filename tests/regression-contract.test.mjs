@@ -370,3 +370,41 @@ test("subject and homepage notes are written to saved learning state", () => {
   assert.equal(home.persisted.notes.home, "Connect photosynthesis with energy flow.");
 });
 
+test("completing a lesson persists progress and does not duplicate completion history", () => {
+  const start = learning.indexOf("function completeLesson(");
+  const end = learning.indexOf("function showReviewScheduled(", start);
+  assert.ok(start >= 0 && end > start, "lesson completion handler should exist");
+  const handler = learning.slice(start, end);
+
+  const savedState = { completed: {}, learningLog: [], review: {}, activity: {} };
+  const saves = [];
+  let renderCount = 0;
+  let openCount = 0;
+  const context = vm.createContext({
+    state: () => savedState,
+    saveState: next => saves.push(JSON.parse(JSON.stringify(next))),
+    addDays: (date, days) => new Date(date.getTime() + days * 86400000),
+    dateKey: () => "2026-10-25",
+    renderSubject: () => { renderCount++; },
+    openLesson: () => { openCount++; },
+    setTimeout: () => 0,
+    showReviewScheduled: () => {},
+    Date,
+  });
+
+  vm.runInContext(handler + "\ncompleteLesson('Biology', 0);", context, { timeout: 1000 });
+  assert.deepEqual(Array.from(savedState.completed.Biology), [0]);
+  assert.equal(savedState.learningLog.length, 1);
+  assert.equal(savedState.learningLog[0].id, "Biology-0");
+  assert.ok(savedState.review["Biology-0"].nextReview, "next review should be saved");
+  assert.ok(savedState.activity["2026-10-25"], "daily learning activity should be saved");
+  assert.equal(saves.length, 1, "completion should persist state");
+
+  vm.runInContext("completeLesson('Biology', 0);", context, { timeout: 1000 });
+  assert.deepEqual(Array.from(savedState.completed.Biology), [0], "the lesson should not be marked complete twice");
+  assert.equal(savedState.learningLog.length, 1, "repeating completion should not duplicate the learning log entry");
+  assert.equal(saves.length, 2, "state should still be saved on repeated completion");
+  assert.equal(renderCount, 2);
+  assert.equal(openCount, 2);
+});
+
