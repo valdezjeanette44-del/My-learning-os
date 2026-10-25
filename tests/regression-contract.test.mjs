@@ -296,3 +296,39 @@ test("all quiz variants produce clear feedback without duplicated punctuation or
     }
   }
 });
+
+test("homepage scroll handler saves Home position but never overwrites it from other pages", () => {
+  const start = learning.indexOf("function saveHomeScrollOnLeave()");
+  const end = learning.indexOf("\nwindow.addEventListener('pagehide',saveHomeScrollOnLeave);", start);
+  assert.ok(start >= 0 && end > start, "homepage scroll-saving handler should exist");
+  const handlerSource = learning.slice(start, end);
+
+  function runHandler(pathname, scrollY, initialValue = null) {
+    const values = new Map();
+    if (initialValue !== null) values.set("myLearningOS.homeScroll", initialValue);
+    const context = vm.createContext({
+      location: { pathname },
+      window: { scrollY },
+      sessionStorage: {
+        setItem: (key, value) => values.set(key, String(value)),
+        getItem: key => values.has(key) ? values.get(key) : null,
+      },
+    });
+    vm.runInContext(handlerSource + "\nsaveHomeScrollOnLeave();", context, { timeout: 1000 });
+    return values.get("myLearningOS.homeScroll") ?? null;
+  }
+
+  assert.equal(runHandler("/", 1240), "1240", "leaving Home should save its current scroll position");
+  assert.equal(runHandler("/index.html", 860), "860", "the index.html homepage should also save its position");
+  assert.equal(
+    runHandler("/projects.html", 300, "1240"),
+    "1240",
+    "leaving Projects must not overwrite the previously saved Home position",
+  );
+  assert.equal(
+    runHandler("/review.html", 520, "860"),
+    "860",
+    "leaving Review must not overwrite the previously saved Home position",
+  );
+});
+
