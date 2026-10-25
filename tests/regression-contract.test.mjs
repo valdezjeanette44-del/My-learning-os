@@ -299,7 +299,7 @@ test("all quiz variants produce clear feedback without duplicated punctuation or
 
 test("homepage scroll handler saves Home position but never overwrites it from other pages", () => {
   const start = learning.indexOf("function saveHomeScrollOnLeave()");
-  const end = learning.indexOf("\\nwindow.addEventListener('pagehide',saveHomeScrollOnLeave);", start);
+  const end = learning.indexOf("\nwindow.addEventListener('pagehide',saveHomeScrollOnLeave);", start);
   assert.ok(start >= 0 && end > start, "homepage scroll-saving handler should exist");
   const handlerSource = learning.slice(start, end);
 
@@ -314,7 +314,7 @@ test("homepage scroll handler saves Home position but never overwrites it from o
         getItem: key => values.has(key) ? values.get(key) : null,
       },
     });
-    vm.runInContext(handlerSource + "\\nsaveHomeScrollOnLeave();", context, { timeout: 1000 });
+    vm.runInContext(handlerSource + "\nsaveHomeScrollOnLeave();", context, { timeout: 1000 });
     return values.get("myLearningOS.homeScroll") ?? null;
   }
 
