@@ -758,16 +758,34 @@ function getQuizReviewItems(){
  return items.sort((a,b)=>a.nextReviewAt-b.nextReviewAt);
 }
 function renderReview(){
- const due=getDueReviews(),s=state(),quizReviews=getQuizReviewItems(),dueQuizReviews=quizReviews.filter(x=>x.due),upcomingQuizReviews=quizReviews.filter(x=>!x.due);
- document.getElementById('app').innerHTML=nav()+`<section class="hero"><h1>🧠 Review</h1><p class="muted">Review concepts at increasing intervals so they stay in memory.</p></section>
- <section class="panel"><div class="review-summary"><div><strong>${due.length+dueQuizReviews.length}</strong><span>due today</span></div><div><strong>${Object.keys(s.review||{}).length+quizReviews.length}</strong><span>scheduled items</span></div><div><strong>${getStreak()}</strong><span>day streak</span></div></div></section>
- <section class="panel"><h2>Today's lesson review</h2>${due.slice(0,8).map(x=>`<div class="review-card"><div><small>${SUBJECTS[x.n].icon} ${x.n} · Lesson ${x.i+1}</small><h3>${esc(x.l[0])}</h3><p class="muted">${esc(x.l[3])}</p></div><a class="button" href="/subjects/${x.n.toLowerCase()}/#lesson-${x.i}">Review →</a></div>`).join('')||'<div class="empty">🎉 No lesson reviews are due right now.</div>'}</section>
- <section class="panel"><h2>Quiz reviews</h2><p class="muted">Quiz reviews use your last quiz result. A perfect score schedules another review in about 7 days; a quiz with missed answers schedules another attempt in about 1 day.</p>
- ${dueQuizReviews.map(x=>`<div class="review-card"><div><small>${SUBJECTS[x.subject].icon} ${esc(x.subject)} · Quiz review · Lesson ${x.index+1}</small><h3>${esc(x.lesson[0])}</h3><p class="muted">Due now · Last score: ${x.result.lastScore??x.result.correct??0}/${x.result.total??3}</p></div><a class="button" href="/subjects/${x.subject.toLowerCase()}/#lesson-${x.index}">Review →</a></div>`).join('')}
- ${upcomingQuizReviews.map(x=>`<div class="review-card"><div><small>${SUBJECTS[x.subject].icon} ${esc(x.subject)} · Quiz review · Lesson ${x.index+1}</small><h3>${esc(x.lesson[0])}</h3><p class="muted">Next quiz review: ${formatDate(x.nextReviewAt.toISOString())} · Last score: ${x.result.lastScore??x.result.correct??0}/${x.result.total??3}</p></div><a class="button secondary" href="/subjects/${x.subject.toLowerCase()}/#lesson-${x.index}">Open lesson →</a></div>`).join('')}
- ${!quizReviews.length?'<div class="empty">No quiz reviews scheduled yet. Complete a lesson quiz to schedule one.</div>':''}
+ const s=state(),now=new Date(),dueLessons=getDueReviews(),quizReviews=getQuizReviewItems();
+ const lessonSchedules=Object.values(s.review||{}).filter(r=>r&&r.nextReview&&SUBJECTS[r.subject]?.lessons[r.index]).map(r=>({type:'lesson',subject:r.subject,index:r.index,lesson:SUBJECTS[r.subject].lessons[r.index],date:new Date(r.nextReview),score:null})).filter(x=>!Number.isNaN(x.date.getTime()));
+ const dueQuizReviews=quizReviews.filter(x=>x.due),upcomingQuizReviews=quizReviews.filter(x=>!x.due);
+ const dueItems=[
+  ...dueLessons.map(x=>({type:'lesson',subject:x.n,index:x.i,lesson:x.l,date:new Date(x.review.nextReview),score:null})),
+  ...dueQuizReviews.map(x=>({type:'quiz',subject:x.subject,index:x.index,lesson:x.lesson,date:x.nextReviewAt,score:(x.result.lastScore??x.result.correct??0)+'/'+(x.result.total??3)}))
+ ];
+ const upcomingItems=[
+  ...lessonSchedules.filter(x=>x.date>now),
+  ...upcomingQuizReviews.map(x=>({type:'quiz',subject:x.subject,index:x.index,lesson:x.lesson,date:x.nextReviewAt,score:(x.result.lastScore??x.result.correct??0)+'/'+(x.result.total??3)}))
+ ].sort((a,b)=>a.date-b.date);
+ const uniqueDue=dueItems.filter((x,i,a)=>a.findIndex(y=>y.type===x.type&&y.subject===x.subject&&y.index===x.index)===i);
+ const uniqueUpcoming=upcomingItems.filter((x,i,a)=>a.findIndex(y=>y.type===x.type&&y.subject===x.subject&&y.index===x.index)===i);
+ const nextItem=uniqueDue[0]||uniqueUpcoming[0];
+ const nextHref=nextItem?'/subjects/'+nextItem.subject.toLowerCase()+'/#lesson-'+nextItem.index:'/#learning-areas';
+ const reviewRow=x=>'<article class="memory-review-row"><div class="memory-review-icon" aria-hidden="true">'+SUBJECTS[x.subject].icon+'</div><div class="memory-review-copy"><small>'+esc(x.subject)+' · '+(x.type==='quiz'?'Quiz review':'Lesson review')+'</small><h3>'+esc(x.lesson[0])+'</h3><p>Next review · '+formatDate(x.date.toISOString())+(x.score?' · Last score '+esc(String(x.score)):'')+'</p></div><a class="memory-review-link" href="/subjects/'+x.subject.toLowerCase()+'/#lesson-'+x.index+'">Open →</a></article>';
+ document.getElementById('app').innerHTML=nav()+`<section class="hero memory-hero"><p class="memory-eyebrow">MY LEARNING OS · MEMORY</p><h1>🧠 Today's review</h1><p class="muted">A little practice today builds lasting knowledge.</p></section>
+ <section class="panel memory-dashboard">
+  <div class="memory-stats">
+   <div class="memory-stat"><strong>${uniqueDue.length}</strong><span>Due today</span></div>
+   <div class="memory-stat"><strong>${uniqueDue.length+uniqueUpcoming.length}</strong><span>Scheduled</span></div>
+   <div class="memory-stat"><strong>${uniqueDue.length*2} min</strong><span>Estimated</span></div>
+  </div>
+  <section class="memory-start"><div class="memory-start-icon" aria-hidden="true">🧠</div><div class="memory-start-copy"><h2>Ready to strengthen your memory?</h2><p>Review your due concepts across your learning subjects.</p></div><a class="button memory-start-button" href="${nextHref}">${uniqueDue.length?'Start review →':'View next review →'}</a></section>
+  <section class="memory-coming"><h2>Coming up</h2>${uniqueUpcoming.slice(0,5).map(reviewRow).join('')||'<div class="empty">No upcoming reviews yet. Complete a lesson or quiz to schedule your next review.</div>'}</section>
+  ${uniqueDue.length?'<section class="memory-coming"><h2>Due now</h2>'+uniqueDue.map(reviewRow).join('')+'</section>':''}
  </section>
- <section class="panel"><h2>How your lesson review grows</h2><p>After a lesson, the first review is scheduled for tomorrow. When you remember the idea, the interval grows: 1 day → 3 days → 7 days → 14 days → 30 days.</p></section>
+ <section class="panel memory-how"><h2>How your review grows</h2><p>After a lesson, the first review is scheduled for tomorrow. As you remember concepts successfully, the interval grows: 1 day → 3 days → 7 days → 14 days → 30 days. Quiz reviews adapt to your result.</p></section>
  <footer>My Learning OS · Learn → Connect → Question → Understand</footer>`;
 }
 function addDays(date,days){const d=new Date(date);d.setDate(d.getDate()+days);return d}
