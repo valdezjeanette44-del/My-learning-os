@@ -392,7 +392,7 @@ test("completing a lesson persists progress and does not duplicate completion hi
     Date,
   });
 
-  vm.runInContext(handler + "\\ncompleteLesson('Biology', 0);", context, { timeout: 1000 });
+  vm.runInContext(handler + "\ncompleteLesson('Biology', 0);", context, { timeout: 1000 });
   assert.deepEqual(Array.from(savedState.completed.Biology), [0]);
   assert.equal(savedState.learningLog.length, 1);
   assert.equal(savedState.learningLog[0].id, "Biology-0");
