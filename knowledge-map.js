@@ -29,7 +29,7 @@ const esc=v=>String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const state=()=>{try{return JSON.parse(localStorage.getItem(KEY))||{}}catch{return {}}};
 const VIEW_KEY="myLearningOS.knowledgeMapView";
 let restoredView=null;
-try{const rawView=sessionStorage.getItem(VIEW_KEY);if(rawView){restoredView=JSON.parse(rawView);sessionStorage.removeItem(VIEW_KEY);}}catch{}
+try{const rawView=sessionStorage.getItem(VIEW_KEY);if(rawView)restoredView=JSON.parse(rawView);}catch{}
 const done=id=>{const raw=state().completed?.[id];return Array.isArray(raw)?[...new Set(raw.filter(i=>Number.isInteger(i)&&i>=0&&i<4))]:[]};
 const count=id=>done(id).length;
 const status=id=>count(id)===0?"Not started":count(id)===4?"Lessons complete":"Learning";
@@ -93,7 +93,11 @@ mapSvg?.addEventListener("keydown",e=>{
  if(marked&&(e.key==="Enter"||e.key===" ")){e.preventDefault();showConnection(Number(marked.dataset.connection),true);}
 });
 app.querySelectorAll(".ku-connections [data-connection], .ku-all-connections [data-connection]").forEach(el=>el.addEventListener("click",()=>showConnection(Number(el.dataset.connection),true)));
-app.querySelectorAll(".ku-topic, .ku-connection-lessons a").forEach(el=>el.addEventListener("click",()=>{try{const viewport=app.querySelector(".ku-map-viewport");sessionStorage.setItem(VIEW_KEY,JSON.stringify({selected,zoom,activeConnection,pageY:window.scrollY,viewportLeft:viewport?.scrollLeft||0,viewportTop:viewport?.scrollTop||0}));}catch{}}));
+const saveMapView=()=>{try{const viewport=app.querySelector(".ku-map-viewport");sessionStorage.setItem(VIEW_KEY,JSON.stringify({selected,zoom,activeConnection,pageY:window.scrollY,viewportLeft:viewport?.scrollLeft||0,viewportTop:viewport?.scrollTop||0}));}catch{}};
+const mapViewport=app.querySelector(".ku-map-viewport");
+mapViewport?.addEventListener("scroll",saveMapView,{passive:true});
+window.addEventListener("pagehide",saveMapView);
+app.querySelectorAll(".ku-topic, .ku-connection-lessons a").forEach(el=>el.addEventListener("click",saveMapView));
 app.querySelectorAll("[data-view]").forEach(el=>el.addEventListener("click",()=>{viewMode=el.dataset.view;render()}));
 app.querySelectorAll("[data-filter]").forEach(el=>el.addEventListener("click",()=>{filter=el.dataset.filter;render()}));
 app.querySelector("#ku-search").addEventListener("input",e=>{query=e.target.value;render();const q=app.querySelector("#ku-search");q.focus();q.setSelectionRange(query.length,query.length)});
@@ -112,6 +116,6 @@ if(restoredView){
   }
  };
  // Wait for the graph and its CSS dimensions to settle before restoring scroll offsets.
- requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(restorePosition)));
+ requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(()=>{restorePosition();requestAnimationFrame(restorePosition);})));
 }
 })();
