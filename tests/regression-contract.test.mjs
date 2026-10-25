@@ -332,3 +332,41 @@ test("homepage scroll handler saves Home position but never overwrites it from o
   );
 });
 
+test("subject and homepage notes are written to saved learning state", () => {
+  function exerciseNoteSaver(functionName, bodyDatasetSubject, inputId, inputValue) {
+    const savedState = { notes: {} };
+    let persisted = null;
+    const elements = {
+      [inputId]: { value: inputValue },
+      saved: { textContent: "" },
+    };
+    const context = vm.createContext({
+      document: {
+        body: { dataset: { subject: bodyDatasetSubject } },
+        getElementById: id => elements[id] || null,
+      },
+      state: () => JSON.parse(JSON.stringify(savedState)),
+      saveState: next => {
+        for (const key of Object.keys(savedState)) delete savedState[key];
+        Object.assign(savedState, JSON.parse(JSON.stringify(next)));
+        persisted = JSON.parse(JSON.stringify(next));
+      },
+      setTimeout: () => 0,
+    });
+    const functionStart = learning.indexOf("function " + functionName + "(");
+    const nextBoundary = functionName === "saveNote" ? "function renderQuiz(" : "const PROJECTS=";
+    const functionEnd = learning.indexOf(nextBoundary, functionStart);
+    const functionSource = learning.slice(functionStart, functionEnd);
+    assert.ok(functionSource.includes(functionName + "("), functionName + " should exist");
+    vm.runInContext(functionSource + "\n" + functionName + "();", context, { timeout: 1000 });
+    return { savedState, persisted, elements };
+  }
+
+  const subject = exerciseNoteSaver("saveNote", "Biology", "note", "Plants use sunlight to make sugars.");
+  assert.equal(subject.persisted.notes.Biology, "Plants use sunlight to make sugars.");
+  assert.equal(subject.elements.saved.textContent, "Saved ✓");
+
+  const home = exerciseNoteSaver("saveHomeNote", "", "homeNote", "Connect photosynthesis with energy flow.");
+  assert.equal(home.persisted.notes.home, "Connect photosynthesis with energy flow.");
+});
+
