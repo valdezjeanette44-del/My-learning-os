@@ -444,7 +444,7 @@ test("Review page includes separately scheduled quiz reviews and distinguishes d
     },
     Number,
   });
-  const items = vm.runInContext(helper + "\\ngetQuizReviewItems()", context, { timeout: 1000 });
+  const items = vm.runInContext(helper + "\ngetQuizReviewItems()", context, { timeout: 1000 });
   assert.equal(items.length, 2, "unknown subjects should be ignored");
   assert.equal(items[0].subject, "Biology");
   assert.equal(items[0].due, true, "past quiz review date should be due");
