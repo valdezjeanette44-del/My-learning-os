@@ -102,5 +102,16 @@ app.querySelector("[data-reset]").addEventListener("click",()=>{zoom=window.matc
 app.querySelector("[data-close-connection]")?.addEventListener("click",()=>{activeConnection=-1;render()});
 }
 render();
-if(restoredView){requestAnimationFrame(()=>{window.scrollTo(0,Number(restoredView.pageY)||0);const viewport=app.querySelector(".ku-map-viewport");if(viewport){viewport.scrollLeft=Number(restoredView.viewportLeft)||0;viewport.scrollTop=Number(restoredView.viewportTop)||0;}});}
+if(restoredView){
+ const restorePosition=()=>{
+  window.scrollTo(0,Number(restoredView.pageY)||0);
+  const viewport=app.querySelector(".ku-map-viewport");
+  if(viewport){
+   viewport.scrollLeft=Number(restoredView.viewportLeft)||0;
+   viewport.scrollTop=Number(restoredView.viewportTop)||0;
+  }
+ };
+ // Wait for the graph and its CSS dimensions to settle before restoring scroll offsets.
+ requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(restorePosition)));
+}
 })();
