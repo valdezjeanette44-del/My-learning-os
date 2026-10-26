@@ -558,3 +558,28 @@ body{background:var(--garden-paper);color:var(--garden-ink)}
 #app .knowledge-one-panel .knowledge-progress-bar>span{display:block;height:100%;border-radius:99px;background:#b66b45;transition:width .2s ease}
 #app .knowledge-one-panel .knowledge-progress-label{display:block!important;font-size:.62rem!important;line-height:1.25!important;color:#75695e!important}
 #app .knowledge-one-panel button.knowledge-node:focus-visible{outline:3px solid #b66b45;outline-offset:2px}
+
+/* Review memory dashboard: isolated styles, no shared navigation changes. */
+.memory-hero .memory-eyebrow{font-size:.78rem;letter-spacing:.12em;font-weight:800;color:#6b63a8;margin:0 0 8px}
+.memory-dashboard{padding:22px}
+.memory-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.memory-stat{background:#f2f2f5;border-radius:18px;padding:18px}
+.memory-stat strong{display:block;font-size:clamp(1.8rem,4vw,2.5rem);line-height:1.1;margin-bottom:8px}
+.memory-stat span{font-weight:650}
+.memory-start{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:center;margin-top:18px;padding:22px;border:1px solid #e5e5e9;border-radius:22px}
+.memory-start-icon{font-size:2rem}
+.memory-start-copy h2{margin:0 0 6px}
+.memory-start-copy p{margin:0;color:#666}
+.memory-start-button{grid-column:1/-1;text-align:center;background:#f0efff;color:#28243f}
+.memory-coming{margin-top:28px}
+.memory-coming h2,.memory-how h2{margin-top:0}
+.memory-review-row{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:14px;align-items:center;padding:16px 0;border-bottom:1px solid #e8e8ec}
+.memory-review-row:last-child{border-bottom:0}
+.memory-review-icon{width:56px;height:56px;border-radius:15px;background:#f1f1f4;display:grid;place-items:center;font-size:1.6rem}
+.memory-review-copy{min-width:0}
+.memory-review-copy small{font-weight:700;color:#555}
+.memory-review-copy h3{margin:3px 0;font-size:1.05rem;overflow-wrap:anywhere}
+.memory-review-copy p{margin:0;color:#666;font-size:.92rem}
+.memory-review-link{font-weight:750;color:#4f46e5;text-decoration:none;white-space:nowrap}
+.memory-how p{margin-bottom:0}
+@media(max-width:650px){.memory-dashboard{padding:16px}.memory-stats{gap:8px}.memory-stat{padding:12px}.memory-stat strong{font-size:1.55rem}.memory-stat span{font-size:.85rem}.memory-start{padding:17px;gap:10px}.memory-review-row{grid-template-columns:44px minmax(0,1fr);gap:11px}.memory-review-icon{width:44px;height:44px;font-size:1.35rem}.memory-review-link{grid-column:2;justify-self:start}.memory-review-copy h3{font-size:1rem}}

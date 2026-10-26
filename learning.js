@@ -745,12 +745,48 @@ function showKnowledgeConnection(index){
  const x=connections[index],box=document.getElementById('knowledgeConnectionDetail');if(!x||!box)return;
  box.innerHTML='<span class="knowledge-detail-pill">'+esc(x.a)+' + '+esc(x.b)+'</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.detail)+'</p><div class="knowledge-example"><strong>🌍 Real-world example</strong><p>'+esc(x.example)+'</p></div>';
 }
+function getQuizReviewItems(){
+ const s=state(),now=new Date(),items=[];
+ Object.entries(s.quizResults||{}).forEach(([key,result])=>{
+  if(!result?.nextReviewAt||!result.subject||!Number.isInteger(result.index))return;
+  const subject=SUBJECTS[result.subject],lesson=subject?.lessons[result.index];
+  if(!lesson)return;
+  const nextReviewAt=new Date(result.nextReviewAt);
+  if(Number.isNaN(nextReviewAt.getTime()))return;
+  items.push({key,subject:result.subject,index:result.index,lesson,result,nextReviewAt,due:nextReviewAt<=now});
+ });
+ return items.sort((a,b)=>a.nextReviewAt-b.nextReviewAt);
+}
 function renderReview(){
- const due=getDueReviews(),s=state();
- document.getElementById('app').innerHTML=nav()+`<section class="hero"><h1>🧠 Review</h1><p class="muted">Review concepts at increasing intervals so they stay in memory.</p></section>
- <section class="panel"><div class="review-summary"><div><strong>${due.length}</strong><span>due today</span></div><div><strong>${Object.keys(s.review||{}).length}</strong><span>scheduled</span></div><div><strong>${getStreak()}</strong><span>day streak</span></div></div></section>
- <section class="panel"><h2>Today's review</h2>${due.slice(0,8).map(x=>`<div class="review-card"><div><small>${SUBJECTS[x.n].icon} ${x.n} · Lesson ${x.i+1}</small><h3>${esc(x.l[0])}</h3><p class="muted">${esc(x.l[3])}</p></div><a class="button" href="/subjects/${x.n.toLowerCase()}/#lesson-${x.i}">Review →</a></div>`).join('')||'<div class="empty">🎉 Nothing is due right now. Complete another lesson and your next review will be scheduled automatically.</div>'}</section>
- <section class="panel"><h2>How your review grows</h2><p>After a lesson, the first review is scheduled for tomorrow. When you review successfully, the interval grows: 1 day → 3 days → 7 days → 14 days → 30 days.</p></section>
+ const s=state(),now=new Date(),dueLessons=getDueReviews(),quizReviews=getQuizReviewItems();
+ const lessonSchedules=Object.values(s.review||{}).filter(r=>r&&r.nextReview&&SUBJECTS[r.subject]?.lessons[r.index]).map(r=>({type:'lesson',subject:r.subject,index:r.index,lesson:SUBJECTS[r.subject].lessons[r.index],date:new Date(r.nextReview),score:null})).filter(x=>!Number.isNaN(x.date.getTime()));
+ const dueQuizReviews=quizReviews.filter(x=>x.due),upcomingQuizReviews=quizReviews.filter(x=>!x.due);
+ const dueItems=[
+  ...dueLessons.map(x=>({type:'lesson',subject:x.n,index:x.i,lesson:x.l,date:new Date(x.review.nextReview),score:null})),
+  ...dueQuizReviews.map(x=>({type:'quiz',subject:x.subject,index:x.index,lesson:x.lesson,date:x.nextReviewAt,score:(x.result.lastScore??x.result.correct??0)+'/'+(x.result.total??3)}))
+ ];
+ const upcomingItems=[
+  ...lessonSchedules.filter(x=>x.date>now),
+  ...upcomingQuizReviews.map(x=>({type:'quiz',subject:x.subject,index:x.index,lesson:x.lesson,date:x.nextReviewAt,score:(x.result.lastScore??x.result.correct??0)+'/'+(x.result.total??3)}))
+ ].sort((a,b)=>a.date-b.date);
+ const uniqueDue=dueItems.filter((x,i,a)=>a.findIndex(y=>y.type===x.type&&y.subject===x.subject&&y.index===x.index)===i);
+ const uniqueUpcoming=upcomingItems.filter((x,i,a)=>a.findIndex(y=>y.type===x.type&&y.subject===x.subject&&y.index===x.index)===i);
+ const nextItem=uniqueDue[0]||uniqueUpcoming[0];
+ const reviewHref=x=>'/subjects/'+x.subject.toLowerCase()+'/?review='+(x.type==='quiz'?'quiz':'lesson')+'#lesson-'+x.index;
+ const nextHref=nextItem?reviewHref(nextItem):'/#learning-areas';
+ const reviewRow=x=>'<article class="memory-review-row"><div class="memory-review-icon" aria-hidden="true">'+SUBJECTS[x.subject].icon+'</div><div class="memory-review-copy"><small>'+esc(x.subject)+' · '+(x.type==='quiz'?'Quiz review':'Lesson review')+'</small><h3>'+esc(x.lesson[0])+'</h3><p>Next review · '+formatDate(x.date.toISOString())+(x.score?' · Last score '+esc(String(x.score)):'')+'</p></div><a class="memory-review-link" href="'+reviewHref(x)+'">Open →</a></article>';
+ document.getElementById('app').innerHTML=nav()+`<section class="hero memory-hero"><p class="memory-eyebrow">MY LEARNING OS · MEMORY</p><h1>🧠 Today's review</h1><p class="muted">A little practice today builds lasting knowledge.</p></section>
+ <section class="panel memory-dashboard">
+  <div class="memory-stats">
+   <div class="memory-stat"><strong>${uniqueDue.length}</strong><span>Due today</span></div>
+   <div class="memory-stat"><strong>${uniqueDue.length+uniqueUpcoming.length}</strong><span>Scheduled</span></div>
+   <div class="memory-stat"><strong>${uniqueDue.length*2} min</strong><span>Estimated</span></div>
+  </div>
+  <section class="memory-start"><div class="memory-start-icon" aria-hidden="true">🧠</div><div class="memory-start-copy"><h2>Ready to strengthen your memory?</h2><p>Review your due concepts across your learning subjects.</p></div><a class="button memory-start-button" href="${nextHref}">${uniqueDue.length?'Start review →':'View next review →'}</a></section>
+  <section class="memory-coming"><h2>Coming up</h2>${uniqueUpcoming.slice(0,5).map(reviewRow).join('')||'<div class="empty">No upcoming reviews yet. Complete a lesson or quiz to schedule your next review.</div>'}</section>
+  ${uniqueDue.length?'<section class="memory-coming"><h2>Due now</h2>'+uniqueDue.map(reviewRow).join('')+'</section>':''}
+ </section>
+ <section class="panel memory-how"><h2>How your review grows</h2><p>After a lesson, the first review is scheduled for tomorrow. As you remember concepts successfully, the interval grows: 1 day → 3 days → 7 days → 14 days → 30 days. Quiz reviews adapt to your result.</p></section>
  <footer>My Learning OS · Learn → Connect → Question → Understand</footer>`;
 }
 function addDays(date,days){const d=new Date(date);d.setDate(d.getDate()+days);return d}
@@ -867,7 +903,7 @@ function saveHomeScrollOnLeave(){
 }
 window.addEventListener('pagehide',saveHomeScrollOnLeave);
 
-function boot(){const path=location.pathname;const match=path.match(/subjects\/([^/]+)/);document.body.dataset.subject=match?match[1].replace(/^./,c=>c.toUpperCase()):'';const app=document.getElementById('app');if(!app)return;try{if(path.includes('/subjects/'))renderSubject(document.body.dataset.subject);else if(path.includes('knowledge.html'))renderMap();else if(path.includes('review.html'))renderReview();else if(path.includes('projects.html')){const id=new URLSearchParams(location.search).get('project');id?renderProjectDetail(id):renderProjects();}else if(path.includes('search.html'))renderSearch();else if(path.includes('tutor.html'))renderTutor();else renderHome()}catch(error){console.error('My Learning OS failed to render:',error);document.title='My Learning OS';app.innerHTML='<main style="max-width:620px;margin:36px auto;padding:22px;font-family:system-ui,sans-serif;color:#222"><h1 style="font-size:1.6rem">Your learning page could not load</h1><p>We hit a loading error. Your saved learning progress has not been deleted.</p><p style="color:#666">Technical detail: '+String(error&&error.message||error).replace(/[&<>\"']/g,function(ch){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","\'":"&#39;"}[ch]})+'</p><a href="/" style="display:inline-block;padding:12px 16px;background:#4f46e5;color:white;text-decoration:none;border-radius:12px">Back to My Learning OS</a></main>'}}
+function boot(){const path=location.pathname;const match=path.match(/subjects\/([^/]+)/);document.body.dataset.subject=match?match[1].replace(/^./,c=>c.toUpperCase()):'';const app=document.getElementById('app');if(!app)return;try{if(path.includes('/subjects/')){renderSubject(document.body.dataset.subject);const params=new URLSearchParams(location.search);if(['quiz','lesson'].includes(params.get('review'))){const lessonMatch=location.hash.match(/^#lesson-(\d+)$/);if(lessonMatch){const lessonIndex=Number(lessonMatch[1]);requestAnimationFrame(()=>requestAnimationFrame(()=>{openLesson(lessonIndex);if(params.get('review')==='quiz'){const quiz=document.getElementById('mcq-'+lessonIndex);if(quiz)quiz.scrollIntoView({behavior:'smooth',block:'start'});}}));}}}else if(path.includes('knowledge.html'))renderMap();else if(path.includes('review.html'))renderReview();else if(path.includes('projects.html')){const id=new URLSearchParams(location.search).get('project');id?renderProjectDetail(id):renderProjects();}else if(path.includes('search.html'))renderSearch();else if(path.includes('tutor.html'))renderTutor();else renderHome()}catch(error){console.error('My Learning OS failed to render:',error);document.title='My Learning OS';app.innerHTML='<main style="max-width:620px;margin:36px auto;padding:22px;font-family:system-ui,sans-serif;color:#222"><h1 style="font-size:1.6rem">Your learning page could not load</h1><p>We hit a loading error. Your saved learning progress has not been deleted.</p><p style="color:#666">Technical detail: '+String(error&&error.message||error).replace(/[&<>\"']/g,function(ch){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","\'":"&#39;"}[ch]})+'</p><a href="/" style="display:inline-block;padding:12px 16px;background:#4f46e5;color:white;text-decoration:none;border-radius:12px">Back to My Learning OS</a></main>'}}
 let tutorFocusIndex=-1;
 let tutorRequestPending=false;
 function renderTutor(){
