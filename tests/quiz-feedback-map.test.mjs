@@ -24,3 +24,23 @@ test("quiz generator uses the explicit feedback map before keyword fallback", ()
     /reason:QUIZ_DISTRACTOR_FEEDBACK\[\`\$\{name\}\|\$\{title\}\|\$\{spec\.skill\}\|\$\{text\}\`\]\|\|lessonQuizDistractorReason/,
   );
 });
+
+
+test("philosophy feedback addresses the specific misconception in early lessons", () => {
+  assert.match(
+    feedback["Philosophy|What is philosophy?|remember|A philosophical argument is strong simply because many people agree with it."],
+    /Popularity tells us.*not whether its reasons are sound/i,
+  );
+  assert.match(
+    feedback["Philosophy|What is philosophy?|understand|Count votes and treat the majority as automatically correct."],
+    /majority vote.*does not by itself show.*best justified/i,
+  );
+  assert.match(
+    feedback["Philosophy|How do we know?|remember|A belief is justified whenever it happens to be true, even by luck."],
+    /lucky true guess.*lacks the supporting reasons/i,
+  );
+  assert.match(
+    feedback["Philosophy|How do we know?|apply|A notice from an unrelated day proves the train is delayed now."],
+    /outdated.*current situation/i,
+  );
+});
