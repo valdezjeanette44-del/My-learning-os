@@ -245,20 +245,20 @@ function lessonQuizQuestions(name,i,variant=0){
   {skill:"apply",q:transfer[0],correct:transfer[1],wrong:transfer.slice(2,5),why:transfer[1]}
  ];
  function uniqueChoices(arr,correct){return arr.map(x=>String(x||"").trim()).filter((x,j,a)=>x&&x!==correct&&a.indexOf(x)===j)}
- return specs.map((spec,qi)=>{let wrong=uniqueChoices(spec.wrong||[],spec.correct).slice(0,3);for(const fallback of [...mis,...wrongScenario,fact1,fact2,scenarioAnswer]){if(wrong.length>=3)break;if(fallback!==spec.correct&&!wrong.includes(fallback))wrong.push(fallback)}if(wrong.length!==3)throw new Error("Not enough distinct choices: "+name+" / "+title+" / "+spec.skill);if(variant===1)wrong=wrong.slice(1).concat(wrong[0]);const options=[{text:spec.correct,correct:true},...wrong.map(text=>({text,correct:false,reason:spec.skill==="understand"?"This does not explain the situation as well as the correct answer: "+scenarioAnswer:spec.skill==="apply"?"This does not fit the new situation as well as: "+transfer[1]:"This option is less accurate because it conflicts with the key idea: "+fact1}))];const shift=(i*3+qi*2+Object.keys(SUBJECTS).indexOf(name)+(variant?1:0))%4;return {skill:spec.skill,q:spec.q,options:options.slice(shift).concat(options.slice(0,shift)),explain:spec.why}});
+ return specs.map((spec,qi)=>{let wrong=uniqueChoices(spec.wrong||[],spec.correct).slice(0,3);for(const fallback of [...mis,...wrongScenario,fact1,fact2,scenarioAnswer]){if(wrong.length>=3)break;if(fallback!==spec.correct&&!wrong.includes(fallback))wrong.push(fallback)}if(wrong.length!==3)throw new Error("Not enough distinct choices: "+name+" / "+title+" / "+spec.skill);if(variant===1)wrong=wrong.slice(1).concat(wrong[0]);const options=[{text:spec.correct,correct:true},...wrong.map(text=>({text,correct:false,reason:"You chose '"+text+"'. The key idea is: "+(spec.skill==="understand"?scenarioAnswer:spec.skill==="apply"?transfer[1]:spec.why)}))];const shift=(i*3+qi*2+Object.keys(SUBJECTS).indexOf(name)+(variant?1:0))%4;return {skill:spec.skill,q:spec.q,options:options.slice(shift).concat(options.slice(0,shift)),explain:spec.why}});
 }
 function lessonQuizHTML(name,i){
  const key=name+'-'+i,results=state().quizResults||{},saved=results[key],questions=lessonQuizQuestions(name,i,window.quizRetryVariant?.[key]||0),comparableSaved=saved&&saved.total===questions.length?saved:null;
  return `<section class="lesson-mcq" id="mcq-${i}">
   <div class="mcq-heading"><div><span class="lesson-label">KNOWLEDGE CHECK</span><h3>Test your understanding</h3><p>3 questions · Remember, understand and apply.</p></div><span class="mcq-score">${comparableSaved?'Best: '+saved.best+'/'+saved.total:questions.length+' questions'}</span></div>
   <form onsubmit="submitLessonQuiz(event,'${name}',${i})">
-   ${questions.map((q,qi)=>`<fieldset class="mcq-question" id="mcq-question-${i}-${qi}"><legend>${qi+1}. ${esc(q.q)}</legend>${q.options.map((o,oi)=>`<label class="mcq-option"><input type="radio" name="mcq-${i}-${qi}" value="${oi}" data-correct="${o.correct ? 'true' : 'false'}" data-answer="${esc(o.text)}"><span>${esc(o.text)}</span></label>`).join('')}<p class="mcq-feedback" id="mcq-feedback-${i}-${qi}" hidden></p></fieldset>`).join('')}
+   ${questions.map((q,qi)=>`<fieldset class="mcq-question" id="mcq-question-${i}-${qi}"><legend>${qi+1}. ${esc(q.q)}</legend>${q.options.map((o,oi)=>`<label class="mcq-option"><input type="radio" name="mcq-${i}-${qi}" value="${oi}" data-correct="${o.correct ? 'true' : 'false'}" data-answer="${esc(o.text)}" data-reason="${esc(o.reason||'')}"><span>${esc(o.text)}</span></label>`).join('')}<p class="mcq-feedback" id="mcq-feedback-${i}-${qi}" hidden></p></fieldset>`).join('')}
    <div class="lesson-actions"><button type="submit">Check my score</button><button class="button secondary" type="button" onclick="retryMissedLessonQuiz('${name}',${i})" id="mcq-retry-missed-${i}" hidden>Retry missed questions</button><button class="button secondary" type="button" onclick="resetLessonQuiz(${i})">Try again</button></div>
   </form>
   <div class="mcq-result" id="mcq-result-${i}" role="status">${comparableSaved?'Last score: '+saved.correct+'/'+saved.total+' ('+Math.round(saved.correct/saved.total*100)+'%) · Best: '+saved.best+'/'+saved.total+' · Attempts: '+saved.attempts:''}</div>
  </section>`;
 }
-function lessonQuizFeedbackText(question,isCorrect){
+function lessonQuizFeedbackText(question,isCorrect,selectedIndex){
  const right=question.options.findIndex(option=>option.correct);
  const clean=value=>String(value||"").replace(/[.!?]+$/,"").trim();
  const normalize=value=>String(value||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
@@ -269,7 +269,8 @@ function lessonQuizFeedbackText(question,isCorrect){
   ||(normalizedAnswer.length>=28&&normalizedExplanation.includes(normalizedAnswer))
   ||(normalizedExplanation.length>=28&&normalizedAnswer.includes(normalizedExplanation));
  if(isCorrect)return "✓ Correct. "+(explanation||correctAnswer)+".";
- return "✗ Not quite. Correct answer: "+correctAnswer+"."+(explanation&&!explanationRepeatsAnswer?" "+explanation+".":"");
+ const selectedReason=clean(question.options[selectedIndex]?.reason||"");
+ return "✗ Not quite. Correct answer: "+correctAnswer+"."+(selectedReason?" "+selectedReason+".":explanation&&!explanationRepeatsAnswer?" "+explanation+".":"");
 }
 function submitLessonQuiz(event,name,i){
  event.preventDefault();
@@ -282,7 +283,7 @@ function submitLessonQuiz(event,name,i){
   const chosen=answers[qi],selected=document.querySelector('input[name="mcq-'+i+'-'+qi+'"]:checked'),isCorrect=selected?.dataset?.correct!==undefined?selected.dataset.correct==='true':q.options[chosen].correct;if(isCorrect)correct++;else missed.push(qi);
   const feedback=document.getElementById('mcq-feedback-'+i+'-'+qi);
   feedback.hidden=false;feedback.className='mcq-feedback '+(isCorrect?'correct':'incorrect');
-  const displayedOptions=Array.from(document.querySelectorAll('input[name="mcq-'+i+'-'+qi+'"]')).map(input=>({text:input.dataset?.answer||input.parentElement?.querySelector('span')?.textContent||'',correct:input.dataset?.correct==='true'}));const feedbackQuestion=displayedOptions.some(option=>option.correct)?{...q,options:displayedOptions}:q;feedback.textContent=lessonQuizFeedbackText(feedbackQuestion,isCorrect);
+  const displayedOptions=Array.from(document.querySelectorAll('input[name="mcq-'+i+'-'+qi+'"]')).map(input=>({text:input.dataset?.answer||input.parentElement?.querySelector('span')?.textContent||'',correct:input.dataset?.correct==='true',reason:input.dataset?.reason||''}));const feedbackQuestion=displayedOptions.some(option=>option.correct)?{...q,options:displayedOptions}:q;feedback.textContent=lessonQuizFeedbackText(feedbackQuestion,isCorrect,chosen);
  });
  const s=state();s.quizResults=s.quizResults||{};const key=name+'-'+i,previous=s.quizResults[key]||{attempts:0,best:0};
  const skillNames=questions.map(q=>q.skill||'understanding');const missedSkills=missed.map(qi=>skillNames[qi]);const comparableBest=previous.total===questions.length?(previous.best||0):0;const best=Math.max(comparableBest,correct);const mastered=correct===questions.length;const reviewDays=mastered?7:1;s.quizResults[key]={...previous,subject:name,index:i,correct,total:questions.length,best,attempts:(previous.attempts||0)+1,lastAnswers:answers,lastScore:correct,missed,missedSkills,mastered,conceptsToReview:[...new Set(missedSkills)],nextReviewAt:new Date(Date.now()+reviewDays*86400000).toISOString(),updatedAt:new Date().toISOString()};
