@@ -462,3 +462,32 @@ test("Review page includes separately scheduled quiz reviews and distinguishes d
   assert.ok(learning.includes("document.getElementById('mcq-'+lessonIndex)"), "quiz deep links should scroll to the matching lesson quiz");
   assert.ok(learning.includes("openLesson(lessonIndex)"), "lesson and quiz deep links should expand the matching lesson");
 });
+
+
+test("quiz grading and corrective feedback use the answer options displayed to the learner", () => {
+  assert.match(
+    learning,
+    /data-correct="\$\{o\.correct \? 'true' : 'false'\}"/,
+    "each rendered quiz option should carry its own keyed correctness",
+  );
+  assert.match(
+    learning,
+    /data-answer="\$\{esc\(o\.text\)\}"/,
+    "each rendered quiz option should carry its displayed answer text",
+  );
+  assert.match(
+    learning,
+    /selected\?\.dataset\?\.correct!==undefined\?selected\.dataset\.correct==='true'/,
+    "grading should use the selected displayed option's correctness",
+  );
+  assert.match(
+    learning,
+    /const displayedOptions=Array\.from\(document\.querySelectorAll/,
+    "feedback should be built from the currently displayed options",
+  );
+  assert.match(
+    learning,
+    /data-correct="\'\+\(o\.correct\?'true':'false'\)\+'"/,
+    "retry-rendered options should carry correctness metadata too",
+  );
+});
