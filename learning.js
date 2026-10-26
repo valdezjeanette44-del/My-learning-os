@@ -299,7 +299,7 @@ function retryMissedLessonQuiz(name,i){
  const alternate=lessonQuizQuestions(name,i,1);
  missed.forEach(qi=>{
   const field=document.getElementById('mcq-question-'+i+'-'+qi),q=alternate[qi];
-  if(field&&q){field.innerHTML='<legend>'+(qi+1)+'. '+esc(q.q)+'</legend>'+q.options.map((o,oi)=>'<label class="mcq-option"><input type="radio" name="mcq-'+i+'-'+qi+'" value="'+oi+'" data-correct="'+(o.correct?'true':'false')+'" data-answer="'+esc(o.text)+'"><span>'+esc(o.text)+'</span></label>').join('')+'<p class="mcq-feedback" id="mcq-feedback-'+i+'-'+qi+'" hidden></p>';}
+  if(field&&q){field.innerHTML='<legend>'+(qi+1)+'. '+esc(q.q)+'</legend>'+q.options.map((o,oi)=>'<label class="mcq-option"><input type="radio" name="mcq-'+i+'-'+qi+'" value="'+oi+'" data-correct="'+(o.correct?'true':'false')+'" data-answer="'+esc(o.text)+'" data-reason="'+esc(o.reason||'')+'"><span>'+esc(o.text)+'</span></label>').join('')+'<p class="mcq-feedback" id="mcq-feedback-'+i+'-'+qi+'" hidden></p>';}
  });
  const retry=document.getElementById('mcq-retry-missed-'+i);if(retry)retry.hidden=true;
  const result=document.getElementById('mcq-result-'+i);if(result)result.textContent='Retry only the questions you missed, then check your score again.';
