@@ -64,3 +64,34 @@ test("technology feedback explains the specific misconception in early lessons",
     /does not download the whole internet/i,
   );
 });
+
+
+test("biology feedback corrects specific life and cell misconceptions", () => {
+  assert.match(
+    feedback["Biology|What is life?|remember|Every living organism must be made of many cells."],
+    /single cell.*not a requirement for life/i,
+  );
+  assert.match(
+    feedback["Biology|Cells: the basic unit|remember|All cells have a nucleus."],
+    /prokaryotic cells.*lack one/i,
+  );
+  assert.match(
+    feedback["Biology|Cells: the basic unit|remember|A cell membrane lets every substance pass freely in and out."],
+    /selectively permeable.*rather than allowing everything/i,
+  );
+});
+
+test("history feedback explains source evaluation and archaeological evidence", () => {
+  assert.match(
+    feedback["History|How do historians study the past?|remember|A written source is always more reliable than an object or oral account."],
+    /depends on the question.*not simply whether it is written/i,
+  );
+  assert.match(
+    feedback["History|Prehistory and archaeology|remember|Prehistory means that no evidence from the period exists."],
+    /before written records.*archaeological remains/i,
+  );
+  assert.match(
+    feedback["History|Prehistory and archaeology|understand|It has no historical value because it is not written."],
+    /objects and their archaeological context are evidence/i,
+  );
+});
