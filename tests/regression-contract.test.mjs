@@ -455,4 +455,10 @@ test("Review page includes separately scheduled quiz reviews and distinguishes d
   assert.ok(learning.includes("Coming up"), "upcoming lesson and quiz reviews should have their own section");
   assert.ok(learning.includes("formatDate(x.date.toISOString())"), "scheduled review dates should be visible");
   assert.ok(learning.includes("Quiz review"), "quiz reviews should remain clearly labelled");
+  assert.ok(learning.includes("const reviewHref=x=>"), "review links should distinguish lesson and quiz destinations");
+  assert.ok(learning.includes("?review='+(x.type==='quiz'?'quiz':'lesson')"), "review links should encode both lesson and quiz destinations");
+  assert.ok(learning.includes("['quiz','lesson'].includes(params.get('review'))"), "subject page should handle both lesson- and quiz-review deep links");
+  assert.ok(learning.includes("params.get('review')==='quiz'"), "quiz review deep links should enable direct quiz scrolling");
+  assert.ok(learning.includes("document.getElementById('mcq-'+lessonIndex)"), "quiz deep links should scroll to the matching lesson quiz");
+  assert.ok(learning.includes("openLesson(lessonIndex)"), "lesson and quiz deep links should expand the matching lesson");
 });
