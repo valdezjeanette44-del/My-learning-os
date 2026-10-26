@@ -50,14 +50,15 @@ test("retry re-renders only saved missed questions", () => {
 });
 
 test("empty missed list falls back to the existing quiz reset", () => {
+  const resetCalls = [];
   const context = vm.createContext({
     state: () => ({ quizResults: { "Physics-0": { missed: [] } } }),
-    resetCalls: [],
-    resetLessonQuiz(index) { this.resetCalls.push(index); },
+    resetCalls,
+    resetLessonQuiz(index) { resetCalls.push(index); },
     window: {},
     document: { getElementById: () => null },
   });
 
   vm.runInContext(retryHandler + "\nretryMissedLessonQuiz('Physics', 0)", context, { timeout: 1000 });
-  assert.deepEqual(Array.from(context.resetCalls), [0]);
+  assert.deepEqual(resetCalls, [0]);
 });
