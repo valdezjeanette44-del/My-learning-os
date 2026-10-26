@@ -266,10 +266,12 @@ function lessonQuizFeedbackText(question,isCorrect,selectedIndex){
  const correctAnswer=clean(question.options[right]?.text||"");
  const explanation=clean(question.explain||correctAnswer);
  if(isCorrect)return "✓ Correct. "+(repeatsAnswer(explanation,correctAnswer)?correctAnswer:explanation)+".";
- const selectedText=clean(question.options[selectedIndex]?.text||"");
- const rawReason=clean(question.options[selectedIndex]?.reason||"");
+ const selectedOption=Number.isInteger(selectedIndex)?question.options[selectedIndex]:null;
+ const selectedText=clean(selectedOption?.text||"");
+ const rawReason=clean(selectedOption?.reason||"");
  const selectedReason=clean(rawReason.replace(/^You chose '[^']*'\.\s*/i,"").replace(/^The key idea is:\s*/i,""));
  const usefulExtra=[selectedReason,explanation].find(value=>value&&!repeatsAnswer(value,correctAnswer)&&normalize(value)!==normalize(selectedText));
+ if(!selectedOption)return "✗ Not quite. Correct answer: "+correctAnswer+"."+(usefulExtra?" "+usefulExtra+".":"");
  return "✗ Not quite. You selected: "+selectedText+". Correct answer: "+correctAnswer+"."+(usefulExtra?" "+usefulExtra+".":"");
 }
 function submitLessonQuiz(event,name,i){
