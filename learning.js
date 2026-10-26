@@ -252,7 +252,7 @@ function lessonQuizHTML(name,i){
  return `<section class="lesson-mcq" id="mcq-${i}">
   <div class="mcq-heading"><div><span class="lesson-label">KNOWLEDGE CHECK</span><h3>Test your understanding</h3><p>3 questions · Remember, understand and apply.</p></div><span class="mcq-score">${comparableSaved?'Best: '+saved.best+'/'+saved.total:questions.length+' questions'}</span></div>
   <form onsubmit="submitLessonQuiz(event,'${name}',${i})">
-   ${questions.map((q,qi)=>`<fieldset class="mcq-question" id="mcq-question-${i}-${qi}"><legend>${qi+1}. ${esc(q.q)}</legend>${q.options.map((o,oi)=>`<label class="mcq-option"><input type="radio" name="mcq-${i}-${qi}" value="${oi}"><span>${esc(o.text)}</span></label>`).join('')}<p class="mcq-feedback" id="mcq-feedback-${i}-${qi}" hidden></p></fieldset>`).join('')}
+   ${questions.map((q,qi)=>`<fieldset class="mcq-question" id="mcq-question-${i}-${qi}"><legend>${qi+1}. ${esc(q.q)}</legend>${q.options.map((o,oi)=>`<label class="mcq-option"><input type="radio" name="mcq-${i}-${qi}" value="${oi}" data-correct="${o.correct ? 'true' : 'false'}" data-answer="${esc(o.text)}"><span>${esc(o.text)}</span></label>`).join('')}<p class="mcq-feedback" id="mcq-feedback-${i}-${qi}" hidden></p></fieldset>`).join('')}
    <div class="lesson-actions"><button type="submit">Check my score</button><button class="button secondary" type="button" onclick="retryMissedLessonQuiz('${name}',${i})" id="mcq-retry-missed-${i}" hidden>Retry missed questions</button><button class="button secondary" type="button" onclick="resetLessonQuiz(${i})">Try again</button></div>
   </form>
   <div class="mcq-result" id="mcq-result-${i}" role="status">${comparableSaved?'Last score: '+saved.correct+'/'+saved.total+' ('+Math.round(saved.correct/saved.total*100)+'%) · Best: '+saved.best+'/'+saved.total+' · Attempts: '+saved.attempts:''}</div>
@@ -279,10 +279,10 @@ function submitLessonQuiz(event,name,i){
  if(missing.length){result.textContent='Please answer question'+(missing.length>1?'s ':' ')+missing.join(', ')+ ' before checking your score.';return}
  let correct=0,missed=[];
  questions.forEach((q,qi)=>{
-  const chosen=answers[qi],right=q.options.findIndex(o=>o.correct),isCorrect=q.options[chosen].correct;if(isCorrect)correct++;else missed.push(qi);
+  const chosen=answers[qi],selected=document.querySelector('input[name="mcq-'+i+'-'+qi+'"]:checked'),isCorrect=selected?.dataset?.correct!==undefined?selected.dataset.correct==='true':q.options[chosen].correct;if(isCorrect)correct++;else missed.push(qi);
   const feedback=document.getElementById('mcq-feedback-'+i+'-'+qi);
   feedback.hidden=false;feedback.className='mcq-feedback '+(isCorrect?'correct':'incorrect');
-  feedback.textContent=lessonQuizFeedbackText(q,isCorrect);
+  const displayedOptions=Array.from(document.querySelectorAll('input[name="mcq-'+i+'-'+qi+'"]')).map(input=>({text:input.dataset?.answer||input.parentElement?.querySelector('span')?.textContent||'',correct:input.dataset?.correct==='true'}));const feedbackQuestion=displayedOptions.some(option=>option.correct)?{...q,options:displayedOptions}:q;feedback.textContent=lessonQuizFeedbackText(feedbackQuestion,isCorrect);
  });
  const s=state();s.quizResults=s.quizResults||{};const key=name+'-'+i,previous=s.quizResults[key]||{attempts:0,best:0};
  const skillNames=questions.map(q=>q.skill||'understanding');const missedSkills=missed.map(qi=>skillNames[qi]);const comparableBest=previous.total===questions.length?(previous.best||0):0;const best=Math.max(comparableBest,correct);const mastered=correct===questions.length;const reviewDays=mastered?7:1;s.quizResults[key]={...previous,subject:name,index:i,correct,total:questions.length,best,attempts:(previous.attempts||0)+1,lastAnswers:answers,lastScore:correct,missed,missedSkills,mastered,conceptsToReview:[...new Set(missedSkills)],nextReviewAt:new Date(Date.now()+reviewDays*86400000).toISOString(),updatedAt:new Date().toISOString()};
@@ -298,7 +298,7 @@ function retryMissedLessonQuiz(name,i){
  const alternate=lessonQuizQuestions(name,i,1);
  missed.forEach(qi=>{
   const field=document.getElementById('mcq-question-'+i+'-'+qi),q=alternate[qi];
-  if(field&&q){field.innerHTML='<legend>'+(qi+1)+'. '+esc(q.q)+'</legend>'+q.options.map((o,oi)=>'<label class="mcq-option"><input type="radio" name="mcq-'+i+'-'+qi+'" value="'+oi+'"><span>'+esc(o.text)+'</span></label>').join('')+'<p class="mcq-feedback" id="mcq-feedback-'+i+'-'+qi+'" hidden></p>';}
+  if(field&&q){field.innerHTML='<legend>'+(qi+1)+'. '+esc(q.q)+'</legend>'+q.options.map((o,oi)=>'<label class="mcq-option"><input type="radio" name="mcq-'+i+'-'+qi+'" value="'+oi+'" data-correct="'+(o.correct?'true':'false')+'" data-answer="'+esc(o.text)+'"><span>'+esc(o.text)+'</span></label>').join('')+'<p class="mcq-feedback" id="mcq-feedback-'+i+'-'+qi+'" hidden></p>';}
  });
  const retry=document.getElementById('mcq-retry-missed-'+i);if(retry)retry.hidden=true;
  const result=document.getElementById('mcq-result-'+i);if(result)result.textContent='Retry only the questions you missed, then check your score again.';
