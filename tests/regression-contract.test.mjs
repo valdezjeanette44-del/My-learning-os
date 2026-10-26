@@ -130,6 +130,7 @@ test("quiz submission gives correct feedback, explains incorrect answers, and pe
         const value = selected.get(selector);
         return value === undefined ? null : { value };
       },
+      querySelectorAll: () => [],
       getElementById: id => elements[id] || null,
     },
     state: () => JSON.parse(JSON.stringify(saved)),
