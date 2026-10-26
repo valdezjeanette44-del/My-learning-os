@@ -104,3 +104,23 @@ Reviewed all 8 lesson topics in these two subjects across the remember, understa
 
 ### Batch 2 disposition
 No question wording or answer-key edits are recommended for Biology or History based on this pass. Preserve the existing qualifications around heritability, archaeological interpretation, and causal inference. This content review does not replace the planned automated and live-app regression tests.
+
+
+## Detailed semantic audit — Batch 3: Economics and Business
+
+### Economics
+- Opportunity-cost questions correctly focus on the next-best alternative given up, rather than every possible alternative or only money already spent.
+- Supply-and-demand questions correctly describe upward price pressure as a possibility when demand exceeds available supply. The concert-ticket example preserves the “all else equal” qualification.
+- Incentive examples correctly say that parking charges or reusable-bag discounts may influence choices, without claiming every person responds identically.
+- Trade and specialization questions correctly distinguish comparative advantage from absolute advantage and use opportunity cost as the basis for specialization. The baker/helper example is consistent with the helper having a lower opportunity cost in cleaning.
+- Distractors represent common confusions about opportunity cost, market responses, incentives, and comparative advantage. No confirmed factual or answer-key error found.
+
+### Business
+- The travel-pouch examples correctly begin with understanding a customer problem and testing whether a solution is valued, rather than assuming demand.
+- Calculation check: €30 − €18 product and delivery costs = €12 before other costs. For 10 pouches, €300 revenue − €180 product/delivery costs − €40 advertising = €80 before additional costs. Both answers are correct and qualified.
+- Customer-research questions correctly distinguish compliments and social-media likes from evidence of willingness to pay.
+- Small-budget tests appropriately recommend samples, specific feedback, and price testing before reordering or scaling.
+- Distractors represent common early-business mistakes: assuming demand, ignoring costs, overvaluing compliments, and buying stock before validation. No confirmed factual or answer-key error found.
+
+### Batch 3 disposition
+No question wording or answer-key edits are recommended for Economics or Business based on this pass. Preserve conditional language in market questions and the “before other costs” qualification in profit examples. This content review does not replace automated and live-app regression tests.
