@@ -234,7 +234,9 @@ const QUIZ_CONCEPT_NOTES={
 };
 function lessonQuizDistractorReason(name,title,skill,wrongText,correctText,conceptText){
  const wrong=String(wrongText||"").toLowerCase(),topic=String(title||"").toLowerCase(),correct=String(correctText||"").trim(),concept=String(conceptText||"").trim();
- const misconceptions=QUIZ_MISCONCEPTIONS[name]?.[title]||[];
+ if(/only moving objects can have energy/.test(wrong))return "An object can store potential energy even when it is still. Motion gives an object kinetic energy, while height or elastic stretch can store potential energy.";
+ if(/potential energy and kinetic energy are exactly the same/.test(wrong))return "Kinetic energy is energy of motion; potential energy is stored because of position or arrangement. They are related, but they are not the same thing.";
+ if(/mass does not change/.test(wrong)&&/energy|falls from a shelf/.test(topic+" "+correct))return "Gravitational potential energy depends on height as well as mass and gravity. As the book falls, its height decreases, so its gravitational potential energy decreases.";
  if(/\b(disappear|disappears|vanish|vanishes|used up|created from nothing|no longer conserved)\b/.test(wrong))return "Energy does not simply disappear or appear from nothing. It is transferred between objects or transformed into other forms.";
  if(/\b(changes into mass|into mass)\b/.test(wrong))return "For an ordinary stretched band, stored elastic potential energy becomes motion, with some energy transferred as sound and heat. Energy remains conserved.";
  if(/\b(only|always|never|exactly the same|all .*same)\b/.test(wrong))return "This statement is too absolute. Check the conditions in the question and the distinction explained by the correct answer: "+correct;
