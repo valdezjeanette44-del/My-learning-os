@@ -87,6 +87,28 @@ test("each lesson generates three valid quiz questions with one correct and thre
   }
 });
 
+test("all 96 retry-variant questions preserve one correct answer and aligned explanations", () => {
+  let total = 0;
+  for (const subject of expectedSubjects) {
+    for (const [lessonIndex] of SUBJECTS[subject].lessons.entries()) {
+      const questions = lessonQuizQuestions(subject, lessonIndex, 1);
+      assert.equal(questions.length, 3, `${subject} lesson ${lessonIndex + 1} retry should contain three questions`);
+      for (const [questionIndex, question] of questions.entries()) {
+        const label = `${subject} lesson ${lessonIndex + 1}, retry question ${questionIndex + 1}`;
+        assert.equal(question.options.filter(option => option.correct).length, 1, `${label} should have exactly one correct answer`);
+        assert.equal(question.options.length, 4, `${label} should have four choices`);
+        assert.equal(new Set(question.options.map(option => option.text.trim())).size, 4, `${label} should have four distinct choices`);
+        assert.ok(question.options.every(option => option.text.trim()), `${label} should not have empty choices`);
+        if (question.skill === "understand" || question.skill === "apply") {
+          assert.equal(question.explain, question.options.find(option => option.correct).text, `${label} explanation should match the correct answer`);
+        }
+        total += 1;
+      }
+    }
+  }
+  assert.equal(total, 96, "all 32 lessons should generate three retry-variant questions each");
+});
+
 test("shared quiz feedback removes duplicated answer explanations", () => {
   const start = learning.indexOf("function lessonQuizFeedbackText(");
   const end = learning.indexOf("\nfunction submitLessonQuiz(", start);
@@ -120,6 +142,7 @@ test("quiz submission gives correct feedback, explains incorrect answers, and pe
   const score = { textContent: "" };
   const retry = { hidden: true };
   const selected = new Map();
+  let displayedQuestions = [];
   const elements = { "mcq-result-0": result, "mcq-score-0": score, "mcq-retry-missed-0": retry };
   feedback.forEach((item, i) => { elements[`mcq-feedback-0-${i}`] = item; });
   const context = vm.createContext({
@@ -128,7 +151,19 @@ test("quiz submission gives correct feedback, explains incorrect answers, and pe
       querySelector: selector => {
         if (selector === "#mcq-0 .mcq-score") return score;
         const value = selected.get(selector);
-        return value === undefined ? null : { value };
+        if (value === undefined) return null;
+        const match = selector.match(/mcq-0-(\d+).*:checked/);
+        const questionIndex = match ? Number(match[1]) : -1;
+        const option = displayedQuestions[questionIndex]?.options[Number(value)];
+        return { value, dataset: { correct: option?.correct ? "true" : "false", answer: option?.text || "" } };
+      },
+      querySelectorAll: selector => {
+        const match = selector.match(/mcq-0-(\d+)/);
+        const questionIndex = match ? Number(match[1]) : -1;
+        return (displayedQuestions[questionIndex]?.options || []).map(option => ({
+          dataset: { correct: option.correct ? "true" : "false", answer: option.text },
+          parentElement: { querySelector: () => ({ textContent: option.text }) },
+        }));
       },
       getElementById: id => elements[id] || null,
     },
@@ -145,6 +180,7 @@ test("quiz submission gives correct feedback, explains incorrect answers, and pe
     { timeout: 1000 },
   );
   const questions = vm.runInContext('lessonQuizQuestions("Physics", 0)', context);
+  displayedQuestions = questions;
   assert.equal(questions.length, 3, "test lesson should generate three questions");
   questions.forEach((q, i) => {
     selected.set(`input[name="mcq-0-${i}"]:checked`, String(q.options.findIndex(option => option.correct)));
@@ -461,4 +497,33 @@ test("Review page includes separately scheduled quiz reviews and distinguishes d
   assert.ok(learning.includes("params.get('review')==='quiz'"), "quiz review deep links should enable direct quiz scrolling");
   assert.ok(learning.includes("document.getElementById('mcq-'+lessonIndex)"), "quiz deep links should scroll to the matching lesson quiz");
   assert.ok(learning.includes("openLesson(lessonIndex)"), "lesson and quiz deep links should expand the matching lesson");
+});
+
+
+test("quiz grading and corrective feedback use the answer options displayed to the learner", () => {
+  assert.match(
+    learning,
+    /data-correct="\$\{o\.correct \? 'true' : 'false'\}"/,
+    "each rendered quiz option should carry its own keyed correctness",
+  );
+  assert.match(
+    learning,
+    /data-answer="\$\{esc\(o\.text\)\}"/,
+    "each rendered quiz option should carry its displayed answer text",
+  );
+  assert.match(
+    learning,
+    /selected\?\.dataset\?\.correct!==undefined\?selected\.dataset\.correct==='true'/,
+    "grading should use the selected displayed option's correctness",
+  );
+  assert.match(
+    learning,
+    /const displayedOptions=Array\.from\(document\.querySelectorAll/,
+    "feedback should be built from the currently displayed options",
+  );
+  assert.match(
+    learning,
+    /data-correct="\'\+\(o\.correct\?'true':'false'\)\+'"/,
+    "retry-rendered options should carry correctness metadata too",
+  );
 });
