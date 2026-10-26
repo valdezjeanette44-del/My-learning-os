@@ -232,6 +232,21 @@ const QUIZ_CONCEPT_NOTES={
   "Arguments and reasoning":"A strong argument needs relevant reasons that support its conclusion. One example, a confident tone or a popular opinion may not be enough."
  }
 };
+function lessonQuizDistractorReason(name,title,skill,wrongText,correctText,conceptText){
+ const wrong=String(wrongText||"").toLowerCase(),topic=String(title||"").toLowerCase(),correct=String(correctText||"").trim(),concept=String(conceptText||"").trim();
+ const misconceptions=QUIZ_MISCONCEPTIONS[name]?.[title]||[];
+ const known=misconceptions.find(item=>item.toLowerCase()===wrong.trim());
+ if(known)return "Why this is incorrect: "+known+" The important idea is: "+(concept||correct);
+ if(/\b(disappear|disappears|vanish|vanishes|used up|created from nothing|no longer conserved)\b/.test(wrong))return "Energy does not simply disappear or appear from nothing. It is transferred between objects or transformed into other forms.";
+ if(/\b(changes into mass|into mass)\b/.test(wrong))return "For an ordinary stretched band, stored elastic potential energy becomes motion, with some energy transferred as sound and heat. Energy remains conserved.";
+ if(/\b(only|always|never|exactly the same|all .*same)\b/.test(wrong))return "This statement is too absolute. Check the conditions in the question and the distinction explained by the correct answer: "+correct;
+ if(/\b(speed|velocity|direction|km\/h|distance divided by time)\b/.test(wrong+" "+correct+" "+topic))return "Speed tells how fast something moves; velocity also includes direction. Use the quantity that matches what the question asks.";
+ if(/\b(potential energy|kinetic energy|falls from a shelf|elastic)\b/.test(wrong+" "+correct+" "+topic))return "Energy can be stored because of position or arrangement, and motion is kinetic energy. As an object moves, energy transfers or changes form rather than disappearing.";
+ if(/\b(atom|element|molecule|proton|neutron|electron|ion|bond)\b/.test(wrong+" "+correct+" "+topic))return "Focus on what defines the particle or bond in this question, rather than treating different atomic or chemical terms as interchangeable.";
+ if(/\b(force|gravity|orbit|motion|acceleration|friction)\b/.test(wrong+" "+correct+" "+topic))return "Use the forces and motion described in the scenario. An explanation should match the evidence and the physical relationship in the correct answer.";
+ if(/\b(percent|percentage|revenue|profit|cost|price|demand|supply|market)\b/.test(wrong+" "+correct+" "+topic))return "Check which quantity is being measured and how it relates to the other quantities; the chosen option mixes up that relationship.";
+ return "This option does not match the key concept for "+title+". "+(concept||"Compare the conditions in the question with the correct answer.");
+}
 function lessonQuizQuestions(name,i,variant=0){
  const l=SUBJECTS[name].lessons[i],title=l[0],data=QUIZ_AUDIT_BANK[name]?.[title],mis=QUIZ_MISCONCEPTIONS[name]?.[title]||[];
  if(!data)throw new Error("Missing audited quiz for "+name+" / "+title);
@@ -245,7 +260,7 @@ function lessonQuizQuestions(name,i,variant=0){
   {skill:"apply",q:transfer[0],correct:transfer[1],wrong:transfer.slice(2,5),why:transfer[1]}
  ];
  function uniqueChoices(arr,correct){return arr.map(x=>String(x||"").trim()).filter((x,j,a)=>x&&x!==correct&&a.indexOf(x)===j)}
- return specs.map((spec,qi)=>{let wrong=uniqueChoices(spec.wrong||[],spec.correct).slice(0,3);for(const fallback of [...mis,...wrongScenario,fact1,fact2,scenarioAnswer]){if(wrong.length>=3)break;if(fallback!==spec.correct&&!wrong.includes(fallback))wrong.push(fallback)}if(wrong.length!==3)throw new Error("Not enough distinct choices: "+name+" / "+title+" / "+spec.skill);if(variant===1)wrong=wrong.slice(1).concat(wrong[0]);const options=[{text:spec.correct,correct:true},...wrong.map(text=>({text,correct:false,reason:"You chose '"+text+"'. The key idea is: "+(spec.skill==="understand"?scenarioAnswer:spec.skill==="apply"?transfer[1]:spec.why)}))];const shift=(i*3+qi*2+Object.keys(SUBJECTS).indexOf(name)+(variant?1:0))%4;return {skill:spec.skill,q:spec.q,options:options.slice(shift).concat(options.slice(0,shift)),explain:spec.why}});
+ return specs.map((spec,qi)=>{let wrong=uniqueChoices(spec.wrong||[],spec.correct).slice(0,3);for(const fallback of [...mis,...wrongScenario,fact1,fact2,scenarioAnswer]){if(wrong.length>=3)break;if(fallback!==spec.correct&&!wrong.includes(fallback))wrong.push(fallback)}if(wrong.length!==3)throw new Error("Not enough distinct choices: "+name+" / "+title+" / "+spec.skill);if(variant===1)wrong=wrong.slice(1).concat(wrong[0]);const options=[{text:spec.correct,correct:true},...wrong.map(text=>({text,correct:false,reason:lessonQuizDistractorReason(name,title,spec.skill,text,spec.correct,spec.skill==="understand"?scenarioAnswer:spec.skill==="apply"?transfer[1]:spec.why)))];const shift=(i*3+qi*2+Object.keys(SUBJECTS).indexOf(name)+(variant?1:0))%4;return {skill:spec.skill,q:spec.q,options:options.slice(shift).concat(options.slice(0,shift)),explain:spec.why}});
 }
 function lessonQuizHTML(name,i){
  const key=name+'-'+i,results=state().quizResults||{},saved=results[key],questions=lessonQuizQuestions(name,i,window.quizRetryVariant?.[key]||0),comparableSaved=saved&&saved.total===questions.length?saved:null;
