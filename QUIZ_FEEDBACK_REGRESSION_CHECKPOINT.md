@@ -48,3 +48,19 @@ Tested by the user on the Vercel preview on iPhone after the latest feedback cha
 ## Remaining scope limitation
 
 These manual checks cover the Physics → Energy flow on the preview. They do not constitute full browser regression coverage for all eight subjects and 32 lessons. The live app has not been changed. PR #26 remains unmerged pending final review and explicit approval.
+
+
+## Phase 1 — Quiz generation trace (2026-10-26)
+
+Inspected `lessonQuizQuestions`, `lessonQuizHTML`, `lessonQuizFeedbackText`, `submitLessonQuiz`, and `retryMissedLessonQuiz` in `learning.js` on the audit branch.
+
+- [x] Confirmed the audited scenario bank contains all 32 lesson keys.
+- [x] Confirmed the transfer-question bank contains all 32 lesson keys.
+- [x] Traced correct-answer flags through option shuffling and submission; no confirmed answer-shuffling defect found in this pass.
+- [x] Confirmed incorrect-answer feedback primarily relies on text-pattern matching in `lessonQuizDistractorReason`, with a generic fallback. This can explain why some distractors receive feedback that is not specific to the learner's misconception.
+- [x] Found that question generation checks distractors for unique text, then fills gaps from other lesson facts/answers. Text uniqueness alone does not establish that all four choices are meaningful, parallel, or unambiguous.
+- [x] Retry rotates the three wrong choices and re-renders only missed questions; manual browser testing previously confirmed the Energy retry flow works.
+
+### Phase 1 limitations / next checks
+
+This was a source-level trace, not a full runtime/content validation. Presence of all 32 lesson keys does not prove that every generated question is pedagogically sound. Next, validate all 96 generated questions for exactly one correct answer, distinct and plausible distractors, option-specific feedback coverage, and retry/scoring invariants. No app code or live deployment was changed in this phase.
