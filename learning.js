@@ -235,8 +235,6 @@ const QUIZ_CONCEPT_NOTES={
 function lessonQuizDistractorReason(name,title,skill,wrongText,correctText,conceptText){
  const wrong=String(wrongText||"").toLowerCase(),topic=String(title||"").toLowerCase(),correct=String(correctText||"").trim(),concept=String(conceptText||"").trim();
  const misconceptions=QUIZ_MISCONCEPTIONS[name]?.[title]||[];
- const known=misconceptions.find(item=>item.toLowerCase()===wrong.trim());
- if(known)return "Why this is incorrect: "+known+" The important idea is: "+(concept||correct);
  if(/\b(disappear|disappears|vanish|vanishes|used up|created from nothing|no longer conserved)\b/.test(wrong))return "Energy does not simply disappear or appear from nothing. It is transferred between objects or transformed into other forms.";
  if(/\b(changes into mass|into mass)\b/.test(wrong))return "For an ordinary stretched band, stored elastic potential energy becomes motion, with some energy transferred as sound and heat. Energy remains conserved.";
  if(/\b(only|always|never|exactly the same|all .*same)\b/.test(wrong))return "This statement is too absolute. Check the conditions in the question and the distinction explained by the correct answer: "+correct;
