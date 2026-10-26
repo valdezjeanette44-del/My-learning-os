@@ -56,3 +56,27 @@ Before changing production quiz code, add option-specific feedback reasons for t
 5. all eight subjects and all 32 lessons render successfully.
 
 No changes to `main` or the live deployment are included in this audit.
+
+
+## Detailed semantic audit — Batch 1: Physics and Chemistry
+
+Reviewed all 8 lesson topics in these two subjects across the remember, understand, and apply question templates, including their keyed answers, distractors, and explanations.
+
+### Physics — findings
+- **What does physics study?** The thrown-ball scenario correctly identifies gravity as the continuing downward force and leaves room for air resistance. The remember answer accurately describes observation, experiments, and models.
+- **Motion and speed:** The cyclist question correctly distinguishes scalar speed from velocity, which includes direction. The train calculation is correct: 120 km ÷ 2 h = 60 km/h.
+- **Energy:** The falling-book item correctly describes gravitational potential energy decreasing as kinetic energy increases, while allowing some energy to be dissipated. The elastic-band item preserves energy accounting and mentions sound/heat.
+- **Gravity and orbits:** The satellite and spacecraft items correctly explain that gravity changes direction while sideways motion sustains an orbit; the phrasing avoids saying gravity disappears in space.
+- **Distractor quality:** Wrong choices represent identifiable misconceptions (e.g., speed includes direction, energy disappears, gravity pushes outward) and are clearly distinguishable from the intended answers.
+- **No confirmed factual/keying errors found in this batch.**
+
+### Chemistry — findings
+- **What is matter made of?** Melting ice and evaporation are correctly described as physical changes; the answer distinguishes changes of state from formation of new substances.
+- **Atoms and elements:** The six-proton atom is correctly identified as carbon. Atoms with eight protons but different neutron counts are correctly described as oxygen isotopes.
+- **Chemical bonds:** Shared electron pairs are correctly identified as covalent bonding; electron transfer followed by attraction between oppositely charged ions is correctly identified as ionic bonding. The introductory explanations are simplified but appropriate for the course level.
+- **Chemical reactions:** Balancing atom counts with coefficients is correct. The bubbles question appropriately says bubbles may indicate a reaction but are not sufficient by themselves to establish exactly what occurred.
+- **Distractor quality:** The alternatives reflect common misconceptions about melting, proton/neutron identity, electron sharing/transfer, and conservation of atoms.
+- **No confirmed factual/keying errors found in this batch.**
+
+### Batch 1 disposition
+No question wording or answer-key edits are recommended for Physics or Chemistry based on this pass. Keep the cautious qualifications already present. This is a content audit, not a replacement for automated generation and live-app regression tests.
