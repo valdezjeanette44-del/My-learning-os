@@ -87,6 +87,28 @@ test("each lesson generates three valid quiz questions with one correct and thre
   }
 });
 
+test("all 96 retry-variant questions preserve one correct answer and aligned explanations", () => {
+  let total = 0;
+  for (const subject of expectedSubjects) {
+    for (const [lessonIndex] of SUBJECTS[subject].lessons.entries()) {
+      const questions = lessonQuizQuestions(subject, lessonIndex, 1);
+      assert.equal(questions.length, 3, `${subject} lesson ${lessonIndex + 1} retry should contain three questions`);
+      for (const [questionIndex, question] of questions.entries()) {
+        const label = `${subject} lesson ${lessonIndex + 1}, retry question ${questionIndex + 1}`;
+        assert.equal(question.options.filter(option => option.correct).length, 1, `${label} should have exactly one correct answer`);
+        assert.equal(question.options.length, 4, `${label} should have four choices`);
+        assert.equal(new Set(question.options.map(option => option.text.trim())).size, 4, `${label} should have four distinct choices`);
+        assert.ok(question.options.every(option => option.text.trim()), `${label} should not have empty choices`);
+        if (question.skill === "understand" || question.skill === "apply") {
+          assert.equal(question.explain, question.options.find(option => option.correct).text, `${label} explanation should match the correct answer`);
+        }
+        total += 1;
+      }
+    }
+  }
+  assert.equal(total, 96, "all 32 lessons should generate three retry-variant questions each");
+});
+
 test("shared quiz feedback removes duplicated answer explanations", () => {
   const start = learning.indexOf("function lessonQuizFeedbackText(");
   const end = learning.indexOf("\nfunction submitLessonQuiz(", start);
