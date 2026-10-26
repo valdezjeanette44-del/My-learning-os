@@ -80,3 +80,27 @@ Reviewed all 8 lesson topics in these two subjects across the remember, understa
 
 ### Batch 1 disposition
 No question wording or answer-key edits are recommended for Physics or Chemistry based on this pass. Keep the cautious qualifications already present. This is a content audit, not a replacement for automated generation and live-app regression tests.
+
+
+## Detailed semantic audit — Batch 2: Biology and History
+
+Reviewed all 8 lesson topics in these two subjects across the remember, understand, and apply question templates, including keyed answers, distractors, and explanations.
+
+### Biology — findings
+- **What is life?** Plant response to light is correctly treated as a response to the environment. The transfer question correctly explains that a dormant seed can remain living despite little visible activity.
+- **Cells: the basic unit:** The cell membrane is correctly identified as selectively regulating exchange. DNA enclosed in a nucleus indicates a eukaryotic cell; the question does not incorrectly conclude that every eukaryote is a plant.
+- **DNA and heredity:** The pigment example appropriately links a gene to a cellular process rather than suggesting genes directly choose appearance or change an organism's atomic proton counts. The sibling question appropriately accounts for inherited genetic combinations plus development and environment.
+- **Evolution by natural selection:** Both questions correctly frame population change in terms of heritable traits and differential reproduction. The pesticide example avoids implying that individual insects intentionally develop a needed mutation.
+- **Distractor quality:** Incorrect choices reflect common misconceptions about plant life, cell structures, genetic determinism, and evolution by need. They are clearly less defensible than the keyed answers.
+- **No confirmed factual/keying errors found in this batch.**
+
+### History — findings
+- **How do historians study the past?** The conflicting-source questions correctly recommend evaluating perspective, purpose, audience, and corroborating evidence rather than automatically trusting one source.
+- **Prehistory and archaeology:** The tool-context questions correctly treat archaeological context as evidence for cautious interpretation, not proof of one certain use or belief. They also correctly reject the idea that unwritten periods lack evidence.
+- **Agriculture and civilization:** Surplus food may support specialized work, while storage and ownership can affect social relations. The questions appropriately avoid claiming farming guaranteed equality or eliminated disease and conflict.
+- **Empires and exchange:** Trade routes can carry ideas, technologies, languages, and diseases. The crop example correctly distinguishes a plausible link from proof of causation.
+- **Distractor quality:** Incorrect choices represent overconfidence in a single source, certainty from artifacts, simplistic accounts of farming, and overly absolute claims about cultural exchange.
+- **No confirmed factual/keying errors found in this batch.**
+
+### Batch 2 disposition
+No question wording or answer-key edits are recommended for Biology or History based on this pass. Preserve the existing qualifications around heritability, archaeological interpretation, and causal inference. This content review does not replace the planned automated and live-app regression tests.
