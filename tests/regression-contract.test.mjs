@@ -130,7 +130,7 @@ test("quiz submission gives correct feedback, explains incorrect answers, and pe
         if (selector === "#mcq-0 .mcq-score") return score;
         const value = selected.get(selector);
         if (value === undefined) return null;
-        const match = selector.match(/mcq-0-(\d+):checked/);
+        const match = selector.match(/mcq-0-(\d+).*:checked/);
         const questionIndex = match ? Number(match[1]) : -1;
         const option = displayedQuestions[questionIndex]?.options[Number(value)];
         return { value, dataset: { correct: option?.correct ? "true" : "false", answer: option?.text || "" } };
