@@ -262,15 +262,15 @@ function lessonQuizFeedbackText(question,isCorrect,selectedIndex){
  const right=question.options.findIndex(option=>option.correct);
  const clean=value=>String(value||"").replace(/[.!?]+$/,"").trim();
  const normalize=value=>String(value||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+ const repeatsAnswer=(value,answer)=>{const a=normalize(answer),v=normalize(value);return !v||v===a||(a.length>=28&&v.includes(a))||(v.length>=28&&a.includes(v))};
  const correctAnswer=clean(question.options[right]?.text||"");
  const explanation=clean(question.explain||correctAnswer);
- const normalizedAnswer=normalize(correctAnswer),normalizedExplanation=normalize(explanation);
- const explanationRepeatsAnswer=normalizedAnswer===normalizedExplanation
-  ||(normalizedAnswer.length>=28&&normalizedExplanation.includes(normalizedAnswer))
-  ||(normalizedExplanation.length>=28&&normalizedAnswer.includes(normalizedExplanation));
- if(isCorrect)return "✓ Correct. "+(explanation||correctAnswer)+".";
- const selectedReason=clean(question.options[selectedIndex]?.reason||"");
- return "✗ Not quite. Correct answer: "+correctAnswer+"."+(selectedReason?" "+selectedReason+".":explanation&&!explanationRepeatsAnswer?" "+explanation+".":"");
+ if(isCorrect)return "✓ Correct. "+(repeatsAnswer(explanation,correctAnswer)?correctAnswer:explanation)+".";
+ const selectedText=clean(question.options[selectedIndex]?.text||"");
+ const rawReason=clean(question.options[selectedIndex]?.reason||"");
+ const selectedReason=clean(rawReason.replace(/^You chose '[^']*'\.\s*/i,"").replace(/^The key idea is:\s*/i,""));
+ const usefulExtra=[selectedReason,explanation].find(value=>value&&!repeatsAnswer(value,correctAnswer)&&normalize(value)!==normalize(selectedText));
+ return "✗ Not quite. You selected: "+selectedText+". Correct answer: "+correctAnswer+"."+(usefulExtra?" "+usefulExtra+".":"");
 }
 function submitLessonQuiz(event,name,i){
  event.preventDefault();
