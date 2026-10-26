@@ -49,7 +49,7 @@ test("philosophy feedback addresses the specific misconception in early lessons"
 test("technology feedback explains the specific misconception in early lessons", () => {
   assert.match(
     feedback["Technology|What is technology?|remember|Technology refers only to electronic devices and computers."],
-    /paper map, wheel, or hand tool.*technology/i,
+    /paper map, wheel, or hand tool.*practical problem/i,
   );
   assert.match(
     feedback["Technology|What is technology?|apply|The paper map is not technology because it cannot collect live data."],
