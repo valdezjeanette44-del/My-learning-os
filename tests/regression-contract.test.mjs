@@ -120,6 +120,7 @@ test("quiz submission gives correct feedback, explains incorrect answers, and pe
   const score = { textContent: "" };
   const retry = { hidden: true };
   const selected = new Map();
+  let displayedQuestions = [];
   const elements = { "mcq-result-0": result, "mcq-score-0": score, "mcq-retry-missed-0": retry };
   feedback.forEach((item, i) => { elements[`mcq-feedback-0-${i}`] = item; });
   const context = vm.createContext({
@@ -128,9 +129,20 @@ test("quiz submission gives correct feedback, explains incorrect answers, and pe
       querySelector: selector => {
         if (selector === "#mcq-0 .mcq-score") return score;
         const value = selected.get(selector);
-        return value === undefined ? null : { value };
+        if (value === undefined) return null;
+        const match = selector.match(/mcq-0-(\\d+):checked/);
+        const questionIndex = match ? Number(match[1]) : -1;
+        const option = displayedQuestions[questionIndex]?.options[Number(value)];
+        return { value, dataset: { correct: option?.correct ? "true" : "false", answer: option?.text || "" } };
       },
-      querySelectorAll: () => [],
+      querySelectorAll: selector => {
+        const match = selector.match(/mcq-0-(\\d+)/);
+        const questionIndex = match ? Number(match[1]) : -1;
+        return (displayedQuestions[questionIndex]?.options || []).map(option => ({
+          dataset: { correct: option.correct ? "true" : "false", answer: option.text },
+          parentElement: { querySelector: () => ({ textContent: option.text }) },
+        }));
+      },
       getElementById: id => elements[id] || null,
     },
     state: () => JSON.parse(JSON.stringify(saved)),
@@ -146,6 +158,7 @@ test("quiz submission gives correct feedback, explains incorrect answers, and pe
     { timeout: 1000 },
   );
   const questions = vm.runInContext('lessonQuizQuestions("Physics", 0)', context);
+  displayedQuestions = questions;
   assert.equal(questions.length, 3, "test lesson should generate three questions");
   questions.forEach((q, i) => {
     selected.set(`input[name="mcq-0-${i}"]:checked`, String(q.options.findIndex(option => option.correct)));
