@@ -44,3 +44,23 @@ test("philosophy feedback addresses the specific misconception in early lessons"
     /outdated.*current situation/i,
   );
 });
+
+
+test("technology feedback explains the specific misconception in early lessons", () => {
+  assert.match(
+    feedback["Technology|What is technology?|remember|Technology refers only to electronic devices and computers."],
+    /paper map, wheel, or hand tool.*technology/i,
+  );
+  assert.match(
+    feedback["Technology|What is technology?|apply|The paper map is not technology because it cannot collect live data."],
+    /paper map is still technology.*Live updates are a feature/i,
+  );
+  assert.match(
+    feedback["Technology|How does the internet work?|remember|Data travels across the internet without shared protocols or addressing."],
+    /shared communication rules and addressing/i,
+  );
+  assert.match(
+    feedback["Technology|How does the internet work?|understand|The browser downloads the entire internet first."],
+    /does not download the whole internet/i,
+  );
+});
