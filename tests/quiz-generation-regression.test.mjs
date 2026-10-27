@@ -129,3 +129,28 @@ test("Economics supply/demand misconception feedback reaches the rendered quiz m
   assert.match(message, /supply describes how much sellers are willing and able to offer/i);
   assert.doesNotMatch(message, /chosen option mixes up that relationship/i);
 });
+
+
+test("Economics trade question 2 uses its specific feedback in the generated quiz message", () => {
+  const question = generate("Economics", 3, 0)[1];
+  const wrongText = "Absolute advantage means one country must produce everything.";
+  const wrongIndex = question.options.findIndex(option => option.text === wrongText);
+  assert.notEqual(wrongIndex, -1, "the absolute-advantage misconception should be a distractor");
+  assert.match(question.options[wrongIndex].reason, /comparative advantage.*opportunity cost/i);
+  const message = vm.runInContext("lessonQuizFeedbackText", context)(question, false, wrongIndex);
+  assert.match(message, /absolute advantage means producing a good with fewer resources/i);
+  assert.match(message, /comparative advantage.*opportunity cost/i);
+  assert.doesNotMatch(message, /chosen option mixes up that relationship/i);
+});
+
+test("Economics trade question 3 uses its specific feedback in the generated quiz message", () => {
+  const question = generate("Economics", 3, 0)[2];
+  const wrongText = "The baker must do both tasks because being better at both removes gains from trade.";
+  const wrongIndex = question.options.findIndex(option => option.text === wrongText);
+  assert.notEqual(wrongIndex, -1, "the baker/helper misconception should be a distractor");
+  assert.match(question.options[wrongIndex].reason, /helper may give up less baking output when cleaning/i);
+  const message = vm.runInContext("lessonQuizFeedbackText", context)(question, false, wrongIndex);
+  assert.match(message, /baker is more productive at both tasks/i);
+  assert.match(message, /helper may give up less baking output when cleaning/i);
+  assert.doesNotMatch(message, /chosen option mixes up that relationship/i);
+});
