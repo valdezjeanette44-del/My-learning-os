@@ -583,7 +583,8 @@ function lessonQuizFeedbackText(question,isCorrect,selectedIndex){
  const rawReason=clean(selectedOption?.reason||"");
  const selectedReason=clean(rawReason.replace(/^You chose '[^']*'\.\s*/i,"").replace(/^The key idea is:\s*/i,""));
  const usefulExtra=[selectedReason,explanation].find(value=>value&&!repeatsAnswer(value,correctAnswer)&&normalize(value)!==normalize(selectedText));
- if(!selectedOption)return "✗ Not quite. Correct answer: "+correctAnswer+"."+(usefulExtra?" "+usefulExtra+".":"");
+ const conciseExtra=usefulExtra?clean(usefulExtra.split(/(?<=[.!?])\s+/)[0]):"";
+ if(!selectedOption)return "✗ Not quite. Correct answer: "+correctAnswer+"."+(conciseExtra?" "+conciseExtra+".":"");
  return "✗ Not quite. You selected: "+selectedText+". Correct answer: "+correctAnswer+"."+(usefulExtra?" "+usefulExtra+".":"");
 }
 function submitLessonQuiz(event,name,i){
