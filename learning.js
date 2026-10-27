@@ -1100,7 +1100,7 @@ function renderReview(){
    <div class="memory-stat"><strong>${uniqueDue.length*2} min</strong><span>Estimated</span></div>
   </div>
   <section class="memory-start"><div class="memory-start-icon" aria-hidden="true">🧠</div><div class="memory-start-copy"><h2>Ready to strengthen your memory?</h2><p>Review your due concepts across your learning subjects.</p></div><a class="button memory-start-button" href="${nextHref}">${uniqueDue.length?'Start review →':'View next review →'}</a></section>
-  <section class="memory-coming"><h2>Coming up</h2>${uniqueUpcoming.slice(0,5).map(reviewRow).join('')||'<div class="empty">No upcoming reviews yet. Complete a lesson or quiz to schedule your next review.</div>'}</section>
+  <section class="memory-coming"><h2>Coming up</h2>${uniqueUpcoming.map(reviewRow).join('')||'<div class="empty">No upcoming reviews yet. Complete a lesson or quiz to schedule your next review.</div>'}</section>
   ${uniqueDue.length?'<section class="memory-coming"><h2>Due now</h2>'+uniqueDue.map(reviewRow).join('')+'</section>':''}
  </section>
  <section class="panel memory-how"><h2>How your review grows</h2><p>After a lesson, the first review is scheduled for tomorrow. As you remember concepts successfully, the interval grows: 1 day → 3 days → 7 days → 14 days → 30 days. Quiz reviews adapt to your result.</p></section>
