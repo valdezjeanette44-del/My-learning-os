@@ -154,3 +154,17 @@ test("Economics trade question 3 uses its specific feedback in the generated qui
   assert.match(message, /helper may give up less baking output when cleaning/i);
   assert.doesNotMatch(message, /chosen option mixes up that relationship/i);
 });
+
+
+test("Economics trade question 1 explains why specialization can benefit both sides", () => {
+  const question = generate("Economics", 3, 0)[0];
+  const wrongText = "Specialization always reduces productivity and makes trade unnecessary.";
+  const wrongIndex = question.options.findIndex(option => option.text === wrongText);
+  assert.notEqual(wrongIndex, -1, "the specialization misconception should be a distractor");
+  const message = vm.runInContext("lessonQuizFeedbackText", context)(question, false, wrongIndex);
+  assert.match(message, /specialization does not automatically reduce productivity/i);
+  assert.match(message, /lower opportunity cost/i);
+  assert.match(message, /trading with others/i);
+  assert.match(message, /both sides better off/i);
+  assert.doesNotMatch(message, /Compare it with the specific conditions/i);
+});
