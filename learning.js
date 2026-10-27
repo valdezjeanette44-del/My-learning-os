@@ -584,7 +584,7 @@ function lessonQuizFeedbackText(question,isCorrect,selectedIndex){
  const selectedReason=clean(rawReason.replace(/^You chose '[^']*'\.\s*/i,"").replace(/^The key idea is:\s*/i,""));
  const usefulExtra=[selectedReason,explanation].find(value=>value&&!repeatsAnswer(value,correctAnswer)&&normalize(value)!==normalize(selectedText));
  const firstExtra=usefulExtra?clean(usefulExtra.split(/(?<=[.!?])\s+/)[0]):"";
- const conciseExtra=firstExtra.split(/\s+/).length>16?firstExtra.split(/\s+/).slice(0,16).join(" ").replace(/[,:;—-]+$/,"")+"…":firstExtra;
+ const conciseExtra=firstExtra; // Keep the complete first sentence; word-count truncation produced unfinished feedback on mobile.
  if(!selectedOption)return "✗ Not quite. Correct answer: "+correctAnswer+"."+(conciseExtra?" "+conciseExtra+".":"");
  return "✗ Not quite. You selected: "+selectedText+". Correct answer: "+correctAnswer+"."+(conciseExtra?" "+conciseExtra+".":"");
 }
