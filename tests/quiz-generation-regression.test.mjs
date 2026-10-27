@@ -97,3 +97,20 @@ test("quiz submission and review navigation retain their regression hooks", () =
   assert.match(source, /reviewHref/);
   assert.match(source, /mcq-retry-missed-/);
 });
+
+
+test("Chemistry chemical-reactions feedback is specific to balancing equations and bubbles", () => {
+  const feedback = vm.runInContext("QUIZ_DISTRACTOR_FEEDBACK", context);
+  const expected = [
+    ["Chemistry|Chemical reactions|understand|Delete extra oxygen atoms from the reactants.", /balanced equation.*same number of each type of atom.*do not delete atoms/i],
+    ["Chemistry|Chemical reactions|understand|Change oxygen atoms into another element.", /does not turn oxygen into another element.*adjust coefficients/i],
+    ["Chemistry|Chemical reactions|understand|Leave it unbalanced because atom counts do not matter.", /atom counts matter.*balanced on both sides/i],
+    ["Chemistry|Chemical reactions|apply|The mixture must be boiling, so a chemical reaction is impossible.", /bubbles.*gas is forming.*additional evidence/i],
+    ["Chemistry|Chemical reactions|apply|Any visible change proves a new element formed.", /visible change.*does not automatically mean a new element formed/i],
+    ["Chemistry|Chemical reactions|apply|Bubbles prove every atom has been destroyed.", /atoms have been destroyed.*atoms are rearranged/i],
+  ];
+  for (const [key, pattern] of expected) {
+    assert.ok(feedback[key], `missing distractor feedback: ${key}`);
+    assert.match(feedback[key], pattern, `feedback should explain the specific misconception: ${key}`);
+  }
+});
