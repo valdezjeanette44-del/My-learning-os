@@ -1,0 +1,99 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import vm from "node:vm";
+
+const source = await readFile("learning.js", "utf8");
+
+// Evaluate the real lesson and quiz banks from learning.js, rather than a copied fixture.
+const declarations = [
+  "SUBJECTS",
+  "QUIZ_MISCONCEPTIONS",
+  "QUIZ_AUDIT_BANK",
+  "QUIZ_TRANSFER_BANK",
+  "QUIZ_MISCONCEPTION_STEMS",
+  "QUIZ_TOPIC_LABELS",
+  "QUIZ_CONCEPT_NOTES",
+  "QUIZ_DISTRACTOR_FEEDBACK",
+];
+const context = vm.createContext({});
+for (const name of declarations) {
+  const startMatch = new RegExp("const\\s+" + name + "\\s*=").exec(source);
+  assert.ok(startMatch, `missing declaration: ${name}`);
+  const start = startMatch.index;
+  const nextDeclaration = source.indexOf("\\nconst ", start + startMatch[0].length);
+  const sameLineDeclaration = source.indexOf("; const ", start + startMatch[0].length);
+  const candidates = [nextDeclaration, sameLineDeclaration].filter(index => index >= 0);
+  const end = candidates.length ? Math.min(...candidates) : source.length;
+  const declaration = source.slice(start, end).trim();
+  vm.runInContext(declaration, context, { timeout: 1000 });
+}
+
+const reasonStart = source.indexOf("function lessonQuizDistractorReason(");
+const reasonEnd = source.indexOf("\\nfunction ", reasonStart + 10);
+assert.ok(reasonStart >= 0 && reasonEnd > reasonStart, "quiz feedback fallback function should exist");
+vm.runInContext(source.slice(reasonStart, reasonEnd), context, { timeout: 1000 });
+
+const generatorStart = source.indexOf("function lessonQuizQuestions(");
+const generatorEnd = source.indexOf("\\nfunction ", generatorStart + 10);
+assert.ok(generatorStart >= 0 && generatorEnd > generatorStart, "quiz generator should exist");
+vm.runInContext(source.slice(generatorStart, generatorEnd), context, { timeout: 1000 });
+
+const subjects = vm.runInContext("SUBJECTS", context);
+const generate = vm.runInContext("lessonQuizQuestions", context);
+
+test("all eight subjects and 32 lesson definitions are present", () => {
+  assert.equal(Object.keys(subjects).length, 8);
+  let totalLessons = 0;
+  for (const [subject, definition] of Object.entries(subjects)) {
+    assert.equal(definition.lessons.length, 4, `${subject} should define four lessons`);
+    totalLessons += definition.lessons.length;
+  }
+  assert.equal(totalLessons, 32);
+});
+
+test("every lesson generates three valid questions in both initial and retry variants", () => {
+  for (const [subject, definition] of Object.entries(subjects)) {
+    for (let lessonIndex = 0; lessonIndex < definition.lessons.length; lessonIndex++) {
+      const title = definition.lessons[lessonIndex][0];
+      const initial = generate(subject, lessonIndex, 0);
+      const retry = generate(subject, lessonIndex, 1);
+      assert.equal(initial.length, 3, `${subject} / ${title}: initial question count`);
+      assert.equal(retry.length, 3, `${subject} / ${title}: retry question count`);
+
+      for (let questionIndex = 0; questionIndex < 3; questionIndex++) {
+        for (const [variantName, question] of [["initial", initial[questionIndex]], ["retry", retry[questionIndex]]]) {
+          const label = `${subject} / ${title} / Q${questionIndex + 1} / ${variantName}`;
+          assert.equal(question.options.length, 4, `${label}: exactly four options`);
+          const texts = question.options.map(option => option.text.trim());
+          assert.ok(texts.every(Boolean), `${label}: option text must not be empty`);
+          assert.equal(new Set(texts).size, 4, `${label}: options must be unique`);
+          assert.equal(question.options.filter(option => option.correct).length, 1, `${label}: exactly one correct option`);
+          assert.ok(question.q && question.q.trim(), `${label}: question prompt must not be empty`);
+          for (const option of question.options.filter(option => !option.correct)) {
+            assert.ok(option.reason && option.reason.trim(), `${label}: every wrong option needs feedback`);
+          }
+        }
+
+        const correctInitial = initial[questionIndex].options.find(option => option.correct).text;
+        const correctRetry = retry[questionIndex].options.find(option => option.correct).text;
+        assert.equal(correctRetry, correctInitial, `${subject} / ${title} / Q${questionIndex + 1}: retry must preserve the correct answer`);
+        assert.deepEqual(
+          retry[questionIndex].options.filter(option => !option.correct).map(option => option.text).sort(),
+          initial[questionIndex].options.filter(option => !option.correct).map(option => option.text).sort(),
+          `${subject} / ${title} / Q${questionIndex + 1}: retry must preserve the same distractors`,
+        );
+      }
+    }
+  }
+});
+
+test("quiz submission and review navigation retain their regression hooks", () => {
+  assert.match(source, /function submitLessonQuiz\\(/);
+  assert.match(source, /function retryMissedLessonQuiz\\(/);
+  assert.match(source, /function renderReview\\(/);
+  assert.match(source, /quizResults/);
+  assert.match(source, /lastScore/);
+  assert.match(source, /reviewHref/);
+  assert.match(source, /mcq-retry-missed-/);
+});
