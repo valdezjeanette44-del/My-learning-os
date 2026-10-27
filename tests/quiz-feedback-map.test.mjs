@@ -114,3 +114,25 @@ test("physics, chemistry, economics, and business feedback corrects core misconc
     /Revenue is money earned from sales.*profit.*costs/i,
   );
 });
+
+test("Economics trade feedback explains absolute versus comparative advantage", () => {
+  assert.match(
+    feedback["Economics|Trade and specialization|understand|Absolute advantage means one country must produce everything."],
+    /absolute advantage means producing a good with fewer resources.*comparative advantage.*opportunity cost/i,
+  );
+  assert.doesNotMatch(
+    feedback["Economics|Trade and specialization|understand|Absolute advantage means one country must produce everything."],
+    /chosen option mixes up that relationship/i,
+  );
+});
+
+test("Economics trade feedback explains why comparative advantage can support specialization", () => {
+  assert.match(
+    feedback["Economics|Trade and specialization|apply|The baker must do both tasks because being better at both removes gains from trade."],
+    /baker is more productive at both tasks.*helper may give up less baking output when cleaning.*specialization worthwhile/i,
+  );
+  assert.doesNotMatch(
+    feedback["Economics|Trade and specialization|apply|The baker must do both tasks because being better at both removes gains from trade."],
+    /chosen option mixes up that relationship/i,
+  );
+});
