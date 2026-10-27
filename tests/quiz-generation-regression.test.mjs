@@ -21,7 +21,7 @@ for (const name of declarations) {
   const startMatch = new RegExp("const\\s+" + name + "\\s*=").exec(source);
   assert.ok(startMatch, `missing declaration: ${name}`);
   const start = startMatch.index;
-  const nextDeclaration = source.indexOf("\\nconst ", start + startMatch[0].length);
+  const nextDeclaration = source.indexOf("\nconst ", start + startMatch[0].length);
   const sameLineDeclaration = source.indexOf("; const ", start + startMatch[0].length);
   const candidates = [nextDeclaration, sameLineDeclaration].filter(index => index >= 0);
   const end = candidates.length ? Math.min(...candidates) : source.length;
@@ -30,12 +30,12 @@ for (const name of declarations) {
 }
 
 const reasonStart = source.indexOf("function lessonQuizDistractorReason(");
-const reasonEnd = source.indexOf("\\nfunction ", reasonStart + 10);
+const reasonEnd = source.indexOf("\nfunction ", reasonStart + 10);
 assert.ok(reasonStart >= 0 && reasonEnd > reasonStart, "quiz feedback fallback function should exist");
 vm.runInContext(source.slice(reasonStart, reasonEnd), context, { timeout: 1000 });
 
 const generatorStart = source.indexOf("function lessonQuizQuestions(");
-const generatorEnd = source.indexOf("\\nfunction ", generatorStart + 10);
+const generatorEnd = source.indexOf("\nfunction ", generatorStart + 10);
 assert.ok(generatorStart >= 0 && generatorEnd > generatorStart, "quiz generator should exist");
 vm.runInContext(source.slice(generatorStart, generatorEnd), context, { timeout: 1000 });
 
@@ -89,9 +89,9 @@ test("every lesson generates three valid questions in both initial and retry var
 });
 
 test("quiz submission and review navigation retain their regression hooks", () => {
-  assert.match(source, /function submitLessonQuiz\\(/);
-  assert.match(source, /function retryMissedLessonQuiz\\(/);
-  assert.match(source, /function renderReview\\(/);
+  assert.match(source, /function submitLessonQuiz\(/);
+  assert.match(source, /function retryMissedLessonQuiz\(/);
+  assert.match(source, /function renderReview\(/);
   assert.match(source, /quizResults/);
   assert.match(source, /lastScore/);
   assert.match(source, /reviewHref/);
