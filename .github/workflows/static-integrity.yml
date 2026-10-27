@@ -2,7 +2,6 @@ name: Static integrity checks
 
 on:
   pull_request:
-  workflow_dispatch:
   push:
     branches:
       - main
