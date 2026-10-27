@@ -39,6 +39,11 @@ const generatorEnd = source.indexOf("\nfunction ", generatorStart + 10);
 assert.ok(generatorStart >= 0 && generatorEnd > generatorStart, "quiz generator should exist");
 vm.runInContext(source.slice(generatorStart, generatorEnd), context, { timeout: 1000 });
 
+const feedbackStart = source.indexOf("function lessonQuizFeedbackText(");
+const feedbackEnd = source.indexOf("\\nfunction ", feedbackStart + 10);
+assert.ok(feedbackStart >= 0 && feedbackEnd > feedbackStart, "quiz feedback renderer should exist");
+vm.runInContext(source.slice(feedbackStart, feedbackEnd), context, { timeout: 1000 });
+
 const subjects = vm.runInContext("SUBJECTS", context);
 const generate = vm.runInContext("lessonQuizQuestions", context);
 
@@ -113,4 +118,14 @@ test("Chemistry chemical-reactions feedback is specific to balancing equations a
     assert.ok(feedback[key], `missing distractor feedback: ${key}`);
     assert.match(feedback[key], pattern, `feedback should explain the specific misconception: ${key}`);
   }
+});
+
+test("Economics supply/demand misconception feedback reaches the rendered quiz message", () => {
+  const question = generate("Economics", 1, 0)[0];
+  const wrongIndex = question.options.findIndex(option => option.text === "Supply means how much buyers want to purchase at each price.");
+  assert.notEqual(wrongIndex, -1, "the known supply/demand misconception should be a distractor");
+  const message = vm.runInContext("lessonQuizFeedbackText", context)(question, false, wrongIndex);
+  assert.match(message, /Demand describes how much buyers are willing and able to buy/i);
+  assert.match(message, /supply describes how much sellers are willing and able to offer/i);
+  assert.doesNotMatch(message, /chosen option mixes up that relationship/i);
 });
