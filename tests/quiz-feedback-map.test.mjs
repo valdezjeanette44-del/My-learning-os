@@ -95,3 +95,22 @@ test("history feedback explains source evaluation and archaeological evidence", 
     /objects and their archaeological context are evidence/i,
   );
 });
+
+test("physics, chemistry, economics, and business feedback corrects core misconceptions", () => {
+  assert.match(
+    feedback["Physics|What does physics study?|remember|Physics studies only planets and stars, not everyday objects."],
+    /falling balls.*stars.*not limited to astronomy/i,
+  );
+  assert.match(
+    feedback["Chemistry|What is matter made of?|remember|Melting creates a completely new substance every time."],
+    /physical change.*chemical identity/i,
+  );
+  assert.match(
+    feedback["Economics|What is economics?|remember|Opportunity cost is the money price only, never time or another choice."],
+    /next-best alternative.*time.*not just the money price/i,
+  );
+  assert.match(
+    feedback["Business|What is a business?|remember|Revenue alone guarantees that a business is profitable."],
+    /Revenue is money earned from sales.*profit.*costs/i,
+  );
+});
