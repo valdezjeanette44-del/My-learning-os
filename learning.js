@@ -585,7 +585,7 @@ function lessonQuizFeedbackText(question,isCorrect,selectedIndex){
  const usefulExtra=[selectedReason,explanation].find(value=>value&&!repeatsAnswer(value,correctAnswer)&&normalize(value)!==normalize(selectedText));
  const conciseExtra=usefulExtra?clean(usefulExtra.split(/(?<=[.!?])\s+/)[0]):"";
  if(!selectedOption)return "✗ Not quite. Correct answer: "+correctAnswer+"."+(conciseExtra?" "+conciseExtra+".":"");
- return "✗ Not quite. You selected: "+selectedText+". Correct answer: "+correctAnswer+"."+(usefulExtra?" "+usefulExtra+".":"");
+ return "✗ Not quite. You selected: "+selectedText+". Correct answer: "+correctAnswer+"."+(conciseExtra?" "+conciseExtra+".":"");
 }
 function submitLessonQuiz(event,name,i){
  event.preventDefault();
