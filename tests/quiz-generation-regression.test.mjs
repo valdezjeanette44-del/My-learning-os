@@ -40,7 +40,7 @@ assert.ok(generatorStart >= 0 && generatorEnd > generatorStart, "quiz generator 
 vm.runInContext(source.slice(generatorStart, generatorEnd), context, { timeout: 1000 });
 
 const feedbackStart = source.indexOf("function lessonQuizFeedbackText(");
-const feedbackEnd = source.indexOf("\\nfunction ", feedbackStart + 10);
+const feedbackEnd = source.indexOf("\nfunction ", feedbackStart + 10);
 assert.ok(feedbackStart >= 0 && feedbackEnd > feedbackStart, "quiz feedback renderer should exist");
 vm.runInContext(source.slice(feedbackStart, feedbackEnd), context, { timeout: 1000 });
 
