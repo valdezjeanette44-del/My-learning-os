@@ -30,3 +30,11 @@ test("Review dashboard compact styles are scoped to memory components", async ()
   assert.match(css, /\.memory-start-copy h2/);
   assert.match(css, /\.memory-review-row/);
 });
+
+test("Review dashboard count badges render real counts and the empty progress state is readable", async () => {
+  const source = await readFile("learning.js", "utf8");
+  assert.match(source, /<h2>Due today <span class="memory-count">\$\{dueTodayItems\.length\}<\/span><\/h2>/);
+  assert.match(source, /<h2>Coming up <span class="memory-count">\$\{upcomingItems\.length\}<\/span><\/h2>/);
+  assert.match(source, /const progressLabel=progressTotal\?completedToday\+' \/ '\+progressTotal:'All caught up'/);
+  assert.doesNotMatch(source, /memory-count">['"]\+dueTodayItems\.length\+/);
+});
