@@ -675,3 +675,67 @@ body{background:var(--garden-paper);color:var(--garden-ink)}
 .memory-priorities-intro h2{font-size:1.12rem;line-height:1.25;margin:0 0 5px}
 .memory-priorities-intro p{color:#666;font-size:.9rem;line-height:1.45;margin:0}
 @media(max-width:650px){.memory-priorities-intro h2{font-size:1.08rem}.memory-priorities-intro p{font-size:.88rem}}
+
+
+/* Approved compact Review dashboard reference: card-based priority groups. */
+.memory-start-button{
+  display:block;width:100%;padding:13px 16px;border-radius:15px;
+  background:#4f46e5;color:#fff;text-align:center;text-decoration:none;
+  font-weight:750;line-height:1.35;
+}
+.memory-priority-card{
+  margin-top:14px;padding:15px 16px;border:1px solid #e7e5e4;
+  border-radius:22px;background:rgba(255,255,255,.82);
+  box-shadow:0 2px 8px rgba(39,35,30,.035);
+}
+.memory-priority-card h2{
+  display:flex;align-items:center;gap:9px;margin:0 0 10px;
+  padding-right:25px;position:relative;font-size:1.18rem;line-height:1.35;
+}
+.memory-priority-card h2::after{
+  content:"";position:absolute;right:2px;top:50%;width:8px;height:8px;
+  border-top:3px solid currentColor;border-right:3px solid currentColor;
+  transform:translateY(-50%) rotate(45deg);border-radius:1px;
+}
+.memory-priority-card .memory-count{flex:none}
+.memory-priority-card .memory-review-row{
+  grid-template-columns:64px minmax(0,1fr) auto;gap:12px;
+  padding:13px 0;border-bottom:1px solid #eceaf0;
+}
+.memory-priority-card .memory-review-row:last-child{border-bottom:0;padding-bottom:2px}
+.memory-priority-card .memory-review-icon{width:64px;height:64px;border-radius:18px;font-size:1.8rem}
+.memory-priority-card .memory-review-copy small{
+  display:block;color:#5146c8;text-transform:uppercase;font-size:.78rem;
+  letter-spacing:.025em;line-height:1.35;
+}
+.memory-priority-card .memory-review-copy h3{font-size:1.05rem;line-height:1.25;margin:3px 0}
+.memory-priority-card .memory-review-copy p{font-size:.88rem;line-height:1.35}
+.memory-priority-card .memory-review-link{
+  align-self:center;grid-column:auto;justify-self:end;margin:0;
+  padding:9px 14px;border-radius:999px;background:#f0efff;
+  color:#4f46e5;font-size:.88rem;font-weight:750;
+}
+.memory-empty-due{
+  display:flex;align-items:center;gap:14px;padding:10px 0 3px;
+  background:transparent;border-radius:0;
+}
+.memory-empty-due>span{
+  flex:none;display:grid;place-items:center;width:56px;height:56px;
+  border-radius:17px;background:#f1f0fb;color:#6b5ce7;font-size:1.5rem;
+}
+.memory-empty-due p{margin:0;color:#666;line-height:1.5}
+@media(max-width:650px){
+  .memory-start-button{padding:13px 12px;font-size:.94rem}
+  .memory-priority-card{padding:13px 14px;border-radius:20px}
+  .memory-priority-card h2{font-size:1.08rem;margin-bottom:8px}
+  .memory-priority-card .memory-review-row{
+    grid-template-columns:48px minmax(0,1fr);gap:10px;padding:12px 0;
+  }
+  .memory-priority-card .memory-review-icon{width:48px;height:48px;border-radius:14px;font-size:1.4rem}
+  .memory-priority-card .memory-review-copy small{font-size:.7rem}
+  .memory-priority-card .memory-review-copy h3{font-size:.96rem}
+  .memory-priority-card .memory-review-copy p{font-size:.8rem;line-height:1.35}
+  .memory-priority-card .memory-review-link{grid-column:2;justify-self:start;padding:7px 12px;margin-top:4px}
+  .memory-empty-due{gap:11px;padding:8px 0 2px}
+  .memory-empty-due>span{width:48px;height:48px;border-radius:14px;font-size:1.3rem}
+}
