@@ -1111,13 +1111,14 @@ function renderReview(){
   </div>
   <section class="memory-start">
    <div class="memory-start-copy"><h2>Ready to strengthen your memory?</h2><p>Review your due concepts across your learning subjects.</p></div>
-   <a class="button memory-start-button" href="${nextHref}">${dueCount?'Start review · '+dueCount+' item'+(dueCount===1?'':'s')+' →':'View next review →'}</a>
+   <a class="button memory-start-button" href="${nextHref}">Start today's review →</a>
   </section>
   <section class="memory-progress" aria-label="Today's review progress">
-   <div class="memory-progress-heading"><h2>Today's progress</h2><strong>${progressLabel}</strong></div>
+   <div class="memory-progress-heading"><h2>Your daily progress</h2><strong>${progressLabel}</strong></div>
    <div class="bar" role="progressbar" aria-label="Reviews completed today" aria-valuemin="0" aria-valuemax="${Math.max(progressTotal,1)}" aria-valuenow="${completedToday}"><div style="width:${progressPercent}%"></div></div>
    <p>${progressTotal?progressPercent+'% complete today':'Your progress will appear as you complete reviews.'}</p>
   </section>
+  <section class="memory-priorities-intro"><h2>Review priorities</h2><p>Separate overdue work from today's tasks and future reviews.</p></section>
   ${overdueItems.length?'<section class="memory-coming"><h2>Overdue <span class="memory-count">'+overdueItems.length+'</span></h2>'+overdueItems.map(reviewRow).join('')+'</section>':''}
   <section class="memory-coming"><h2>Due today <span class="memory-count">${dueTodayItems.length}</span></h2>${dueTodayItems.map(reviewRow).join('')||'<div class="empty">No reviews due today. You are all caught up.</div>'}</section>
   <section class="memory-coming"><h2>Coming up <span class="memory-count">${upcomingItems.length}</span></h2>${upcomingItems.slice(0,8).map(reviewRow).join('')||'<div class="empty">No upcoming reviews yet. Complete a lesson or quiz to schedule your next review.</div>'}</section>
