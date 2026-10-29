@@ -38,3 +38,13 @@ test("Review dashboard count badges render real counts and the empty progress st
   assert.match(source, /const progressLabel=progressTotal\?completedToday\+' \/ '\+progressTotal:'All caught up'/);
   assert.doesNotMatch(source, /memory-count">['"]\+dueTodayItems\.length\+/);
 });
+
+
+test("Review dashboard uses the requested daily progress label, primary action, and priorities heading", async () => {
+  const source = await readFile("learning.js", "utf8");
+  const css = await readFile("styles.css", "utf8");
+  assert.match(source, /<h2>Your daily progress<\/h2>/);
+  assert.match(source, /memory-start-button[^>]*>Start today's review →<\/a>/);
+  assert.match(source, /<section class="memory-priorities-intro"><h2>Review priorities<\/h2><p>Separate overdue work from today's tasks and future reviews\.<\/p><\/section>\s*\$\{overdueItems\.length\?/);
+  assert.match(css, /\.memory-priorities-intro\{margin-top:18px\}/);
+});
