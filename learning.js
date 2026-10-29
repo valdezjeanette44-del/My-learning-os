@@ -1086,7 +1086,7 @@ function renderReview(){
  const allItems=[...lessonSchedules,...quizSchedules];
  const uniqueItems=allItems.filter((x,i,a)=>a.findIndex(y=>y.type===x.type&&y.subject===x.subject&&y.index===x.index)===i);
  const completedIds=new Set((s.reviewCompletions||{})[todayKey]||[]);
- const remainingItems=uniqueItems.filter(x=>!completedIds.has(x.type+':'+x.subject+':'+x.index));
+ const remainingItems=uniqueItems.filter(x=>localReviewDayKey(x.date)>todayKey||!completedIds.has(x.type+':'+x.subject+':'+x.index));
  const overdueItems=remainingItems.filter(x=>localReviewDayKey(x.date)<todayKey).sort((a,b)=>a.date-b.date);
  const dueTodayItems=remainingItems.filter(x=>localReviewDayKey(x.date)===todayKey).sort((a,b)=>a.date-b.date);
  const upcomingItems=remainingItems.filter(x=>localReviewDayKey(x.date)>todayKey).sort((a,b)=>a.date-b.date);
