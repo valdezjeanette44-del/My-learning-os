@@ -603,7 +603,7 @@ function submitLessonQuiz(event,name,i){
  });
  const s=state();s.quizResults=s.quizResults||{};const key=name+'-'+i,previous=s.quizResults[key]||{attempts:0,best:0};
  const skillNames=questions.map(q=>q.skill||'understanding');const missedSkills=missed.map(qi=>skillNames[qi]);const comparableBest=previous.total===questions.length?(previous.best||0):0;const best=Math.max(comparableBest,correct);const mastered=correct===questions.length;const reviewDays=mastered?7:1;s.quizResults[key]={...previous,subject:name,index:i,correct,total:questions.length,best,attempts:(previous.attempts||0)+1,lastAnswers:answers,lastScore:correct,missed,missedSkills,mastered,conceptsToReview:[...new Set(missedSkills)],nextReviewAt:new Date(Date.now()+reviewDays*86400000).toISOString(),updatedAt:new Date().toISOString()};
- if(String(location.search||'').includes('review=quiz')){const day=localReviewDayKey(new Date()),id='quiz:'+name+':'+i;s.reviewCompletions=s.reviewCompletions||{};s.reviewCompletions[day]=s.reviewCompletions[day]||[];if(!s.reviewCompletions[day].includes(id))s.reviewCompletions[day].push(id);}
+ if(typeof location!=='undefined'&&String(location.search||'').includes('review=quiz')){const day=localReviewDayKey(new Date()),id='quiz:'+name+':'+i;s.reviewCompletions=s.reviewCompletions||{};s.reviewCompletions[day]=s.reviewCompletions[day]||[];if(!s.reviewCompletions[day].includes(id))s.reviewCompletions[day].push(id);}
  saveState(s);
  result.textContent='You got '+correct+' out of '+questions.length+' correct ('+Math.round(correct/questions.length*100)+'%). Best: '+s.quizResults[key].best+'/'+questions.length+' · Attempts: '+s.quizResults[key].attempts+'. Your score is saved on this device.';
  const score=document.querySelector('#mcq-'+i+' .mcq-score');if(score)score.textContent='Best: '+s.quizResults[key].best+'/'+questions.length;
@@ -1075,7 +1075,7 @@ function getQuizReviewItems(){
   if(!lesson)return;
   const nextReviewAt=new Date(result.nextReviewAt);
   if(Number.isNaN(nextReviewAt.getTime()))return;
-  items.push({key,subject:result.subject,index:result.index,lesson,result,nextReviewAt,due:localReviewDayKey(nextReviewAt)<=localReviewDayKey(new Date())});
+  items.push({key,subject:result.subject,index:result.index,lesson,result,nextReviewAt,due:nextReviewAt<=new Date()});
  });
  return items.sort((a,b)=>a.nextReviewAt-b.nextReviewAt);
 }
