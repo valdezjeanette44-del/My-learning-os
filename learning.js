@@ -1119,9 +1119,9 @@ function renderReview(){
    <p>${progressTotal?progressPercent+'% complete today':'Your progress will appear as you complete reviews.'}</p>
   </section>
   <section class="memory-priorities-intro"><h2>Review priorities</h2><p>Separate overdue work from today's tasks and future reviews.</p></section>
-  ${overdueItems.length?'<section class="memory-coming"><h2>Overdue <span class="memory-count">'+overdueItems.length+'</span></h2>'+overdueItems.map(reviewRow).join('')+'</section>':''}
-  <section class="memory-coming"><h2>Due today <span class="memory-count">${dueTodayItems.length}</span></h2>${dueTodayItems.map(reviewRow).join('')||'<div class="empty">No reviews due today. You are all caught up.</div>'}</section>
-  <section class="memory-coming"><h2>Coming up <span class="memory-count">${upcomingItems.length}</span></h2>${upcomingItems.slice(0,8).map(reviewRow).join('')||'<div class="empty">No upcoming reviews yet. Complete a lesson or quiz to schedule your next review.</div>'}</section>
+  ${overdueItems.length?'<section class="memory-coming memory-priority-card"><h2>Overdue <span class="memory-count">'+overdueItems.length+'</span></h2>'+overdueItems.map(reviewRow).join('')+'</section>':''}
+  <section class="memory-coming memory-priority-card"><h2>Due today <span class="memory-count">${dueTodayItems.length}</span></h2>${dueTodayItems.map(reviewRow).join('')||'<div class="empty memory-empty-due"><span aria-hidden="true">▦</span><p>No reviews due today. You are all caught up.</p></div>'}</section>
+  <section class="memory-coming memory-priority-card"><h2>Coming up <span class="memory-count">${upcomingItems.length}</span></h2>${upcomingItems.slice(0,8).map(reviewRow).join('')||'<div class="empty memory-empty-due"><span aria-hidden="true">▦</span><p>No upcoming reviews yet. Complete a lesson or quiz to schedule your next review.</p></div>'}</section>
  </section>
  <section class="panel memory-how"><h2>How your review grows</h2><p>After a lesson, the first review is scheduled for tomorrow. As you remember concepts successfully, the interval grows: 1 day → 3 days → 7 days → 14 days → 30 days. Quiz reviews adapt to your result.</p></section>
  <footer>My Learning OS · Learn → Connect → Question → Understand</footer>`;
