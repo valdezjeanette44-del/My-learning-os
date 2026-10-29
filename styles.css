@@ -668,3 +668,10 @@ body{background:var(--garden-paper);color:var(--garden-ink)}
  .memory-review-icon{width:40px;height:40px}
  .memory-review-link{grid-column:2;margin-top:1px}
 }
+
+
+/* Review priorities intro sits immediately before the overdue and due-today queues. */
+.memory-priorities-intro{margin-top:18px}
+.memory-priorities-intro h2{font-size:1.12rem;line-height:1.25;margin:0 0 5px}
+.memory-priorities-intro p{color:#666;font-size:.9rem;line-height:1.45;margin:0}
+@media(max-width:650px){.memory-priorities-intro h2{font-size:1.08rem}.memory-priorities-intro p{font-size:.88rem}}
