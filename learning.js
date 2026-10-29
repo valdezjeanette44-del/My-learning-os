@@ -603,6 +603,7 @@ function submitLessonQuiz(event,name,i){
  });
  const s=state();s.quizResults=s.quizResults||{};const key=name+'-'+i,previous=s.quizResults[key]||{attempts:0,best:0};
  const skillNames=questions.map(q=>q.skill||'understanding');const missedSkills=missed.map(qi=>skillNames[qi]);const comparableBest=previous.total===questions.length?(previous.best||0):0;const best=Math.max(comparableBest,correct);const mastered=correct===questions.length;const reviewDays=mastered?7:1;s.quizResults[key]={...previous,subject:name,index:i,correct,total:questions.length,best,attempts:(previous.attempts||0)+1,lastAnswers:answers,lastScore:correct,missed,missedSkills,mastered,conceptsToReview:[...new Set(missedSkills)],nextReviewAt:new Date(Date.now()+reviewDays*86400000).toISOString(),updatedAt:new Date().toISOString()};
+ if(new URLSearchParams(location.search).get('review')==='quiz'){const day=localReviewDayKey(new Date()),id='quiz:'+name+':'+i;s.reviewCompletions=s.reviewCompletions||{};s.reviewCompletions[day]=s.reviewCompletions[day]||[];if(!s.reviewCompletions[day].includes(id))s.reviewCompletions[day].push(id);}
  saveState(s);
  result.textContent='You got '+correct+' out of '+questions.length+' correct ('+Math.round(correct/questions.length*100)+'%). Best: '+s.quizResults[key].best+'/'+questions.length+' · Attempts: '+s.quizResults[key].attempts+'. Your score is saved on this device.';
  const score=document.querySelector('#mcq-'+i+' .mcq-score');if(score)score.textContent='Best: '+s.quizResults[key].best+'/'+questions.length;
@@ -1062,49 +1063,67 @@ function showKnowledgeConnection(index){
  const x=connections[index],box=document.getElementById('knowledgeConnectionDetail');if(!x||!box)return;
  box.innerHTML='<span class="knowledge-detail-pill">'+esc(x.a)+' + '+esc(x.b)+'</span><h3>'+esc(x.title)+'</h3><p>'+esc(x.detail)+'</p><div class="knowledge-example"><strong>🌍 Real-world example</strong><p>'+esc(x.example)+'</p></div>';
 }
+function localReviewDayKey(date){
+ const d=new Date(date);
+ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
 function getQuizReviewItems(){
- const s=state(),now=new Date(),items=[];
+ const s=state(),items=[];
  Object.entries(s.quizResults||{}).forEach(([key,result])=>{
   if(!result?.nextReviewAt||!result.subject||!Number.isInteger(result.index))return;
   const subject=SUBJECTS[result.subject],lesson=subject?.lessons[result.index];
   if(!lesson)return;
   const nextReviewAt=new Date(result.nextReviewAt);
   if(Number.isNaN(nextReviewAt.getTime()))return;
-  items.push({key,subject:result.subject,index:result.index,lesson,result,nextReviewAt,due:nextReviewAt<=now});
+  items.push({key,subject:result.subject,index:result.index,lesson,result,nextReviewAt});
  });
  return items.sort((a,b)=>a.nextReviewAt-b.nextReviewAt);
 }
 function renderReview(){
- const s=state(),now=new Date(),dueLessons=getDueReviews(),quizReviews=getQuizReviewItems();
+ const s=state(),todayKey=localReviewDayKey(new Date());
  const lessonSchedules=Object.values(s.review||{}).filter(r=>r&&r.nextReview&&SUBJECTS[r.subject]?.lessons[r.index]).map(r=>({type:'lesson',subject:r.subject,index:r.index,lesson:SUBJECTS[r.subject].lessons[r.index],date:new Date(r.nextReview),score:null})).filter(x=>!Number.isNaN(x.date.getTime()));
- const dueQuizReviews=quizReviews.filter(x=>x.due),upcomingQuizReviews=quizReviews.filter(x=>!x.due);
- const dueItems=[
-  ...dueLessons.map(x=>({type:'lesson',subject:x.n,index:x.i,lesson:x.l,date:new Date(x.review.nextReview),score:null})),
-  ...dueQuizReviews.map(x=>({type:'quiz',subject:x.subject,index:x.index,lesson:x.lesson,date:x.nextReviewAt,score:(x.result.lastScore??x.result.correct??0)+'/'+(x.result.total??3)}))
- ];
- const upcomingItems=[
-  ...lessonSchedules.filter(x=>x.date>now),
-  ...upcomingQuizReviews.map(x=>({type:'quiz',subject:x.subject,index:x.index,lesson:x.lesson,date:x.nextReviewAt,score:(x.result.lastScore??x.result.correct??0)+'/'+(x.result.total??3)}))
- ].sort((a,b)=>a.date-b.date);
- const uniqueDue=dueItems.filter((x,i,a)=>a.findIndex(y=>y.type===x.type&&y.subject===x.subject&&y.index===x.index)===i);
- const uniqueUpcoming=upcomingItems.filter((x,i,a)=>a.findIndex(y=>y.type===x.type&&y.subject===x.subject&&y.index===x.index)===i);
- const nextItem=uniqueDue[0]||uniqueUpcoming[0];
+ const quizSchedules=getQuizReviewItems().map(x=>({type:'quiz',subject:x.subject,index:x.index,lesson:x.lesson,date:x.nextReviewAt,score:(x.result.lastScore??x.result.correct??0)+'/'+(x.result.total??3)}));
+ const allItems=[...lessonSchedules,...quizSchedules];
+ const uniqueItems=allItems.filter((x,i,a)=>a.findIndex(y=>y.type===x.type&&y.subject===x.subject&&y.index===x.index)===i);
+ const completedIds=new Set((s.reviewCompletions||{})[todayKey]||[]);
+ const remainingItems=uniqueItems.filter(x=>!completedIds.has(x.type+':'+x.subject+':'+x.index));
+ const overdueItems=remainingItems.filter(x=>localReviewDayKey(x.date)<todayKey).sort((a,b)=>a.date-b.date);
+ const dueTodayItems=remainingItems.filter(x=>localReviewDayKey(x.date)===todayKey).sort((a,b)=>a.date-b.date);
+ const upcomingItems=remainingItems.filter(x=>localReviewDayKey(x.date)>todayKey).sort((a,b)=>a.date-b.date);
+ const dueItems=[...overdueItems,...dueTodayItems];
+ const nextItem=dueItems[0]||upcomingItems[0];
  const reviewHref=x=>'/subjects/'+x.subject.toLowerCase()+'/?review='+(x.type==='quiz'?'quiz':'lesson')+'#lesson-'+x.index;
  const nextHref=nextItem?reviewHref(nextItem):'/#learning-areas';
  const reviewRow=x=>'<article class="memory-review-row"><div class="memory-review-icon" aria-hidden="true">'+SUBJECTS[x.subject].icon+'</div><div class="memory-review-copy"><small>'+esc(x.subject)+' · '+(x.type==='quiz'?'Quiz review':'Lesson review')+'</small><h3>'+esc(x.lesson[0])+'</h3><p>Next review · '+formatDate(x.date.toISOString())+(x.score?' · Last score '+esc(String(x.score)):'')+'</p></div><a class="memory-review-link" href="'+reviewHref(x)+'">Open →</a></article>';
+ const scheduledCount=uniqueItems.length;
+ const dueCount=dueItems.length;
+ const completedToday=completedIds.size;
+ const progressTotal=completedToday+dueCount;
+ const progressPercent=progressTotal?Math.round(completedToday/progressTotal*100):0;
+ const estimatedMinutes=dueCount*2;
  document.getElementById('app').innerHTML=nav()+`<section class="hero memory-hero"><p class="memory-eyebrow">MY LEARNING OS · MEMORY</p><h1>🧠 Today's review</h1><p class="muted">A little practice today builds lasting knowledge.</p></section>
  <section class="panel memory-dashboard">
   <div class="memory-stats">
-   <div class="memory-stat"><strong>${uniqueDue.length}</strong><span>Due today</span></div>
-   <div class="memory-stat"><strong>${uniqueDue.length+uniqueUpcoming.length}</strong><span>Scheduled</span></div>
-   <div class="memory-stat"><strong>${uniqueDue.length*2} min</strong><span>Estimated</span></div>
+   <div class="memory-stat"><strong>${dueTodayItems.length}</strong><span>Due today</span></div>
+   <div class="memory-stat"><strong>${scheduledCount}</strong><span>Scheduled</span></div>
+   <div class="memory-stat"><strong>${estimatedMinutes} min</strong><span>Est. remaining</span></div>
   </div>
-  <section class="memory-start"><div class="memory-start-icon" aria-hidden="true">🧠</div><div class="memory-start-copy"><h2>Ready to strengthen your memory?</h2><p>Review your due concepts across your learning subjects.</p></div><a class="button memory-start-button" href="${nextHref}">${uniqueDue.length?'Start review →':'View next review →'}</a></section>
-  <section class="memory-coming"><h2>Coming up</h2>${uniqueUpcoming.map(reviewRow).join('')||'<div class="empty">No upcoming reviews yet. Complete a lesson or quiz to schedule your next review.</div>'}</section>
-  ${uniqueDue.length?'<section class="memory-coming"><h2>Due now</h2>'+uniqueDue.map(reviewRow).join('')+'</section>':''}
+  <section class="memory-start">
+   <div class="memory-start-copy"><h2>Ready to strengthen your memory?</h2><p>Review your due concepts across your learning subjects.</p></div>
+   <a class="button memory-start-button" href="${nextHref}">${dueCount?'Start review · '+dueCount+' item'+(dueCount===1?'':'s')+' →':'View next review →'}</a>
+  </section>
+  <section class="memory-progress" aria-label="Today's review progress">
+   <div class="memory-progress-heading"><h2>Today's progress</h2><strong>${completedToday} / ${progressTotal}</strong></div>
+   <div class="bar" role="progressbar" aria-label="Reviews completed today" aria-valuemin="0" aria-valuemax="${Math.max(progressTotal,1)}" aria-valuenow="${completedToday}"><div style="width:${progressPercent}%"></div></div>
+   <p>${progressTotal?progressPercent+'% complete today':'Your progress will appear as you complete reviews.'}</p>
+  </section>
+  ${overdueItems.length?'<section class="memory-coming"><h2>Overdue <span class="memory-count">'+overdueItems.length+'</span></h2>'+overdueItems.map(reviewRow).join('')+'</section>':''}
+  <section class="memory-coming"><h2>Due today <span class="memory-count">'+dueTodayItems.length+'</span></h2>${dueTodayItems.map(reviewRow).join('')||'<div class="empty">No reviews due today. You are all caught up.</div>'}</section>
+  <section class="memory-coming"><h2>Coming up <span class="memory-count">'+upcomingItems.length+'</span></h2>${upcomingItems.slice(0,8).map(reviewRow).join('')||'<div class="empty">No upcoming reviews yet. Complete a lesson or quiz to schedule your next review.</div>'}</section>
  </section>
  <section class="panel memory-how"><h2>How your review grows</h2><p>After a lesson, the first review is scheduled for tomorrow. As you remember concepts successfully, the interval grows: 1 day → 3 days → 7 days → 14 days → 30 days. Quiz reviews adapt to your result.</p></section>
  <footer>My Learning OS · Learn → Connect → Question → Understand</footer>`;
+ requestAnimationFrame(()=>{try{const saved=sessionStorage.getItem('myLearningOS.reviewScroll');if(saved!==null)window.scrollTo(0,Math.max(0,Number(saved)||0));}catch{}});
 }
 function addDays(date,days){const d=new Date(date);d.setDate(d.getDate()+days);return d}
 function dateKey(date){const d=new Date(date);return d.toISOString().slice(0,10)}
@@ -1123,6 +1142,8 @@ function getStreak(){
 function recordReview(name,i,known){
  const s=state(),key=name+'-'+i,r=s.review?.[key];
  if(!r)return;
+ const completionDay=localReviewDayKey(new Date()),completionId='lesson:'+name+':'+i;
+ s.reviewCompletions=s.reviewCompletions||{};s.reviewCompletions[completionDay]=s.reviewCompletions[completionDay]||[];if(!s.reviewCompletions[completionDay].includes(completionId))s.reviewCompletions[completionDay].push(completionId);
  const intervals=[1,3,7,14,30];
  r.interval=known?intervals[Math.min((r.stage||0)+1,intervals.length-1)]:1;
  r.stage=known?Math.min((r.stage||0)+1,intervals.length-1):0;
@@ -1219,6 +1240,8 @@ function saveHomeScrollOnLeave(){
  }
 }
 window.addEventListener('pagehide',saveHomeScrollOnLeave);
+function saveReviewScrollOnLeave(){if(location.pathname.includes('review.html')){try{sessionStorage.setItem('myLearningOS.reviewScroll',String(window.scrollY));}catch{}}}
+window.addEventListener('pagehide',saveReviewScrollOnLeave);
 
 function boot(){const path=location.pathname;const match=path.match(/subjects\/([^/]+)/);document.body.dataset.subject=match?match[1].replace(/^./,c=>c.toUpperCase()):'';const app=document.getElementById('app');if(!app)return;try{if(path.includes('/subjects/')){renderSubject(document.body.dataset.subject);const params=new URLSearchParams(location.search);if(['quiz','lesson'].includes(params.get('review'))){const lessonMatch=location.hash.match(/^#lesson-(\d+)$/);if(lessonMatch){const lessonIndex=Number(lessonMatch[1]);requestAnimationFrame(()=>requestAnimationFrame(()=>{openLesson(lessonIndex);if(params.get('review')==='quiz'){const quiz=document.getElementById('mcq-'+lessonIndex);if(quiz)quiz.scrollIntoView({behavior:'smooth',block:'start'});}}));}}}else if(path.includes('knowledge.html'))renderMap();else if(path.includes('review.html'))renderReview();else if(path.includes('projects.html')){const id=new URLSearchParams(location.search).get('project');id?renderProjectDetail(id):renderProjects();}else if(path.includes('search.html'))renderSearch();else if(path.includes('tutor.html'))renderTutor();else renderHome()}catch(error){console.error('My Learning OS failed to render:',error);document.title='My Learning OS';app.innerHTML='<main style="max-width:620px;margin:36px auto;padding:22px;font-family:system-ui,sans-serif;color:#222"><h1 style="font-size:1.6rem">Your learning page could not load</h1><p>We hit a loading error. Your saved learning progress has not been deleted.</p><p style="color:#666">Technical detail: '+String(error&&error.message||error).replace(/[&<>\"']/g,function(ch){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","\'":"&#39;"}[ch]})+'</p><a href="/" style="display:inline-block;padding:12px 16px;background:#4f46e5;color:white;text-decoration:none;border-radius:12px">Back to My Learning OS</a></main>'}}
 let tutorFocusIndex=-1;
