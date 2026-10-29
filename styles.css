@@ -631,3 +631,40 @@ body{background:var(--garden-paper);color:var(--garden-ink)}
  .memory-review-copy h3{font-size:.95rem}
  .memory-review-copy p{font-size:.8rem}
 }
+
+
+/* Review dashboard polish: compact hierarchy and safe space above the fixed mobile navigation. */
+.memory-hero{margin-bottom:10px}
+.memory-dashboard{padding:15px}
+.memory-stats{gap:8px}
+.memory-stat{padding:11px 10px;border-radius:15px}
+.memory-stat strong{font-size:clamp(1.35rem,3.5vw,1.8rem);margin-bottom:3px}
+.memory-stat span{font-size:.84rem;line-height:1.25}
+.memory-start{margin-top:12px;padding:14px;border-radius:17px}
+.memory-start-copy h2{font-size:1.12rem}
+.memory-start-copy p{font-size:.9rem}
+.memory-start-button{font-size:.94rem}
+.memory-progress{margin-top:12px;padding:12px 13px}
+.memory-coming{margin-top:18px}
+.memory-coming h2{font-size:1.12rem;margin-bottom:5px}
+.memory-review-row{padding:11px 0;gap:10px}
+.memory-review-copy h3{font-size:.98rem;line-height:1.25}
+.memory-review-copy p{font-size:.84rem;line-height:1.35;margin-top:3px}
+.memory-review-link{font-size:.9rem}
+.memory-how{padding:16px}
+.memory-how p{font-size:.92rem;line-height:1.5}
+@media(max-width:650px){
+ body{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+ .app{padding-bottom:calc(30px + env(safe-area-inset-bottom))}
+ .memory-dashboard{padding:13px}
+ .memory-stat{padding:10px 8px}
+ .memory-stat strong{font-size:1.35rem}
+ .memory-stat span{font-size:.78rem}
+ .memory-start{padding:13px}
+ .memory-start-copy h2{font-size:1.05rem}
+ .memory-start-copy p{font-size:.88rem}
+ .memory-progress-heading h2{font-size:.96rem}
+ .memory-review-row{grid-template-columns:40px minmax(0,1fr);gap:9px;padding:11px 0}
+ .memory-review-icon{width:40px;height:40px}
+ .memory-review-link{grid-column:2;margin-top:1px}
+}
