@@ -34,7 +34,7 @@ test("all entry pages use the same shared stylesheet cache version", async () =>
     );
     assert.doesNotMatch(
       html,
-      /styles\.css\?v=(?!11(?:["']))\d+/,
+      /styles\.css\?v=(?!12(?:["']))\d+/,
       `${path} contains a mismatched stylesheet cache version`,
     );
   }
