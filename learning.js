@@ -1092,16 +1092,23 @@ function renderReview(){
  const reviewHref=x=>'/subjects/'+x.subject.toLowerCase()+'/?review='+(x.type==='quiz'?'quiz':'lesson')+'#lesson-'+x.index;
  const nextHref=nextItem?reviewHref(nextItem):'/#learning-areas';
  const reviewRow=x=>'<article class="memory-review-row"><div class="memory-review-icon" aria-hidden="true">'+SUBJECTS[x.subject].icon+'</div><div class="memory-review-copy"><small>'+esc(x.subject)+' · '+(x.type==='quiz'?'Quiz review':'Lesson review')+'</small><h3>'+esc(x.lesson[0])+'</h3><p>Next review · '+formatDate(x.date.toISOString())+(x.score?' · Last score '+esc(String(x.score)):'')+'</p></div><a class="memory-review-link" href="'+reviewHref(x)+'">Open →</a></article>';
+ const progressStatus=uniqueDue.length===0?'All caught up':uniqueDue.length+' to review';
  document.getElementById('app').innerHTML=nav()+`<section class="hero memory-hero"><p class="memory-eyebrow">MY LEARNING OS · MEMORY</p><h1>🧠 Today's review</h1><p class="muted">A little practice today builds lasting knowledge.</p></section>
  <section class="panel memory-dashboard">
   <div class="memory-stats">
    <div class="memory-stat"><strong>${uniqueDue.length}</strong><span>Due today</span></div>
    <div class="memory-stat"><strong>${uniqueDue.length+uniqueUpcoming.length}</strong><span>Scheduled</span></div>
-   <div class="memory-stat"><strong>${uniqueDue.length*2} min</strong><span>Estimated</span></div>
+   <div class="memory-stat"><strong>${uniqueDue.length*2} min</strong><span>Est. remaining</span></div>
   </div>
-  <section class="memory-start"><div class="memory-start-icon" aria-hidden="true">🧠</div><div class="memory-start-copy"><h2>Ready to strengthen your memory?</h2><p>Review your due concepts across your learning subjects.</p></div><a class="button memory-start-button" href="${nextHref}">${uniqueDue.length?'Start review →':'View next review →'}</a></section>
-  <section class="memory-coming"><h2>Coming up</h2>${uniqueUpcoming.map(reviewRow).join('')||'<div class="empty">No upcoming reviews yet. Complete a lesson or quiz to schedule your next review.</div>'}</section>
-  ${uniqueDue.length?'<section class="memory-coming"><h2>Due now</h2>'+uniqueDue.map(reviewRow).join('')+'</section>':''}
+  <section class="memory-start"><div class="memory-start-copy"><h2>Ready to strengthen your memory?</h2><p>Review your due concepts across your learning subjects.</p></div><a class="button memory-start-button" href="${nextHref}">Start today's review →</a></section>
+  <section class="memory-progress">
+   <div class="memory-progress-heading"><h2>Your daily progress</h2><strong>${progressStatus}</strong></div>
+   <div class="bar" role="progressbar" aria-label="Today's review progress" aria-valuemin="0" aria-valuemax="${Math.max(uniqueDue.length,1)}" aria-valuenow="0"><div style="width:0%"></div></div>
+   <p>Your progress will appear as you complete reviews.</p>
+  </section>
+  <section class="memory-priorities"><h2>Review priorities</h2><p>Separate overdue work from today's tasks and future reviews.</p></section>
+  <section class="memory-list-section"><h2>Due today <span class="memory-count">${uniqueDue.length}</span></h2>${uniqueDue.map(reviewRow).join('')||'<div class="empty">No reviews due today. You are all caught up.</div>'}</section>
+  <section class="memory-list-section"><h2>Coming up <span class="memory-count">${uniqueUpcoming.length}</span></h2>${uniqueUpcoming.map(reviewRow).join('')||'<div class="empty">No upcoming reviews yet. Complete a lesson or quiz to schedule your next review.</div>'}</section>
  </section>
  <section class="panel memory-how"><h2>How your review grows</h2><p>After a lesson, the first review is scheduled for tomorrow. As you remember concepts successfully, the interval grows: 1 day → 3 days → 7 days → 14 days → 30 days. Quiz reviews adapt to your result.</p></section>
  <footer>My Learning OS · Learn → Connect → Question → Understand</footer>`;
