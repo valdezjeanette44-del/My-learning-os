@@ -1099,6 +1099,7 @@ function renderReview(){
  const dueCount=dueItems.length;
  const completedToday=completedIds.size;
  const progressTotal=completedToday+dueCount;
+ const progressLabel=progressTotal?completedToday+' / '+progressTotal:'All caught up';
  const progressPercent=progressTotal?Math.round(completedToday/progressTotal*100):0;
  const estimatedMinutes=dueCount*2;
  document.getElementById('app').innerHTML=nav()+`<section class="hero memory-hero"><p class="memory-eyebrow">MY LEARNING OS · MEMORY</p><h1>🧠 Today's review</h1><p class="muted">A little practice today builds lasting knowledge.</p></section>
@@ -1113,7 +1114,7 @@ function renderReview(){
    <a class="button memory-start-button" href="${nextHref}">${dueCount?'Start review · '+dueCount+' item'+(dueCount===1?'':'s')+' →':'View next review →'}</a>
   </section>
   <section class="memory-progress" aria-label="Today's review progress">
-   <div class="memory-progress-heading"><h2>Today's progress</h2><strong>${completedToday} / ${progressTotal}</strong></div>
+   <div class="memory-progress-heading"><h2>Today's progress</h2><strong>${progressLabel}</strong></div>
    <div class="bar" role="progressbar" aria-label="Reviews completed today" aria-valuemin="0" aria-valuemax="${Math.max(progressTotal,1)}" aria-valuenow="${completedToday}"><div style="width:${progressPercent}%"></div></div>
    <p>${progressTotal?progressPercent+'% complete today':'Your progress will appear as you complete reviews.'}</p>
   </section>
