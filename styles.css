@@ -805,3 +805,58 @@ body{background:var(--garden-paper);color:var(--garden-ink)}
   font-size:clamp(1.65rem,4.5vw,2.25rem);
   line-height:1.15;
 }
+
+/* Phase 2: warm, guided Continue Your Journey card */
+.continue-card:not(.all-done){
+ border-color:#e6cbb9;
+ background:linear-gradient(110deg,#f8eee4,#fffdf9);
+ box-shadow:0 3px 12px rgba(126,83,55,.05);
+}
+.continue-card:not(.all-done) .continue-icon{
+ background:#f1e2d3;
+}
+.continue-card:not(.all-done) .continue-copy small{
+ color:#bd704d;
+}
+.continue-card:not(.all-done)>b{
+ display:inline-flex;
+ align-items:center;
+ justify-content:center;
+ gap:5px;
+ flex-shrink:0;
+ padding:9px 13px;
+ border-radius:999px;
+ background:#bd704d;
+ color:#fff;
+ font-size:.78rem;
+ font-weight:800;
+ line-height:1.2;
+ white-space:nowrap;
+ box-shadow:0 2px 5px rgba(126,83,55,.14);
+}
+.continue-copy .continue-meta{
+ margin-top:1px;
+ color:#8a7668;
+ font-size:.7rem;
+ font-weight:650;
+}
+.continue-progress{
+ display:block;
+ width:100%;
+ height:5px;
+ margin-top:3px;
+ overflow:hidden;
+ border-radius:999px;
+ background:#eee5d9;
+}
+.continue-progress>span{
+ display:block;
+ height:100%;
+ border-radius:inherit;
+ background:#bd704d;
+}
+@media(max-width:420px){
+ .continue-card:not(.all-done){align-items:center}
+ .continue-copy .continue-meta{font-size:.65rem}
+ .continue-progress{height:4px}
+}
