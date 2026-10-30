@@ -15,7 +15,7 @@ function saveState(s){localStorage.setItem(KEY,JSON.stringify(s))}
 function esc(v){return String(v??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[m]))}
 function subjectProgress(name){const s=state(),n=SUBJECTS[name].lessons.length;return Math.round(((s.completed[name]||[]).length/n)*100)}
 function totalStats(){const s=state();let lessons=0,total=0,scores=0;Object.keys(SUBJECTS).forEach(k=>{total+=SUBJECTS[k].lessons.length;lessons+=(s.completed[k]||[]).length;if(s.scores[k])scores++});return{lessons,total,scores}}
-function nav(){return '<div class="topbar"><a class="brand" href="/">🧠 My Learning OS</a><nav class="nav" aria-label="Main navigation"><a href="/">Home</a><a href="/search.html">Search</a><a href="/projects.html">Projects</a><a href="/review.html">Review</a><a href="/knowledge.html">Knowledge Map</a><a href="/tutor.html">Tutor</a></nav></div><nav class="mobile-nav" aria-label="Quick navigation"><a href="/" aria-label="Home"><span>⌂</span><small>Home</small></a><a href="/#learning-areas" aria-label="Learning areas"><span>▦</span><small>Learn</small></a><a href="/projects.html" aria-label="Projects"><span>◫</span><small>Projects</small></a><a href="/review.html" aria-label="Review"><span>↻</span><small>Review</small></a><details class="mobile-more"><summary><span>•••</span><small>More</small></summary><div class="mobile-more-menu"><a href="/search.html">🔎 Search</a><a href="/knowledge.html">🗺️ Knowledge Map</a><a href="/tutor.html">👩‍🏫 Tutor</a></div></details></nav>'}
+function nav(){return '<div class="topbar"><a class="brand" href="/">🧠 My Learning OS</a><nav class="nav" aria-label="Main navigation"><a href="/">Home</a><a href="/search.html">Search</a><a href="/projects.html" onclick="saveProjectsScroll()">Projects</a><a href="/review.html">Review</a><a href="/knowledge.html">Knowledge Map</a><a href="/tutor.html">Tutor</a></nav></div><nav class="mobile-nav" aria-label="Quick navigation"><a href="/" aria-label="Home"><span>⌂</span><small>Home</small></a><a href="/#learning-areas" aria-label="Learning areas"><span>▦</span><small>Learn</small></a><a href="/projects.html" aria-label="Projects" onclick="saveProjectsScroll()"><span>◫</span><small>Projects</small></a><a href="/review.html" aria-label="Review"><span>↻</span><small>Review</small></a><details class="mobile-more"><summary><span>•••</span><small>More</small></summary><div class="mobile-more-menu"><a href="/search.html">🔎 Search</a><a href="/knowledge.html">🗺️ Knowledge Map</a><a href="/tutor.html">👩‍🏫 Tutor</a></div></details></nav>'}
 function renderSubject(name){
  const d=SUBJECTS[name],s=state(),done=s.completed[name]||[],p=subjectProgress(name);
  document.title=name+' | My Learning OS';
@@ -973,7 +973,7 @@ function toggleProjectStep(id,i){
  ps.completed=ps.completed||[];
  const at=ps.completed.indexOf(i);
  if(at>=0)ps.completed.splice(at,1);else {ps.completed.push(i);s.learningLog=s.learningLog||[];s.learningLog.push({type:'project',id:id,at:new Date().toISOString()});}
- saveState(s);renderProjectDetail(id,i);
+ saveState(s);renderProjectDetail(id,i,true);
 }
 function saveProjectNotes(id){
  const el=document.getElementById('projectNotes'),s=state();
@@ -999,21 +999,25 @@ function runSearch(query){
 function renderProjects(){
  const ids=Object.keys(PROJECTS);
  document.title='Projects | My Learning OS';
- document.getElementById('app').innerHTML=nav()+`<section class="hero"><a class="back" href="/">← Back to Home</a><h1>🔬 My Projects</h1><p class="muted">Long-term investigations where you connect ideas across subjects.</p></section>
- <div class="project-grid">${ids.map(id=>{const d=PROJECTS[id],pct=projectProgress(id),p=projectState(id);return `<a class="project-card" href="/projects.html?project=${id}"><div class="project-card-icon">${d.icon}</div><small>PROJECT</small><h2>${d.title}</h2><p class="muted">${d.subtitle}</p><div class="bar"><div style="width:${pct}%"></div></div><strong>${p.completed.length}/${d.steps.length} milestones · ${pct}%</strong></a>`}).join('')}</div>`;
+ document.getElementById('app').innerHTML=nav()+`<section class="hero"><a class="back" href="/" onclick="saveProjectsScroll()">← Back to Home</a><h1>🔬 My Projects</h1><p class="muted">Long-term investigations where you connect ideas across subjects.</p></section>
+ <div class="project-grid">${ids.map(id=>{const d=PROJECTS[id],pct=projectProgress(id),p=projectState(id);return `<a class="project-card" href="/projects.html?project=${id}" onclick="saveProjectsScroll()"><div class="project-card-icon">${d.icon}</div><small>PROJECT</small><h2>${d.title}</h2><p class="muted">${d.subtitle}</p><div class="bar"><div style="width:${pct}%"></div></div><strong>${p.completed.length}/${d.steps.length} milestones · ${pct}%</strong></a>`}).join('')}</div>`;
+ restoreProjectsScroll();
 }
-function renderProjectDetail(id,openIndex=0){
+function renderProjectDetail(id,openIndex=0,preserveScroll=false){
+ const previousScrollY=preserveScroll?window.scrollY:0;
  const d=PROJECTS[id];if(!d){renderProjects();return}
  const p=projectState(id),pct=projectProgress(id);
  document.title=d.title+' | My Learning OS';
- document.getElementById('app').innerHTML=nav()+`<section class="hero project-page-heading"><a class="back" href="/projects.html">← All Projects</a><h1>${d.icon} ${d.title}</h1><p class="muted">${d.subtitle}</p></section>
+ document.getElementById('app').innerHTML=nav()+`<section class="hero project-page-heading"><a class="back" href="/projects.html" onclick="saveProjectsScroll()">← All Projects</a><h1>${d.icon} ${d.title}</h1><p class="muted">${d.subtitle}</p></section>
  <section class="project-hero project-hero-compact"><div class="project-icon">${d.icon}</div><div><small>YOUR PROJECT</small><h2>${d.title}</h2><p>${d.description}</p></div></section>
  <section class="panel project-progress-panel"><div class="project-progress-head"><div><h2>Progress</h2><p class="muted">${p.completed.length} of ${d.steps.length} steps complete</p></div><strong>${pct}%</strong></div><div class="bar"><div style="width:${pct}%"></div></div></section>
  <section class="panel project-path-panel"><div class="project-path-heading"><div><h2>Project steps</h2><p class="muted">Open one step at a time. Work at your own pace.</p></div><span class="step-count">${d.steps.length} steps</span></div><div class="project-steps">${d.steps.map((x,i)=>`<article class="project-step-card ${p.completed.includes(i)?'done':''} ${openIndex===i?'is-open':''}">
- <button class="project-step-toggle" aria-expanded="${openIndex===i}" onclick="renderProjectDetail('${id}',${openIndex===i?-1:i})"><span class="project-check">${p.completed.includes(i)?'✓':i+1}</span><span class="project-step-title"><strong>${i+1}. ${x[0]}</strong><small>${p.completed.includes(i)?'Completed':'Tap to open this step'}</small></span><span class="project-step-chevron">${openIndex===i?'−':'+'}</span></button>
+ <button class="project-step-toggle" aria-expanded="${openIndex===i}" onclick="renderProjectDetail('${id}',${openIndex===i?-1:i},true)"><span class="project-check">${p.completed.includes(i)?'✓':i+1}</span><span class="project-step-title"><strong>${i+1}. ${x[0]}</strong><small>${p.completed.includes(i)?'Completed':'Tap to open this step'}</small></span><span class="project-step-chevron">${openIndex===i?'−':'+'}</span></button>
  ${openIndex===i?`<div class="project-step-content"><p>${x[1]}</p><div class="project-question"><strong>Think about it</strong><p>${x[2]}</p></div><button class="project-complete-button ${p.completed.includes(i)?'is-complete':''}" onclick="toggleProjectStep('${id}',${i})">${p.completed.includes(i)?'✓ Mark as not complete':'Mark step complete ✓'}</button></div>`:''}
  </article>`).join('')}</div></section>
  <section class="panel project-discoveries"><h2>🧠 My discoveries</h2><p class="muted">Save your ideas and questions here.</p><textarea class="note project-notes" id="projectNotes" placeholder="What did you discover? What questions do you still have?">${esc(p.notes||'')}</textarea><div class="lesson-actions"><button onclick="saveProjectNotes('${id}')">Save my discoveries</button><span id="projectSaved" class="muted"></span></div></section>`;
+ if(preserveScroll)requestAnimationFrame(()=>window.scrollTo(0,previousScrollY));
+ else restoreProjectsScroll(id);
 }
 function renderMap(){
  const subjects=[
@@ -1233,6 +1237,29 @@ function whyItWorks(subject,lesson){
  };
  return explanations[title]||"Look closely at this example: identify what causes the change, what happens as a result, and what evidence supports that explanation.";
 }
+
+// Preserve independent scroll positions for the Projects dashboard and every project detail page.
+function projectScrollStorageKey(){
+ const path=location.pathname;
+ if(!path.includes('projects.html'))return null;
+ const id=new URLSearchParams(location.search).get('project');
+ return id?'myLearningOS.projectScroll.'+id:'myLearningOS.projectsScroll';
+}
+function saveProjectsScroll(){
+ const key=projectScrollStorageKey();
+ if(!key)return;
+ try{sessionStorage.setItem(key,String(window.scrollY));}catch{}
+}
+function restoreProjectsScroll(id){
+ const key=id?'myLearningOS.projectScroll.'+id:'myLearningOS.projectsScroll';
+ try{
+  const saved=sessionStorage.getItem(key);
+  if(saved===null)return;
+  requestAnimationFrame(()=>window.scrollTo(0,Math.max(0,Number(saved)||0)));
+ }catch{}
+}
+function saveProjectsScrollOnLeave(){saveProjectsScroll();}
+window.addEventListener('pagehide',saveProjectsScrollOnLeave);
 
 // Remember the dashboard's position when navigating away from Home. Do not overwrite it from other pages.
 function saveHomeScrollOnLeave(){
