@@ -840,7 +840,15 @@ function renderHome(){
  </section>
  <section class="home-section" id="learning-areas">
   <div class="home-section-heading"><div><small class="muted">CHOOSE WHAT TO EXPLORE</small><h2>Learning areas</h2></div></div>
-  <div class="home-subject-grid">${Object.entries(SUBJECTS).map(([n,d])=>`<a class="home-subject" href="/subjects/${n.toLowerCase()}/" onclick="sessionStorage.setItem('myLearningOS.homeScroll',String(window.scrollY))"><span>${d.icon}</span><strong>${n}</strong><small>${subjectProgress(n)}% complete</small><div class="bar"><div style="width:${subjectProgress(n)}%"></div></div></a>`).join('')}</div>
+  <div class="subject-filter-list" role="group" aria-label="Filter learning areas">
+   <button class="subject-filter is-active" type="button" data-subject-filter="All" aria-pressed="true" aria-controls="learning-subject-grid">All</button>
+   <button class="subject-filter" type="button" data-subject-filter="Science" aria-pressed="false" aria-controls="learning-subject-grid">Science</button>
+   <button class="subject-filter" type="button" data-subject-filter="Humanities" aria-pressed="false" aria-controls="learning-subject-grid">Humanities</button>
+   <button class="subject-filter" type="button" data-subject-filter="Technology" aria-pressed="false" aria-controls="learning-subject-grid">Technology</button>
+   <button class="subject-filter" type="button" data-subject-filter="Business & Economics" aria-pressed="false" aria-controls="learning-subject-grid">Business &amp; Economics</button>
+  </div>
+  <p class="subject-filter-status" id="learning-filter-status" aria-live="polite">Showing all ${Object.keys(SUBJECTS).length} subjects</p>
+  <div class="home-subject-grid" id="learning-subject-grid">${Object.entries(SUBJECTS).map(([n,d])=>{const category=['Physics','Chemistry','Biology'].includes(n)?'Science':['History','Philosophy'].includes(n)?'Humanities':['Economics','Business'].includes(n)?'Business & Economics':'Technology';return `<a class="home-subject" data-subject-category="${category}" href="/subjects/${n.toLowerCase()}/" onclick="sessionStorage.setItem('myLearningOS.homeScroll',String(window.scrollY))"><span>${d.icon}</span><strong>${n}</strong><small>${subjectProgress(n)}% complete</small><div class="bar"><div style="width:${subjectProgress(n)}%"></div></div></a>`}).join('')}</div>
  </section>
  <section class="home-section">
   <div class="home-section-heading"><div><small class="muted">LEARN BY DOING</small><h2>My projects</h2></div><a href="/projects.html">View all →</a></div>
@@ -850,7 +858,18 @@ function renderHome(){
  <details class="home-details"><summary>📝 My notes</summary><div class="home-notes"><p class="muted">Capture an idea or connection. Notes stay in this browser.</p><textarea class="note" id="homeNote" placeholder="An idea I want to remember…">${esc(state().notes.home||'')}</textarea><div class="lesson-actions"><button onclick="saveHomeNote()">Save notes</button></div></div></details>
  <footer>My Learning OS · Learn → Connect → Question → Understand</footer>`;
  const savedHomeScroll=sessionStorage.getItem('myLearningOS.homeScroll');if(savedHomeScroll!==null){sessionStorage.removeItem('myLearningOS.homeScroll');requestAnimationFrame(()=>window.scrollTo(0,Number(savedHomeScroll)||0));}
+ document.querySelectorAll('[data-subject-filter]').forEach(button=>button.addEventListener('click',()=>applySubjectFilter(button.dataset.subjectFilter)));
  newQuestion();
+}
+function applySubjectFilter(category){
+ const cards=[...document.querySelectorAll('#learning-subject-grid .home-subject')];
+ const filters=[...document.querySelectorAll('[data-subject-filter]')];
+ if(!cards.length||!filters.some(button=>button.dataset.subjectFilter===category))return;
+ let visible=0;
+ cards.forEach(card=>{const show=category==='All'||card.dataset.subjectCategory===category;card.hidden=!show;if(show)visible++;});
+ filters.forEach(button=>{const active=button.dataset.subjectFilter===category;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});
+ const status=document.getElementById('learning-filter-status');
+ if(status)status.textContent=category==='All'?`Showing all ${visible} subjects`:`Showing ${visible} ${category} ${visible===1?'subject':'subjects'}`;
 }
 function newQuestion(){
  const item=qs[Math.floor(Math.random()*qs.length)];
