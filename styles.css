@@ -868,8 +868,8 @@ body{background:var(--garden-paper);color:var(--garden-ink)}
 .subject-filter-status{min-height:1.3em;margin:0 2px 10px;color:var(--garden-muted,#797269);font-size:.78rem}
 .home-subject[hidden]{display:none!important}
 @media(max-width:650px){
- .subject-filter-list{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+ .subject-filter-list{grid-template-columns:repeat(6,minmax(0,1fr));column-gap:8px;row-gap:4px}
  .subject-filter:nth-child(-n+3){grid-column:span 2}
  .subject-filter:nth-child(n+4){grid-column:span 3}
- .subject-filter{min-height:48px;padding:8px 7px;font-size:.85rem}
+ .subject-filter{min-height:48px;padding:5px 7px;font-size:.85rem}
 }
