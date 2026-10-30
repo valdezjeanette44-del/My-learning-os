@@ -814,7 +814,17 @@ function renderHome(){
   <h1>Welcome back.</h1>
   <p>One small step at a time.</p>
  </section>
- ${next?`<a class="continue-card" href="/subjects/${next.name.toLowerCase()}/#lesson-${next.i}"><span class="continue-icon">${next.icon}</span><span class="continue-copy"><small>YOUR NEXT STEP</small><strong>Continue learning</strong><span>${next.name} · Lesson ${next.i+1}: ${esc(next.lesson[0])}</span></span><b>Continue →</b></a>`:'<section class="continue-card all-done"><span class="continue-icon">🎉</span><span class="continue-copy"><small>GREAT WORK</small><strong>All lessons completed</strong><span>Choose a subject to revisit or explore a project.</span></span><b>Explore →</b></section>'}
+ ${next?`<a class="continue-card" href="/subjects/${next.name.toLowerCase()}/#lesson-${next.i}" aria-label="Continue ${next.name}, lesson ${next.i+1}: ${esc(next.lesson[0])}">
+  <span class="continue-icon">${next.icon}</span>
+  <span class="continue-copy">
+   <small>YOUR NEXT STEP</small>
+   <strong>Continue learning</strong>
+   <span class="continue-lesson">${next.name} · Lesson ${next.i+1}: ${esc(next.lesson[0])}</span>
+   <span class="continue-meta">Lesson ${next.i+1} of ${SUBJECTS[next.name].lessons.length} · ${subjectProgress(next.name)}% subject progress</span>
+   <span class="continue-progress" aria-hidden="true"><span style="width:${subjectProgress(next.name)}%"></span></span>
+  </span>
+  <b>Continue <span aria-hidden="true">→</span></b>
+ </a>`:'<section class="continue-card all-done"><span class="continue-icon">🎉</span><span class="continue-copy"><small>GREAT WORK</small><strong>All lessons completed</strong><span>Choose a subject to revisit or explore a project.</span></span><b>Explore →</b></section>'}
  <section class="home-overview" aria-label="Learning progress overview">
   <div class="home-overview-heading">Your progress at a glance</div>
   <div class="home-overview-main">
