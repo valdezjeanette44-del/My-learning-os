@@ -580,7 +580,7 @@ body{background:var(--garden-paper);color:var(--garden-ink)}
 .memory-review-copy small{font-weight:700;color:#555}
 .memory-review-copy h3{margin:3px 0;font-size:1.05rem;overflow-wrap:anywhere}
 .memory-review-copy p{margin:0;color:#666;font-size:.92rem}
-.memory-review-link{font-weight:750;color:#4f46e5;text-decoration:none;white-space:nowrap}
+.memory-review-link{font-weight:750;color:#7652df;text-decoration:none;white-space:nowrap}
 .memory-how p{margin-bottom:0}
 @media(max-width:650px){.memory-dashboard{padding:16px}.memory-stats{gap:8px}.memory-stat{padding:12px}.memory-stat strong{font-size:1.55rem}.memory-stat span{font-size:.85rem}.memory-start{padding:17px;gap:10px}.memory-review-row{grid-template-columns:44px minmax(0,1fr);gap:11px}.memory-review-icon{width:44px;height:44px;font-size:1.35rem}.memory-review-link{grid-column:2;justify-self:start}.memory-review-copy h3{font-size:1rem}}
 
@@ -605,7 +605,7 @@ body{background:var(--garden-paper);color:var(--garden-ink)}
 .memory-progress>p{margin:7px 0 0;color:#666;font-size:.82rem}
 .memory-coming{margin-top:20px}
 .memory-coming h2{font-size:1.2rem;margin-bottom:8px}
-.memory-count{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 7px;border-radius:99px;background:#f0efff;color:#4f46e5;font-size:.78rem;vertical-align:middle}
+.memory-count{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 7px;border-radius:99px;background:#f0efff;color:#7652df;font-size:.78rem;vertical-align:middle}
 .memory-review-row{grid-template-columns:42px minmax(0,1fr);gap:10px;padding:12px 0}
 .memory-review-icon{width:42px;height:42px;border-radius:12px;font-size:1.3rem}
 .memory-review-copy small{font-size:.75rem;letter-spacing:.01em}
@@ -680,7 +680,7 @@ body{background:var(--garden-paper);color:var(--garden-ink)}
 /* Approved compact Review dashboard reference: card-based priority groups. */
 .memory-start-button{
   display:block;width:100%;padding:13px 16px;border-radius:15px;
-  background:#4f46e5;color:#fff;text-align:center;text-decoration:none;
+  background:#7652df;color:#fff;text-align:center;text-decoration:none;
   font-weight:750;line-height:1.35;
 }
 .memory-priority-card{
@@ -705,7 +705,7 @@ body{background:var(--garden-paper);color:var(--garden-ink)}
 .memory-priority-card .memory-review-row:last-child{border-bottom:0;padding-bottom:2px}
 .memory-priority-card .memory-review-icon{width:64px;height:64px;border-radius:18px;font-size:1.8rem}
 .memory-priority-card .memory-review-copy small{
-  display:block;color:#5146c8;text-transform:uppercase;font-size:.78rem;
+  display:block;color:#7652df;text-transform:uppercase;font-size:.78rem;
   letter-spacing:.025em;line-height:1.35;
 }
 .memory-priority-card .memory-review-copy h3{font-size:1.05rem;line-height:1.25;margin:3px 0}
@@ -713,7 +713,7 @@ body{background:var(--garden-paper);color:var(--garden-ink)}
 .memory-priority-card .memory-review-link{
   align-self:center;grid-column:auto;justify-self:end;margin:0;
   padding:9px 14px;border-radius:999px;background:#f0efff;
-  color:#4f46e5;font-size:.88rem;font-weight:750;
+  color:#7652df;font-size:.88rem;font-weight:750;
 }
 .memory-empty-due{
   display:flex;align-items:center;gap:14px;padding:10px 0 3px;
@@ -796,6 +796,6 @@ body{background:var(--garden-paper);color:var(--garden-ink)}
 
 /* Keep Review dashboard navigation chevrons on-brand purple. */
 .memory-priority-card h2::after{
-  border-top-color:#4f46e5;
-  border-right-color:#4f46e5;
+  border-top-color:#7652df;
+  border-right-color:#7652df;
 }
