@@ -776,6 +776,8 @@ function getWeeklyStats(){
 }
 function renderHome(){
  const st=totalStats(),pct=Math.round(st.lessons/st.total*100),s=state(),reviewDue=getDueReviews().length,streak=getStreak(),next=getNextLesson();
+ const exploredSubjects=Object.keys(SUBJECTS).filter(name=>(s.completed?.[name]||[]).length>0).length;
+ const projectsInProgress=Object.keys(PROJECTS).filter(id=>projectProgress(id)>0&&projectProgress(id)<100).length;
  const projectIds=Object.keys(PROJECTS).sort((a,b)=>{const pa=projectProgress(a),pb=projectProgress(b),rank=x=>x>0&&x<100?0:x===0?1:2;return rank(pa)-rank(pb)||pb-pa;}).slice(0,2);
  document.title='My Learning OS';
  if(!document.getElementById('calm-dashboard-styles')){
@@ -785,25 +787,25 @@ function renderHome(){
    .home-welcome>small{font-size:.65rem;letter-spacing:.1em;font-weight:800;color:var(--garden-clay,#a96f4c)}
    .home-welcome h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(1.7rem,4.8vw,2.05rem);font-weight:400;line-height:1.1;margin:3px 0}
    .home-welcome p{margin:3px 0 0;color:#776d62;font-size:.88rem}
-   .home-overview{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:8px;margin:8px 0 18px}
-   .home-progress,.home-overview .home-review{background:#fffdf9;border:1px solid var(--garden-line,#e7dfd4);border-radius:13px;padding:9px;min-width:0}
-   .home-progress-top{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-bottom:7px;color:#62584e;font-size:.76rem}
-   .home-progress-top strong{font-family:Georgia,serif;font-size:1.2rem;font-weight:400;color:var(--garden-clay,#a96f4c)}
-   .home-progress .bar{height:5px;margin-bottom:6px}
-   .home-progress>small{font-size:.68rem;color:#776d62}
-   .home-overview .home-review{margin:0;box-shadow:none;gap:6px;align-items:center}
-   .home-overview .home-review>span:first-child{font-size:1.15rem;flex-shrink:0}
-   .home-overview .home-review>span:nth-child(2){min-width:0}
-   .home-overview .home-review strong{font-size:.76rem;line-height:1.15;white-space:normal}
-   .home-overview .home-review small{font-size:.66rem;line-height:1.2}
-   .home-overview .home-review>b{font-size:1.05rem;flex-shrink:0}
+   .home-overview{margin:9px 0 20px;padding:13px;background:#fffdf9;border:1px solid var(--garden-line,#e7dfd4);border-radius:16px}
+   .home-overview-heading{font-size:.82rem;font-weight:800;color:var(--garden-clay,#a96f4c);margin:0 0 10px}
+   .home-overview-main{display:grid;grid-template-columns:88px minmax(0,1fr);gap:12px;align-items:center}
+   .home-progress-ring{width:82px;height:82px;border-radius:50%;display:grid;place-items:center;position:relative;background:conic-gradient(var(--garden-clay,#bd704d) var(--progress),#eee6da 0)}
+   .home-progress-ring:before{content:"";position:absolute;inset:7px;border-radius:50%;background:#fffdf9}
+   .home-progress-ring strong{position:relative;font-family:Georgia,serif;font-size:1.25rem;font-weight:400;color:#302a25}
+   .home-overview-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+   .home-overview-stat{min-width:0;padding:8px 9px;border:1px solid var(--garden-line,#e7dfd4);border-radius:11px;background:#fff}
+   .home-overview-stat strong{display:block;font-size:1rem;line-height:1.2;color:#302a25}
+   .home-overview-stat span{display:block;margin-top:3px;font-size:.67rem;line-height:1.25;color:#776d62}
+   .home-overview-foot{display:flex;justify-content:space-between;gap:8px;margin-top:10px;padding-top:9px;border-top:1px solid #eee6da;color:#776d62;font-size:.7rem}
+   .home-overview-foot a{color:var(--garden-clay,#a96f4c);font-weight:750;text-decoration:none}
    .home-section{margin:22px 0 26px}
    .home-section-heading{margin-bottom:10px}
    .home-section-heading h2{font-size:1.35rem}
    .home-subject-grid{gap:9px}
    .home-subject,.home-project{box-shadow:none}
    .home-weekly{display:none!important}
-   @media(max-width:420px){.home-overview{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:7px}.home-progress,.home-overview .home-review{padding:8px}.home-progress-top{font-size:.7rem}.home-progress-top strong{font-size:1.1rem}.home-progress>small{font-size:.64rem}.home-overview .home-review{gap:5px}.home-overview .home-review>span:first-child{font-size:1.05rem}.home-overview .home-review strong{font-size:.7rem}.home-overview .home-review small{font-size:.62rem}}
+   @media(max-width:420px){.home-overview{padding:11px}.home-overview-main{grid-template-columns:74px minmax(0,1fr);gap:9px}.home-progress-ring{width:70px;height:70px}.home-progress-ring:before{inset:6px}.home-progress-ring strong{font-size:1.1rem}.home-overview-stat{padding:7px}.home-overview-stat strong{font-size:.92rem}.home-overview-stat span{font-size:.62rem}.home-overview-foot{font-size:.66rem}}
   `;document.head.appendChild(style);
  }
  document.getElementById('app').innerHTML=nav()+`
@@ -813,9 +815,18 @@ function renderHome(){
   <p>One small step at a time.</p>
  </section>
  ${next?`<a class="continue-card" href="/subjects/${next.name.toLowerCase()}/#lesson-${next.i}"><span class="continue-icon">${next.icon}</span><span class="continue-copy"><small>YOUR NEXT STEP</small><strong>Continue learning</strong><span>${next.name} · Lesson ${next.i+1}: ${esc(next.lesson[0])}</span></span><b>Continue →</b></a>`:'<section class="continue-card all-done"><span class="continue-icon">🎉</span><span class="continue-copy"><small>GREAT WORK</small><strong>All lessons completed</strong><span>Choose a subject to revisit or explore a project.</span></span><b>Explore →</b></section>'}
- <section class="home-overview" aria-label="Learning progress">
-  <div class="home-progress"><div class="home-progress-top"><span>Overall progress</span><strong>${pct}%</strong></div><div class="bar"><div style="width:${pct}%"></div></div><small>${st.lessons} of ${st.total} lessons completed</small></div>
-  <a class="home-review" href="/review.html"><span>🧠</span><span><strong>${reviewDue} to review</strong><small>${streak} day streak</small></span><b>→</b></a>
+ <section class="home-overview" aria-label="Learning progress overview">
+  <div class="home-overview-heading">Your progress at a glance</div>
+  <div class="home-overview-main">
+   <div class="home-progress-ring" role="img" aria-label="${pct}% overall lesson progress" style="--progress:${pct}%"><strong>${pct}%</strong></div>
+   <div class="home-overview-stats">
+    <div class="home-overview-stat"><strong>${st.lessons}/${st.total}</strong><span>Lessons completed</span></div>
+    <div class="home-overview-stat"><strong>${exploredSubjects}/${Object.keys(SUBJECTS).length}</strong><span>Subjects explored</span></div>
+    <div class="home-overview-stat"><strong>${projectsInProgress}</strong><span>Projects in progress</span></div>
+    <a class="home-overview-stat" href="/review.html" style="text-decoration:none"><strong>${reviewDue}</strong><span>Lessons to review →</span></a>
+   </div>
+  </div>
+  <div class="home-overview-foot"><span>🔥 ${streak} day learning streak</span><a href="/review.html">Open review →</a></div>
  </section>
  <section class="home-section" id="learning-areas">
   <div class="home-section-heading"><div><small class="muted">CHOOSE WHAT TO EXPLORE</small><h2>Learning areas</h2></div></div>
