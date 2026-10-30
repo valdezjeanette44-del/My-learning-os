@@ -819,7 +819,20 @@ body{background:var(--garden-paper);color:var(--garden-ink)}
  color:#bd704d;
 }
 .continue-card:not(.all-done)>b{
- color:#bd704d;
+ display:inline-flex;
+ align-items:center;
+ justify-content:center;
+ gap:5px;
+ flex-shrink:0;
+ padding:9px 13px;
+ border-radius:999px;
+ background:#bd704d;
+ color:#fff;
+ font-size:.78rem;
+ font-weight:800;
+ line-height:1.2;
+ white-space:nowrap;
+ box-shadow:0 2px 5px rgba(126,83,55,.14);
 }
 .continue-copy .continue-meta{
  margin-top:1px;
