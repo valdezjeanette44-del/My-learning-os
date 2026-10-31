@@ -778,7 +778,7 @@ function renderHome(){
  const st=totalStats(),pct=Math.round(st.lessons/st.total*100),s=state(),reviewDue=getDueReviews().length,streak=getStreak(),next=getNextLesson();
  const exploredSubjects=Object.keys(SUBJECTS).filter(name=>(s.completed?.[name]||[]).length>0).length;
  const projectsInProgress=Object.keys(PROJECTS).filter(id=>projectProgress(id)>0&&projectProgress(id)<100).length;
- const projectIds=Object.keys(PROJECTS).sort((a,b)=>{const pa=projectProgress(a),pb=projectProgress(b),rank=x=>x>0&&x<100?0:x===0?1:2;return rank(pa)-rank(pb)||pb-pa;}).slice(0,2);
+ const projectIds=['plant-evolution','human-evolution'].filter(id=>PROJECTS[id]);
  document.title='My Learning OS';
  if(!document.getElementById('calm-dashboard-styles')){
   const style=document.createElement('style');style.id='calm-dashboard-styles';style.textContent=`
