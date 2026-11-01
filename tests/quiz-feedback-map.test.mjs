@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const source = await readFile("learning.js", "utf8");
+const source = (await readFile("learning.js", "utf8")).replace(/\r\n/g, "\n");
 const start = source.indexOf("const QUIZ_DISTRACTOR_FEEDBACK = ");
 const end = source.indexOf(";\n\nfunction lessonQuizDistractorReason", start);
 assert.ok(start >= 0 && end > start, "explicit distractor feedback map should exist");
