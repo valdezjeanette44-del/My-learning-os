@@ -909,7 +909,8 @@ function newQuestion(){
  let item=qs[Math.floor(Math.random()*qs.length)];
  const meta=document.getElementById('curiosityMeta'),q=document.getElementById('questionBox'),clue=document.getElementById('curiosityClue'),link=document.getElementById('curiosityLesson');
  if(!q)return;
- if(item.q===q.textContent)item=qs[(qs.indexOf(item)+1)%qs.length];
+ const dailyQuestion=document.getElementById('dailyQuestionBox')?.textContent,currentQuestion=q.textContent;
+ if(item.q===currentQuestion||item.q===dailyQuestion){const start=qs.indexOf(item);for(let offset=1;offset<=qs.length;offset++){const next=qs[(start+offset)%qs.length];if(next.q!==currentQuestion&&next.q!==dailyQuestion){item=next;break;}}}
  if(meta)meta.textContent=item.icon+' '+(item.topic||item.subject)+' · '+(item.category||item.subject);
  q.textContent=item.q;
  if(clue){clue.textContent='';clue.classList.remove('visible');}

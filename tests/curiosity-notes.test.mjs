@@ -32,12 +32,14 @@ test('date rollover preserves an unsaved reflection in a draft linked to the pre
 
 test('exploration question is independent from the daily question and includes beyond-curriculum topics', () => {
   const elements = Object.fromEntries(['dailyQuestionMeta','dailyQuestionBox','dailyQuestionClue','dailyQuestionLesson','curiosityMeta','questionBox','curiosityClue','curiosityLesson'].map(id => [id, { textContent:'', href:'', hidden:false, classList:{remove(){},add(){}} }]));
-  const observed={};const context = { Math:{floor:Math.floor,random:()=>.999}, elements, observed, document:{getElementById:id=>elements[id]}, SUBJECTS:{} };
+  let randomIndex=13;const observed={};const context = { Math:{floor:Math.floor,random:()=> (randomIndex+.01)/14}, elements, observed, document:{getElementById:id=>elements[id]}, SUBJECTS:{} };
   const daily = questions + '\n' + fn('setQuestionView') + '\n' + fn('dailyQuestionForDate') + '\n' + fn('localDayKey') + '\n' + fn('questionCategory') + '\n' + fn('questionTopic') + '\n' + fn('newQuestion');
   run(daily + '\nsetQuestionView(dailyQuestionForDate(new Date(2026,10,1)),{meta:"dailyQuestionMeta",question:"dailyQuestionBox",clue:"dailyQuestionClue",link:"dailyQuestionLesson"});observed.before=elements.dailyQuestionBox.textContent;newQuestion();observed.after=elements.dailyQuestionBox.textContent;observed.explore=elements.questionBox.textContent;observed.external=qs.some(q=>q.category==="Beyond the curriculum")', context);
   assert.equal(observed.before, observed.after);
   assert.notEqual(observed.before, observed.explore);
   assert.equal(observed.external,true);
+  randomIndex=vm.runInContext('qs.findIndex(q=>q.q===elements.dailyQuestionBox.textContent)',context);run('newQuestion()',context);assert.notEqual(elements.questionBox.textContent,elements.dailyQuestionBox.textContent);
+  const firstExplore=elements.questionBox.textContent;run('newQuestion()',context);assert.notEqual(elements.questionBox.textContent,firstExplore);
   assert.equal(run(questions+'\nqs.some(q=>q.category==="Beyond the curriculum")'), true);
 });
 
