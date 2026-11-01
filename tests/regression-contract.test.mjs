@@ -422,7 +422,8 @@ test("Curiosity Lab questions link to their matching subject lesson", () => {
   const questionsSource = learning.slice(0, questionsEnd + 1);
   const questionHandler = learning.slice(functionStart, functionEnd);
   const output = { meta: { textContent: "" }, question: { textContent: "" }, clue: { textContent: "", classList: { remove() {} } }, link: { href: "" } };
-  const randomValues = [0, .125, .25, .375, .5, .625, .75, .875];
+  const questionCount = 14;
+  const randomValues = Array.from({ length: 8 }, (_, index) => (index + .01) / questionCount);
   const results = [];
   const context = vm.createContext({
     Math: { floor: Math.floor, random: () => randomValues.shift() },
@@ -436,7 +437,7 @@ test("Curiosity Lab questions link to their matching subject lesson", () => {
     assert.equal(results[index].href, "/subjects/" + subject.toLowerCase() + "/#lesson-0");
     assert.equal(results[index].meta.includes(subject), true);
   }
-  assert.match(learning, /Explore this lesson →/);
+  assert.match(learning, /Explore topic →/);
 });
 
 test("Capture focuses the existing note without changing or saving its contents", () => {
