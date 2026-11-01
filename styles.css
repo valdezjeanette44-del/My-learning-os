@@ -9,12 +9,15 @@
 .curiosity-head{display:flex;justify-content:space-between;gap:24px;align-items:flex-start}
 .curiosity-head h2{margin:.35rem 0 .5rem}
 .curiosity-spark{font-size:2.5rem;line-height:1}
-.curiosity-card{margin-top:20px;padding:28px;border:1px solid rgba(79,70,229,.14);border-radius:24px;background:linear-gradient(135deg,rgba(79,70,229,.06),rgba(255,255,255,.9))}
-.curiosity-meta{display:inline-flex;padding:7px 11px;border-radius:999px;background:#eef2ff;color:#4338ca;font-weight:700;font-size:.85rem}
+.curiosity-card{margin-top:20px;padding:28px;border:1px solid var(--garden-line,#e9dfd0);border-radius:24px;background:linear-gradient(135deg,#f8eee2,#fffdf9 72%)}
+.curiosity-meta{display:inline-flex;padding:7px 11px;border-radius:999px;background:var(--garden-peach,#f3e3cf);color:#945333;font-weight:700;font-size:.85rem}
 .curiosity-question{font-size:clamp(1.45rem,3vw,2rem);font-weight:800;line-height:1.25;margin:20px 0}
-.curiosity-clue{display:none;padding:14px 16px;border-radius:14px;background:#fff;border:1px solid #e5e7eb;color:#374151;margin-bottom:18px}
+.curiosity-clue{display:none;padding:14px 16px;border-radius:14px;background:#fffdf9;border:1px solid var(--garden-line,#e9dfd0);color:#51483e;margin-bottom:18px}
 .curiosity-clue.visible{display:block}
 .curiosity-actions{display:flex;flex-wrap:wrap;gap:10px}
+.notes-return{margin:10px 0 0;font-size:.86rem;color:var(--garden-muted,#797269)}
+.notes-return a{color:var(--garden-clay,#c96c43);font-weight:700;text-decoration:none}
+.notes-return a:hover,.notes-return a:focus{text-decoration:underline}
 @media(max-width:600px){.curiosity-card{padding:20px}.curiosity-actions>*{width:100%;text-align:center}.curiosity-spark{font-size:2rem}}
 
 

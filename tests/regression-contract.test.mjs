@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFile, access } from "node:fs/promises";
 import vm from "node:vm";
 
-const learning = await readFile("learning.js", "utf8");
+const learning = (await readFile("learning.js", "utf8")).replace(/\r\n/g, "\n");
 const knowledgeMap = await readFile("knowledge-map.js", "utf8");
 const homepage = await readFile("index.html", "utf8");
 
@@ -374,7 +374,7 @@ test("homepage scroll handler saves Home position but never overwrites it from o
 
 test("subject and homepage notes are written to saved learning state", () => {
   function exerciseNoteSaver(functionName, bodyDatasetSubject, inputId, inputValue) {
-    const savedState = { notes: {} };
+    const savedState = { completed: { Biology: [0, 1] }, notes: { home: "Keep this home note.", Physics: "Keep this subject note." } };
     let persisted = null;
     const elements = {
       [inputId]: { value: inputValue },
@@ -404,10 +404,66 @@ test("subject and homepage notes are written to saved learning state", () => {
 
   const subject = exerciseNoteSaver("saveNote", "Biology", "note", "Plants use sunlight to make sugars.");
   assert.equal(subject.persisted.notes.Biology, "Plants use sunlight to make sugars.");
+  assert.equal(subject.persisted.notes.Physics, "Keep this subject note.");
+  assert.deepEqual(subject.persisted.completed.Biology, [0, 1]);
   assert.equal(subject.elements.saved.textContent, "Saved ✓");
 
   const home = exerciseNoteSaver("saveHomeNote", "", "homeNote", "Connect photosynthesis with energy flow.");
   assert.equal(home.persisted.notes.home, "Connect photosynthesis with energy flow.");
+  assert.equal(home.persisted.notes.Physics, "Keep this subject note.");
+  assert.deepEqual(home.persisted.completed.Biology, [0, 1]);
+});
+
+test("Curiosity Lab questions link to their matching subject lesson", () => {
+  const questionsEnd = learning.indexOf(";\nconst SUBJECTS=");
+  const functionStart = learning.indexOf("function newQuestion()");
+  const functionEnd = learning.indexOf("function captureIdea()", functionStart);
+  assert.ok(questionsEnd > 0 && functionStart > questionsEnd && functionEnd > functionStart);
+  const questionsSource = learning.slice(0, questionsEnd + 1);
+  const questionHandler = learning.slice(functionStart, functionEnd);
+  const output = { meta: { textContent: "" }, question: { textContent: "" }, clue: { textContent: "", classList: { remove() {} } }, link: { href: "" } };
+  const randomValues = [0, .125, .25, .375, .5, .625, .75, .875];
+  const results = [];
+  const context = vm.createContext({
+    Math: { floor: Math.floor, random: () => randomValues.shift() },
+    results,
+    output,
+    document: { getElementById: id => ({ curiosityMeta: output.meta, questionBox: output.question, curiosityClue: output.clue, curiosityLesson: output.link })[id] },
+  });
+  vm.runInContext(questionsSource + "\n" + questionHandler + "\n" + Array.from({ length: 8 }, () => "newQuestion(); results.push({ meta: output.meta.textContent, href: output.link.href });").join("\n"), context, { timeout: 1000 });
+  const subjects = ["Physics", "Chemistry", "Biology", "Business", "Economics", "History", "Philosophy", "Technology"];
+  for (const [index, subject] of subjects.entries()) {
+    assert.equal(results[index].href, "/subjects/" + subject.toLowerCase() + "/#lesson-0");
+    assert.equal(results[index].meta.includes(subject), true);
+  }
+  assert.match(learning, /Explore this lesson →/);
+});
+
+test("Capture focuses the existing note without changing or saving its contents", () => {
+  const start = learning.indexOf("function captureIdea()");
+  const end = learning.indexOf("function showCuriosityClue()", start);
+  assert.ok(start >= 0 && end > start);
+  const handler = learning.slice(start, end);
+  for (const isSubject of [false, true]) {
+    const details = { open: false };
+    const homeNote = { value: "Existing home note", focused: false, focus() { this.focused = true; }, scrollIntoView() {} };
+    const subjectNote = { value: "Existing subject note", focused: false, focus() { this.focused = true; }, scrollIntoView() {} };
+    let saves = 0;
+    const context = vm.createContext({
+      document: {
+        body: { dataset: { subject: isSubject ? "Biology" : "" } },
+        querySelector: () => details,
+        getElementById: id => id === "note" ? subjectNote : id === "homeNote" ? homeNote : null,
+      },
+      saveState: () => { saves++; },
+    });
+    vm.runInContext(handler + "\ncaptureIdea();", context, { timeout: 1000 });
+    const target = isSubject ? subjectNote : homeNote;
+    assert.equal(target.focused, true);
+    assert.equal(target.value, isSubject ? "Existing subject note" : "Existing home note");
+    assert.equal(details.open, !isSubject);
+    assert.equal(saves, 0);
+  }
 });
 
 test("completing a lesson persists progress and does not duplicate completion history", () => {
