@@ -82,7 +82,7 @@ function importBackup(version,data,approved=true,rawResult=null) {
   let stored={completed:{Biology:[0]},notes:{home:'Safe'},scores:{Biology:{score:100}},review:{saved:true},projects:{p:true},activity:{today:1},noteLibrary:[{id:'safe',title:'Safe note',category:'General',content:'Safe content'}]};
   const status={textContent:''},location={count:0,reload(){this.count++}};
   class Reader { readAsText(){this.result=rawResult??JSON.stringify({app:'My Learning OS',version,data});this.onload();} }
-  const context={Date,KEY:'myLearningOS.v2',FileReader:Reader,confirm:()=>approved,location,document:{getElementById:id=>id==='backupStatus'?status:null},state:()=>stored,localStorage:{setItem(k,v){stored=JSON.parse(v);}}};
+  const recovery={};const context={Date,KEY:'myLearningOS.v2',STORAGE_RECOVERY_KEY:'myLearningOS.v2.beforeRestore',validateLearningData:run('('+fn('validateLearningData')+')'),FileReader:Reader,confirm:()=>approved,location,document:{getElementById:id=>id==='backupStatus'?status:null},state:()=>stored,localStorage:{getItem(k){return k==='myLearningOS.v2'?JSON.stringify(stored):(recovery[k]??null);},setItem(k,v){if(k==='myLearningOS.v2')stored=JSON.parse(v);else recovery[k]=v;}}};
   context.input={files:[{}],value:'selected'};run(fn('importLearningBackup')+'\nimportLearningBackup(input)',context);
   return {get stored(){return stored;},status,location};
 }
@@ -106,9 +106,9 @@ test('canceled, malformed, and incomplete v2 imports cannot modify saved data', 
 test('backup export is version 2 and contains the complete learning state plus structured notes', () => {
   const data={completed:{History:[0]},notes:{home:'Original'},scores:{History:{score:90}},review:{a:1},projects:{p:2},activity:{today:3},noteLibrary:[{id:'note'}]};let serialized='';
   class BlobMock{constructor(parts){serialized=parts[0]}}
-  const context={Date,Blob:BlobMock,URL:{createObjectURL:()=>'',revokeObjectURL(){}},state:()=>data,document:{getElementById:()=>null,createElement:()=>({click(){},remove(){}}),body:{appendChild(){}}},setTimeout(){}};
+  const context={Date,Blob:BlobMock,URL:{createObjectURL:()=>'',revokeObjectURL(){}},readLearningData:()=>data,document:{getElementById:()=>null,createElement:()=>({click(){},remove(){}}),body:{appendChild(){}}},setTimeout(){}};
   run(fn('exportLearningBackup')+'\nexportLearningBackup()',context);const backup=JSON.parse(serialized);assert.equal(backup.version,2);assert.deepEqual(backup.data,data);
-  const legacyState={completed:{},notes:{},scores:{}};context.state=()=>legacyState;run(fn('exportLearningBackup')+'\nexportLearningBackup()',context);assert.deepEqual(JSON.parse(serialized).data.noteLibrary,[]);
+  const legacyState={completed:{},notes:{},scores:{}};context.readLearningData=()=>legacyState;run(fn('exportLearningBackup')+'\nexportLearningBackup()',context);assert.deepEqual(JSON.parse(serialized).data.noteLibrary,[]);
 });
 
 test('Notes has responsive desktop and mobile layouts and navigation entry points', async () => {
