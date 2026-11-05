@@ -46,8 +46,8 @@ test("all pages that use the shared learning app load its expected script versio
     const html = await readFile(path, "utf8");
     assert.match(
       html,
-      /learning\.js\?v=33(?:["'])/,
-      `${path} should reference learning.js?v=33`,
+      /learning\.js\?v=34(?:["'])/,
+      `${path} should reference learning.js?v=34`,
     );
   }
 });
