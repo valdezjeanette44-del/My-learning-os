@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 380" role="img" aria-labelledby="title desc">
+<title id="title">Two routes across a cell membrane</title><desc id="desc">Oxygen crosses the lipid layer directly by diffusion. An ion passes through a suitable protein channel. Neither arrow implies all substances can pass. This is a simplified passive-transport illustration.</desc>
+<defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0 0L7 3L0 6" fill="#58763c"/></marker></defs>
+<rect width="720" height="380" rx="20" fill="#faf9f2"/><rect y="215" width="720" height="165" fill="#edf2e4"/>
+<rect x="20" y="150" width="680" height="65" fill="#d7c4e3"/>
+<g stroke="#8d72a3" stroke-width="2"><path d="M40 150v65m25-65v65m25-65v65m25-65v65m25-65v65m25-65v65m25-65v65m25-65v65m25-65v65m25-65v65m25-65v65m25-65v65m25-65v65m25-65v65m25-65v65m25-65v65m25-65v65m25-65v65m25-65v65m25-65v65m25-65v65m25-65v65m25-65v65m25-65v65m25-65v65m25-65v65"/></g>
+<rect x="476" y="137" width="88" height="90" rx="18" fill="#647b51"/><rect x="508" y="137" width="24" height="90" fill="#faf9f2"/>
+<g font-family="system-ui,sans-serif" fill="#29362a" font-size="21"><text x="28" y="35">Outside the cell</text><text x="28" y="354">Inside the cell</text><text x="125" y="85">Oxygen</text><text x="486" y="85">Ion +</text><text x="70" y="286">Through the lipid layer</text><text x="432" y="286">Through a suitable</text><text x="432" y="314">protein channel</text></g>
+<g stroke="#58763c" stroke-width="4" marker-end="url(#arrow)"><path d="M185 105v140"/><path d="M520 105v140"/></g><circle cx="185" cy="114" r="10" fill="#7a9a54"/><circle cx="520" cy="114" r="10" fill="#aa7bc5"/>
+</svg>
