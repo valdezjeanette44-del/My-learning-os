@@ -1,8 +1,33 @@
 # Biology implementation — first increment
 
+## Current acceptance and local follow-up — 6 November 2026
+
+**Preview update authorization:** founder approved committing only this button refinement and its implementation record, then pushing `codex/biology-journey` to update the protected preview. The 6/6 acceptance below applies to `91b5f0b`; the updated preview requires a new iPhone button retest. No merge or production deployment is authorized. Statements below describing the correction as local record its pre-publication verification checkpoint.
+
+Reviewed preview: `91b5f0b0bb3ecd2bcd2aca3587a65a66ba80418d` on `codex/biology-journey`, committed and pushed; separate Vercel Preview previously verified Ready with Authentication. [Lesson 2 preview](https://my-learning-os-git-codex-biology-journey-my-learning-os.vercel.app/subjects/biology/#lesson-1). Production was last verified at `ec8113047ce5dab1eba75d98bd6dbaf894e85031`; this follow-up makes no production change or new live-production verification claim. Earlier local-only statements below are historical checkpoints, superseded by this status.
+
+**Founder-reported real-iPhone functional acceptance: 6/6 passed**, for that preview revision:
+
+- Three-question quiz accepts answers and displays feedback.
+- Written answers persist after refresh.
+- Understand, Compare cells, Practice and Reflect navigation works.
+- Completion persists after refresh.
+- Biology overview, Next lesson and browser Back/Forward work.
+- My Notes opens correctly.
+
+This is functional acceptance reported by the founder, not independent device testing, full accessibility acceptance or production acceptance.
+
+**Local correction, not committed/pushed/deployed:** shared `.text-action` rules used `!important` to remove the lesson's minimum button height and horizontal padding. A Cells-only CSS override restores a 44px minimum height, 10px/12px padding, natural wrapping and constrained width. Existing focus/error rules, handlers, curriculum, stable ID `biology-cells` / legacy index 1 and global navigation remain unchanged. No cache-version change is published in this local follow-up; verify fresh CSS when a later preview update is authorized.
+
+**Verification:** all 100 automated tests pass, including stable/legacy identity, reversed presentation, historical quiz-source hashes, unknown-record preservation, backup compatibility and save-failure coverage. JavaScript syntax and whitespace checks pass. No JavaScript, storage schema, saved record or backup-format change. No founder records were read, cleared or restored during this check.
+
+An isolated real browser at `http://127.0.0.1:8769` verified the corrected button at 320px and 375px widths: 44px measured height, 10px/12px padding at 375px, working explanation toggle, no horizontal page overflow. At 375x812, existing fixed navigation measured about 63px high with its top at 741px; after scrolling to the footer, backup controls ended at 367px, 421px and 475px, and the footer at 682px. Existing body bottom padding is 100px plus safe-area inset. Controls are scrollable clear of navigation in that browser; no global navigation correction is justified by these observations. This does not establish iPhone safe-area, open keyboard or zoom behavior. Screenshot captured outside the repository.
+
+**Outstanding:** founder iPhone retest of the new local button styling; VoiceOver/other screen readers and announcement order; exhaustive keyboard/focus traversal; 200% zoom/text enlargement and reflow; measured contrast across normal/focus/error/disabled states; actual OS reduced-motion behavior; iPhone safe-area and on-screen-keyboard overlap; failed-save real-browser retest. Reduced-motion and save failures have automated coverage only. Checkpoints and other lesson enhancements remain outside this task. No new commit, push, PR, merge or deployment performed.
+
 > Preview preparation, 6 November 2026: founder approved a scoped Biology commit and push of `codex/biology-journey` for a separate authenticated Vercel preview. Production/merge remain unauthorized. The historical-content regression test now checks fixed SHA-256 expectations from release `ec81130`, independent of HEAD and Git-history depth; all 100 tests pass. Earlier local-only checkpoints below are retained as verification history. Unrelated foundation documents remain outside this scoped commit and preserved locally.
 
-Status: local, uncommitted prototype on `codex/biology-journey`, based on released `ec8113047ce5dab1eba75d98bd6dbaf894e85031`. Founder authorized starting the blueprint on 6 November 2026. No merge or deployment is authorized.
+Historical initial status: local, uncommitted prototype on `codex/biology-journey`, based on released `ec8113047ce5dab1eba75d98bd6dbaf894e85031`. Founder authorized starting the blueprint on 6 November 2026. See current acceptance above for the later preview and local follow-up status.
 
 ## Technical approach
 
