@@ -60,3 +60,9 @@ test('two deeper sections are native collapsed disclosures without save or rende
  assert.match(sections[1][2],/<summary>Explore deeper: How cells can differ<\/summary>/);
  for(const section of sections){assert.doesNotMatch(section[1],/\bopen\b|on\w+=/);assert.doesNotMatch(section[2],/onclick=|ontoggle=|<textarea|<input|saveState|renderSubject/);}
 });
+
+test('membrane key keeps scientific qualifications visible as scannable explanations',()=>{
+ const core=render('Biology',1).replace(/<details\b[^>]*>[\s\S]*?<\/details>/g,'');
+ assert.match(core,/id="cells-exchange-description" class="cells-diagram-key"/);
+ for(const text of ['<strong>Oxygen:</strong>','<strong>Charged ion:</strong>','<strong>Arrows:</strong>','concentration and electrical forces','Molecules move both ways','do not show a pump','simplified and not to scale'])assert.ok(core.includes(text),text);
+});
