@@ -1,0 +1,16 @@
+# Chemistry implementation — local only
+
+Based on production main d8bc57bfba3148dd4ab989cba35d0ef0ca72bdd2, branch codex/chemistry-journey. Founder authorized identity foundation and Lesson 1 only. No commit, push, PR, preview or deployment. Existing six-phase Master Roadmap preserved.
+
+Four proposed stable IDs now resolve to historical Chemistry slots 0–3 with a separate display list. Legacy content slots, assessment banks, storage key, grading and backup formats are unchanged. Enhanced Matter teaching is separate from historical source fields. Lessons 2–4 and Biology teaching remain unchanged.
+
+Lesson 1 adds objectives, matter/particles/states/change explanations, an original qualified water-state SVG, temporary ungraded classification practice, two collapsed deeper sections, summary and original controls. Native controls, named answer field, status feedback, visible focus, scoped contrast styling and motion-aware section navigation are included. Quiz retry remains the existing Chemistry implementation; approved future Retry/Restart refinement is deferred.
+
+Chemistry ordinary deep links now open on refresh; one Chemistry-scoped hash listener follows Back/Forward and legacy Review targets without rebuilding or saving. Shared rebuild retention additionally keeps the temporary practice element; no practice persistence is introduced.
+
+Verification: 140 tests pass (132 existing plus 8 Chemistry cases); syntax/whitespace checked. Disposable localhost browser: 375px/320px no horizontal page overflow; diagram loaded; classification feedback and disclosure retained unsaved answer/note; original quiz 3/3; completion retained unsaved answer/note/practice/quiz DOM; explicit answer/note saves and completion/quiz survived refresh; Next/Back returned to slot 0; keyboard section action focused the target; no console errors observed. Initial diagram labels enlarged to 24 SVG units, about 15.1px at observed 227.2px image width.
+
+Limitations: real iPhone Safari, Narrator, actual 200% zoom/150% text enlargement, OS reduced motion, comprehensive contrast/focus/error-state audit and failed-save real-browser retest remain unverified. Existing automated backup/unknown-field/failed-save tests pass; no founder-data import or browser restore performed. Historical local learning.js discrepancy has not recurred; compare source again before publication. No reading-time promise or new tracking.
+
+## Pre-preview correction pass — local only
+Initial quiz Review boot for Chemistry slot 0 now honors reduced motion; normal behavior stays smooth. Example/answer changes clear temporary practice feedback. Diagram and HTML qualify selected particles rather than equal-volume samples. SVG state names and H₂O use 26-unit text; small movement captions were removed from SVG because readable 16px HTML already explains them. 143 tests pass, including executed boot paths, change bindings and diagram qualifications. Disposable browser verified auto/smooth under controlled matchMedia preferences, repeated practice and feedback clearing, zero learning-key writes during rendering/practice, 320px/375px no overflow and keyboard section focus. At measured image widths 227.2/282.4px, SVG labels are about 16.4/20.4px. Actual OS motion, iPhone, Narrator and zoom remain pending. No publication.
