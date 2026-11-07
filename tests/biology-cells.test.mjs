@@ -45,3 +45,18 @@ test('responsive pictures provide mobile labels at readable SVG sizes and scient
  for(const file of ['cell-comparison-mobile','membrane-exchange-mobile']){const svg=await readFile('assets/biology/'+file+'.svg','utf8');assert.match(svg,/viewBox="0 0 360 /);assert.match(svg,/font-size="19"/);assert.match(svg,/<desc/);}
  const html=render('Biology',1);assert.match(html,/<picture>/);assert.match(html,/electrical pull/);assert.match(html,/adenosine triphosphate/);assert.match(html,/assumed net inward movement/);assert.match(html,/aria-label="Cells lesson sections"/);
 });
+
+test('short Cells core retains prerequisites and diagram descriptions outside optional disclosures',()=>{
+ const html=render('Biology',1),core=html.replace(/<details\b[^>]*>[\s\S]*?<\/details>/g,'');
+ for(const text of ['selectively permeable','harmful substances','No nucleus does not mean no DNA','ribosomes','cells-exchange-description','cells-comparison-description','assumed net inward movement','not to scale','Original quiz','answer-1','cells-reflect'])assert.ok(core.includes(text),text);
+ assert.doesNotMatch(core,/adenosine triphosphate|electrochemical gradient/);
+ assert.doesNotMatch(html,/5[–-]7 minutes|reading time/i);
+});
+
+test('two deeper sections are native collapsed disclosures without save or rendering handlers',()=>{
+ const html=render('Biology',1),sections=[...html.matchAll(/<details class="cells-deeper"([^>]*)>([\s\S]*?)<\/details>/g)];
+ assert.equal(sections.length,2);
+ assert.match(sections[0][2],/<summary>Explore deeper: How substances cross membranes<\/summary>/);
+ assert.match(sections[1][2],/<summary>Explore deeper: How cells can differ<\/summary>/);
+ for(const section of sections){assert.doesNotMatch(section[1],/\bopen\b|on\w+=/);assert.doesNotMatch(section[2],/onclick=|ontoggle=|<textarea|<input|saveState|renderSubject/);}
+});

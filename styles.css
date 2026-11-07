@@ -978,6 +978,9 @@ body{background:var(--garden-paper,#fbf8f1);color:#302a25}
 .cells-enhanced .lesson-body button{background:#634783;color:#fff;border:1px solid #634783;min-height:44px}.cells-enhanced .lesson-body button.secondary,.cells-enhanced .lesson-body button.text-action{background:#fcfaf4;color:#563976;border-color:#77608e}
 /* Override shared text-action spacing only inside the enhanced Cells lesson. */
 .cells-enhanced .lesson-body button.text-action{min-height:44px!important;padding:10px 12px!important;max-width:100%;white-space:normal;overflow-wrap:break-word;line-height:1.5}
+.cells-enhanced .cells-deeper{margin:20px 0;border:1px solid #d8e1cb;border-radius:12px;padding:0 16px;background:#fafbf5}
+.cells-enhanced .cells-deeper summary{padding:14px 0;min-height:44px;box-sizing:border-box;cursor:pointer;color:#3d5034;font-weight:700;line-height:1.6;overflow-wrap:break-word}
+.cells-enhanced .cells-deeper p{margin:0 0 16px}
 .cells-enhanced .lesson-body button:disabled{background:#e8e2ed;color:#54475f;border-color:#c1b5cc;cursor:default;opacity:1}.cells-enhanced .lesson-body :is(button,a,input,textarea,summary):focus-visible{outline:3px solid #49305f;outline-offset:4px}
 .cells-enhanced .lesson-body :is(input[type="radio"],textarea){accent-color:#634783}.cells-enhanced .lesson-body :is([tabindex="-1"]){scroll-margin-top:24px}.cells-enhanced .cells-summary{max-width:none}.cells-enhanced .mcq-feedback.incorrect{color:#8b3526;background:#fff0eb}.cells-enhanced .mcq-feedback.correct{color:#245c39;background:#edf7ef}
 @media(max-width:850px){.cells-enhanced .cells-pair{grid-template-columns:1fr;gap:14px}.cells-enhanced .cells-section-nav button{flex:1 1 40%}}
