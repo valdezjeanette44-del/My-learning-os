@@ -771,30 +771,59 @@ function scrollCellsSection(section){
  target.setAttribute('tabindex','-1');target.focus({preventScroll:true});
  target.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'auto':'smooth',block:'start'});
 }
+function dnaLessonIntroduction(){
+ return `<section class="cells-learning dna-learning" aria-labelledby="dna-opening">
+ <a href="#subject-overview">← Back to Biology overview</a>
+ <header class="cells-header"><p class="cells-eyebrow">BIOLOGY · LESSON 3 OF 4</p><h3 id="dna-opening">DNA and heredity</h3><p>How can inherited DNA influence a trait?</p></header>
+ <nav class="cells-section-nav" aria-label="DNA lesson sections"><button type="button" onclick="scrollDnaSection('understand')">Understand</button><button type="button" onclick="scrollDnaSection('pathway')">Follow the pathway</button><button type="button" onclick="scrollDnaSection('practice')">Practice</button><button type="button" onclick="scrollDnaSection('reflect')">Reflect</button></nav>
+ <section class="cells-goals"><h4>What you will understand</h4><ul><li>Explain how a gene can influence a trait through molecules and cell processes.</li><li>Explain why inherited DNA is not the only influence on many traits.</li></ul></section>
+ <h4 id="dna-understand" tabindex="-1">From information to a working cell</h4><p>In the Cells lesson, you saw that cells contain DNA, whether or not they have a nucleus. <strong>DNA</strong> is a molecule that stores biological information. A <strong>gene</strong> is a stretch of DNA whose information can be used to make a functional RNA molecule or a protein through an RNA intermediate.</p>
+ <p><strong>RNA</strong> is another kind of molecule. For a protein-coding gene, an RNA copy carries information used to build a protein. Proteins do many jobs: some help chemical reactions happen, while others support structures or carry signals. These activities can influence a <strong>trait</strong>, an observable characteristic. Some genes instead produce RNA that works without being translated into protein.</p>
+ <h4 id="dna-pathway" tabindex="-1">Follow one possible pathway</h4><figure class="dna-pathway"><img src="/assets/biology/gene-to-trait.svg" alt="One protein-coding gene example: a gene in DNA provides information for RNA, then a protein that affects pigment production and contributes to coat colour. Other genes, development and environment can also influence traits." aria-describedby="dna-pathway-description" width="360" height="540"><figcaption>Simplified example, not a rule for every gene or trait.</figcaption></figure>
+ <div id="dna-pathway-description" class="cells-diagram-key"><ul><li><strong>Information:</strong> DNA is used to make RNA; for a protein-coding gene, RNA is used to build a protein.</li><li><strong>Function:</strong> that protein can affect a cellular process, such as pigment production.</li><li><strong>Outcome:</strong> the process contributes to a trait. DNA does not turn into a trait, and one gene need not determine the whole outcome.</li></ul></div>
+ <aside class="cells-connection"><h4>Why it matters: a puppy’s coat</h4><p>A puppy may inherit coat-colour variants from its parents because DNA is passed on during reproduction. A <strong>variant</strong> is a difference in DNA sequence. A variant affecting a pigment-related protein or when it is made can influence the pigment produced or distributed in hair.</p><p>This is one possible route, not a prediction of a particular puppy’s colour. Coat colour can involve several genes. More generally, traits can also depend on development and environment, so DNA is influential without being a complete script for appearance.</p></aside>
+ <p><strong>Heredity</strong> is the passing of genetic information from parents to offspring. Siblings can receive different combinations of variants. Inheritance and gene activity are biological processes, not choices made by an organism.</p>
+ <details class="cells-deeper"><summary>Explore deeper: Genes and their products</summary><p>Optional explanation — the core lesson and practice stand on their own.</p><p>Making RNA from DNA information is called <strong>transcription</strong>. For protein-coding genes, using RNA information to build a protein is called <strong>translation</strong>. Some RNA molecules have other functions, such as helping regulate gene activity. A gene does not always correspond to exactly one final protein product.</p><p>Cells regulate when, where and how much gene product they make. Different cell types can use different parts of much the same genetic information. The pathway diagram shows one example, not every kind of regulation.</p></details>
+ <details class="cells-deeper"><summary>Explore deeper: Why relatives can differ</summary><p>Optional explanation — no additional assessment or completion step.</p><p>In sexual reproduction, reproductive cells carry different combinations of inherited variants. This helps explain why siblings with the same parents often differ; identical twins are a special case with very similar inherited DNA.</p><p>Many traits reflect contributions from multiple genes along with development and environment. Sharing a variant does not guarantee identical outcomes. Conversely, similar appearance alone does not establish identical DNA.</p></details>
+ <details class="cells-sources"><summary>Sources for this explanation</summary><ul><li><a href="https://www.genome.gov/genetics-glossary/Gene">NHGRI: Gene</a></li><li><a href="https://www.genome.gov/genetics-glossary/Gene-Expression">NHGRI: Gene expression</a></li><li><a href="https://www.genome.gov/genetics-glossary/Phenotype">NHGRI: Phenotype</a></li></ul></details>
+ </section>`;
+}
+function dnaLessonSummary(){
+ const next=resolveSubjectLesson('Biology','biology-natural-selection');
+ return `<section class="cells-summary dna-summary"><h4 id="dna-reflect" tabindex="-1">Remember and continue</h4><ul><li>Genes influence traits through functional molecules and cellular processes.</li><li>Not every gene encodes a protein, and not every trait has one determining gene.</li><li>Inherited variation, development and environment can all contribute to differences.</li></ul><p>Next, explore how inherited differences can affect survival and reproduction across generations.</p><p><a href="${next.href}" onclick="openLesson(${next.legacyIndex})">Next: Evolution by natural selection →</a></p><p><a href="/notes.html">Open Notes Library →</a> · <a href="#note">Your original Biology note</a></p><p>Checking your answer explicitly saves it; notes require Save. Completion records learning activity, not proven mastery.</p></section>`;
+}
+function scrollDnaSection(section){
+ const targets={understand:'dna-understand',pathway:'dna-pathway',practice:'mcq-2',reflect:'dna-reflect'};
+ const id=Object.hasOwn(targets,section)?targets[section]:null,target=id&&document.getElementById(id);if(!target)return;
+ target.setAttribute('tabindex','-1');target.focus({preventScroll:true});
+ target.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'auto':'smooth',block:'start'});
+}
 function lessonHTML(name,l,i,isDone){
  const enhancedCells=name==='Biology'&&resolveSubjectLesson(name,i)?.id==='biology-cells';
+ const enhancedDna=name==='Biology'&&resolveSubjectLesson(name,i)?.id==='biology-dna-heredity';
  const teaching=teacherContent(name,l);
  const r=state().review?.[name+'-'+i],due=r&&new Date(r.nextReview)<=new Date();
  const scheduled=r&&!due;
- return `<article class="lesson ${enhancedCells?'cells-enhanced':''} ${isDone?'lesson-done':''}" id="lesson-${i}">
+ return `<article class="lesson ${enhancedCells||enhancedDna?'cells-enhanced':''}${enhancedDna?' dna-enhanced':''} ${isDone?'lesson-done':''}" id="lesson-${i}">
  <button class="lesson-summary" type="button" aria-expanded="false" onclick="openLesson(${i})">
   <span class="lesson-number">${isDone?'✓':i+1}</span>
   <span class="lesson-summary-copy"><strong>${esc(l[0])}</strong><small>${esc(l[1])}</small></span>
   <span class="lesson-chevron">+</span>
  </button>
  <div class="lesson-body">
-  ${enhancedCells?cellsLessonIntroduction():`<div class="teacher-card teacher-simple"><span class="lesson-label">IN SIMPLE WORDS</span><p>${esc(teaching.simple)}</p></div><div class="teacher-card teacher-example"><span class="lesson-label">A REAL-WORLD EXAMPLE</span><p>${esc(teaching.example)}</p></div><div class="teacher-why"><span class="lesson-label">WHY IT WORKS</span><p>${esc(whyItWorks(name,l))}</p></div>`}
-  <div class="question"><span class="lesson-label">THINK ABOUT IT</span><p>${esc(l[3])}</p>
+  ${enhancedCells?cellsLessonIntroduction():enhancedDna?dnaLessonIntroduction():`<div class="teacher-card teacher-simple"><span class="lesson-label">IN SIMPLE WORDS</span><p>${esc(teaching.simple)}</p></div><div class="teacher-card teacher-example"><span class="lesson-label">A REAL-WORLD EXAMPLE</span><p>${esc(teaching.example)}</p></div><div class="teacher-why"><span class="lesson-label">WHY IT WORKS</span><p>${esc(whyItWorks(name,l))}</p></div>`}
+  <div class="question"><span class="lesson-label">THINK ABOUT IT</span><p${enhancedDna?' id="dna-question"':''}>${esc(l[3])}</p>
    <button class="hint-toggle button secondary" onclick="toggleHint(${i})">💡 Need a hint?</button><p id="hint-${i}" class="lesson-hint" hidden>${esc(l[4])}</p>
    ${enhancedCells?`<label for="answer-${i}">Explain why a membrane matters for a cell’s survival.</label><p class="muted">Checking explicitly saves your answer. Feedback matches keywords; it cannot reliably judge your reasoning or mastery. Compare with the example answer.</p>`:''}
-   <textarea class="answer" id="answer-${i}" placeholder="Try explaining your answer in your own words…">${esc((state().answers?.[name]?.[i])||'')}</textarea>
+   ${enhancedDna?`<p class="muted">Checking explicitly saves your answer. Feedback matches keywords; it cannot reliably judge reasoning or mastery. Compare with the example answer.</p>`:''}
+   <textarea class="answer" id="answer-${i}"${enhancedDna?' aria-labelledby="dna-question"':''} placeholder="Try explaining your answer in your own words…">${esc((state().answers?.[name]?.[i])||'')}</textarea>
    <div class="lesson-actions"><button onclick="checkAnswer('${name}',${i})">Check my answer</button><button class="button secondary" onclick="showModelAnswer('${name}',${i})">Show example answer</button></div>
-   <div id="feedback-${i}" class="feedback" ${enhancedCells?'role="status"':''} hidden></div>
+   <div id="feedback-${i}" class="feedback" ${enhancedCells||enhancedDna?'role="status"':''} hidden></div>
   </div>
   ${lessonQuizHTML(name,i)}
   <button class="text-action" onclick="toggleExplanation(${i})">Explain this more simply</button>
   <p id="explain-${i}" class="simple-explanation" hidden><strong>In simple words</strong><br>${esc(l[1])}<br><br><strong>Try this example</strong><br>${esc(l[2])}<br><br><strong>Why it matters</strong><br>Connect the idea to something you can observe in everyday life. Then explain it in your own words.</p>
-  ${enhancedCells?cellsLessonSummary():''}
+  ${enhancedCells?cellsLessonSummary():enhancedDna?dnaLessonSummary():''}
   <section class="self-check"><span class="lesson-label">CAN I EXPLAIN IT?</span><p>Without looking at the example answer, could you explain the main idea to a friend?</p><div class="lesson-actions"><button class="button secondary" onclick="setSelfCheck('${name}',${i},true)">✓ I can explain it</button><button class="button secondary" onclick="setSelfCheck('${name}',${i},false)">↻ I need another try</button></div><p id="self-check-${i}" class="self-check-status">${esc(state().selfChecks?.[name]?.[i]===true?'✓ You marked this as understood.':state().selfChecks?.[name]?.[i]===false?'Keep practising. You can come back to this later.':'')}</p></section>
   <div class="lesson-actions lesson-finish"><button onclick="completeLesson('${name}',${i})" ${isDone?'disabled':''}>${isDone?'✓ Lesson completed':'Mark lesson complete'}</button></div>
   ${scheduled?`<div id="review-status-${i}" class="review-scheduled"><strong>🧠 Review scheduled</strong><br>Next review: <strong>${formatDate(r.nextReview)}</strong>.<br><span class="muted">This concept will return for review so you can strengthen your memory.</span></div>`:''}
