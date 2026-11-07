@@ -97,7 +97,12 @@ function esc(v){return String(v??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&l
 function subjectProgress(name){const s=state(),n=SUBJECTS[name].lessons.length;return Math.round(((s.completed[name]||[]).length/n)*100)}
 function totalStats(){const s=state();let lessons=0,total=0,scores=0;Object.keys(SUBJECTS).forEach(k=>{total+=SUBJECTS[k].lessons.length;lessons+=(s.completed[k]||[]).length;if(s.scores[k])scores++});return{lessons,total,scores}}
 function nav(){return '<div class="topbar"><a class="brand" href="/">🧠 My Learning OS</a><nav class="nav" aria-label="Main navigation"><a href="/">Home</a><a href="/notes.html">My Notes</a><a href="/search.html">Search</a><a href="/projects.html" onclick="saveProjectsScroll()">Projects</a><a href="/review.html">Review</a><a href="/knowledge.html">Knowledge Map</a><a href="/tutor.html">Tutor</a></nav></div><nav class="mobile-nav" aria-label="Quick navigation"><a href="/" aria-label="Home"><span>⌂</span><small>Home</small></a><a href="/projects.html" aria-label="Projects" onclick="saveProjectsScroll()"><span>◫</span><small>Projects</small></a><a href="/review.html" aria-label="Review"><span>↻</span><small>Review</small></a><a href="/notes.html" aria-label="My Notes"><span>✎</span><small>Notes</small></a><details class="mobile-more"><summary><span>•••</span><small>More</small></summary><div class="mobile-more-menu"><a href="/search.html">🔎 Search</a><a href="/knowledge.html">🗺️ Knowledge Map</a><a href="/tutor.html">👩‍🏫 Tutor</a></div></details></nav>'}
-function renderSubject(name){
+function renderSubject(name,preserveInputs=false){
+ // Keep unfinished work in DOM memory only; completion/Review must not save drafts.
+ const retained=preserveInputs?Array.from(document.querySelectorAll('.lesson-mcq[id], #quiz, textarea[id], .lesson-hint[id], .feedback[id], .simple-explanation[id]')):[];
+ const selections=retained.filter(el=>el.tagName==='TEXTAREA').map(el=>({el,start:el.selectionStart,end:el.selectionEnd,direction:el.selectionDirection,scrollTop:el.scrollTop}));
+ const disclosures=preserveInputs?Array.from(document.querySelectorAll('details')).map(el=>el.open):[];
+ const focused=preserveInputs?document.activeElement:null,focusId=focused?.id,focusLesson=focused?.closest('.lesson')?.id,focusHandler=focused?.getAttribute('onclick');
  const d=SUBJECTS[name],s=state(),done=s.completed[name]||[],p=subjectProgress(name);
  document.title=name+' | My Learning OS';
  ensureQuizStyles();
@@ -122,6 +127,16 @@ function renderSubject(name){
  }
  const nextLesson=getNextLesson(),cont=document.getElementById("continueLearning");
  if(cont) cont.innerHTML=nextLesson?'<p class="muted">'+esc(nextLesson.name)+' · Lesson '+(nextLesson.i+1)+'</p><h3>'+esc(nextLesson.lesson[0])+'</h3><p class="muted">'+esc(nextLesson.lesson[1])+'</p><a class="button" href="/subjects/'+nextLesson.name.toLowerCase()+'/#lesson-'+nextLesson.i+'">Continue →</a>':'<p>🎉 You have completed every lesson currently in the course.</p>';
+ for(const el of retained){const replacement=document.getElementById(el.id);if(replacement&&replacement!==el)replacement.replaceWith(el);}
+ selections.forEach(({el,start,end,direction,scrollTop})=>{el.setSelectionRange(start,end,direction);el.scrollTop=scrollTop;});
+ if(preserveInputs){
+  document.querySelectorAll('details').forEach((el,index)=>{el.open=disclosures[index]??false;});
+  const lesson=focusLesson&&document.getElementById(focusLesson);
+  let target=document.contains(focused)?focused:focusId&&document.getElementById(focusId);
+  if(!target&&lesson&&focusHandler)target=Array.from(lesson.querySelectorAll('button')).find(el=>el.getAttribute('onclick')===focusHandler);
+  if((!target||target.disabled)&&lesson)target=lesson.querySelector('.lesson-summary');
+  target?.focus({preventScroll:true});
+ }
 }
 function subjectJourneyHTML(name,s){
  const d=SUBJECTS[name],entries=subjectLessonEntries(name),records=entries.map(entry=>resolveLessonRecords(s,name,entry.id??entry.legacyIndex));
@@ -985,11 +1000,12 @@ function completeLesson(name,i){
  s.review=s.review||{};
  const key=name+'-'+i;
  const now=new Date();
- s.review[key]={subject:name,index:i,learnedAt:now.toISOString(),nextReview:addDays(now,1).toISOString(),interval:1,stage:0};
+ const previous=s.review[key];
+ s.review[key]={...(previous&&typeof previous==='object'&&!Array.isArray(previous)?previous:{}),subject:name,index:i,learnedAt:now.toISOString(),nextReview:addDays(now,1).toISOString(),interval:1,stage:0};
  s.activity=s.activity||{};
  s.activity[dateKey(now)]=true;
  saveState(s);
- renderSubject(name);
+ renderSubject(name,true);
  openLesson(i);
  setTimeout(()=>showReviewScheduled(name,i),50);
 }
@@ -1531,7 +1547,7 @@ function recordReview(name,i,known){
  r.nextReview=addDays(new Date(),r.interval).toISOString();
  s.activity=s.activity||{};s.activity[dateKey(new Date())]=true;saveState(s);
 }
-function finishReview(name,i,known){recordReview(name,i,known);renderSubject(name);openLesson(i);}
+function finishReview(name,i,known){recordReview(name,i,known);renderSubject(name,true);openLesson(i);}
 
 
 function teacherContent(subject,lesson){

@@ -991,3 +991,4 @@ body{background:var(--garden-paper,#fbf8f1);color:#302a25}
 .dna-enhanced .dna-pathway{max-width:360px;margin:24px auto}.dna-enhanced .dna-learning>h4{margin-top:28px}
 .selection-enhanced .selection-diagram{max-width:360px;margin:24px auto}.selection-enhanced .selection-learning>h4{margin-top:28px}
 .life-enhanced .life-diagram{max-width:360px;margin:24px auto}.life-enhanced .life-learning>h4{margin-top:28px}
+.cells-enhanced .mcq-score{color:#563976;background:#f5e8da}
