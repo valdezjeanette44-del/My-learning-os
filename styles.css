@@ -992,3 +992,4 @@ body{background:var(--garden-paper,#fbf8f1);color:#302a25}
 .selection-enhanced .selection-diagram{max-width:360px;margin:24px auto}.selection-enhanced .selection-learning>h4{margin-top:28px}
 .life-enhanced .life-diagram{max-width:360px;margin:24px auto}.life-enhanced .life-learning>h4{margin-top:28px}
 .cells-enhanced .mcq-score{color:#563976;background:#f5e8da}
+body[data-subject="Biology"] #lessons textarea.answer,body[data-subject="Biology"] #note{border-color:#77608e}

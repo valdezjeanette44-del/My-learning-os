@@ -55,3 +55,19 @@ test('Biology score badges meet normal-text contrast without changing shared sub
  const css=await readFile('styles.css','utf8');assert.match(css,/\.cells-enhanced \.mcq-score\{color:#563976;background:#f5e8da\}/);
  const luminance=hex=>{const a=hex.match(/../g).map(x=>parseInt(x,16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);return a[0]*.2126+a[1]*.7152+a[2]*.0722;};const ratio=(luminance('f5e8da')+.05)/(luminance('563976')+.05);assert.ok(ratio>=4.5,ratio.toString());
 });
+test('Biology editable-area boundaries contrast with interior and surrounding surfaces without changing sizing',async()=>{
+ const css=await readFile('styles.css','utf8');
+ assert.match(css,/body\[data-subject="Biology"\] #lessons textarea\.answer,body\[data-subject="Biology"\] #note\{border-color:#77608e\}/);
+ const L=h=>{const v=h.match(/../g).map(x=>parseInt(x,16)/255).map(x=>x<=.04045?x/12.92:((x+.055)/1.055)**2.4);return .2126*v[0]+.7152*v[1]+.0722*v[2];};
+ for(const adjacent of ['ffffff','f5f3ff','fffdf9'])assert.ok((L(adjacent)+.05)/(L('77608e')+.05)>=3,adjacent);
+});
+test('Biology retry respects both motion preferences without writes, focus changes or historical result changes',()=>{
+ for(const [name,reduced,expected] of [['Biology',true,'auto'],['Biology',false,'smooth'],['Chemistry',true,'smooth']]){
+  const data={quizResults:{[name+'-1']:{missed:[1],attempts:8,best:3,extra:'keep'}}},before=JSON.stringify(data),scroll=[],fields={};
+  for(let q=0;q<3;q++)fields['mcq-question-1-'+q]={innerHTML:'Original '+q,scrollIntoView:options=>scroll.push(options)};
+  const active={id:'retry-button'},document={activeElement:active,getElementById:id=>fields[id]||null};
+  const context=vm.createContext({state:()=>data,window:{matchMedia:()=>({matches:reduced})},document,esc:String,lessonQuizQuestions:()=>[0,1,2].map(q=>({q:'Alternate '+q,options:[{text:'Choice',correct:true}]})),saveState:()=>assert.fail('Retry must not save'),resetLessonQuiz:()=>assert.fail('Missed question exists')});
+  vm.runInContext(fn('retryMissedLessonQuiz'),context);context.name=name;vm.runInContext('retryMissedLessonQuiz(name,1)',context);
+  assert.equal(scroll.length,1);assert.equal(scroll[0].behavior,expected);assert.equal(scroll[0].block,'center');assert.equal(document.activeElement,active);assert.equal(JSON.stringify(data),before);assert.equal(fields['mcq-question-1-0'].innerHTML,'Original 0');assert.equal(fields['mcq-question-1-2'].innerHTML,'Original 2');assert.match(fields['mcq-question-1-1'].innerHTML,/Alternate 1/);assert.equal(context.window.quizRetryVariant[name+'-1'],1);
+ }
+});

@@ -747,7 +747,7 @@ function retryMissedLessonQuiz(name,i){
  });
  const retry=document.getElementById('mcq-retry-missed-'+i);if(retry)retry.hidden=true;
  const result=document.getElementById('mcq-result-'+i);if(result)result.textContent='Retry only the questions you missed, then check your score again.';
- const first=document.getElementById('mcq-question-'+i+'-'+missed[0]);if(first)first.scrollIntoView({behavior:'smooth',block:'center'});
+ const first=document.getElementById('mcq-question-'+i+'-'+missed[0]);if(first)first.scrollIntoView({behavior:name==='Biology'&&window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'auto':'smooth',block:'center'});
 }
 function resetLessonQuiz(i){
  document.querySelectorAll('#mcq-'+i+' input[type="radio"]').forEach(input=>input.checked=false);
