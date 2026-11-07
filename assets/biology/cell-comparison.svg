@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" role="img" aria-labelledby="title desc">
+<title id="title">Typical bacterial and animal cells</title><desc id="desc">Both cells have a membrane, cytoplasm, DNA and ribosomes. Bacterial DNA is not enclosed in a nucleus. Most animal-cell DNA is enclosed in a nucleus. The bacterial wall is outside its membrane. Simplified, not to scale.</desc>
+<rect width="720" height="400" rx="20" fill="#faf9f2"/>
+<g font-family="system-ui,sans-serif" fill="#29362a" text-anchor="middle"><text x="180" y="36" font-size="23" font-weight="700">Typical bacterium</text><text x="540" y="36" font-size="23" font-weight="700">Typical animal cell</text>
+<rect x="44" y="86" width="272" height="174" rx="85" fill="#dfe9cb" stroke="#526b40" stroke-width="5"/><rect x="56" y="98" width="248" height="150" rx="75" fill="#edf2df" stroke="#526b40" stroke-width="3"/>
+<path d="M105 170q35-65 80 0t65-5q-35 65-85 0t-60 5" fill="none" stroke="#79559c" stroke-width="5"/>
+<circle cx="540" cy="174" r="112" fill="#eee6f3" stroke="#6a507e" stroke-width="4"/>
+<circle cx="540" cy="174" r="44" fill="#d4bfe2" stroke="#6a507e" stroke-width="3"/><path d="M515 174q15-30 25 0t25 0" fill="none" stroke="#694285" stroke-width="4"/>
+<g fill="#536941"><circle cx="94" cy="143" r="4"/><circle cx="143" cy="219" r="4"/><circle cx="240" cy="133" r="4"/><circle cx="270" cy="196" r="4"/><circle cx="480" cy="130" r="4"/><circle cx="608" cy="150" r="4"/><circle cx="488" cy="215" r="4"/><circle cx="577" cy="246" r="4"/></g>
+<g font-size="18"><text x="180" y="294">DNA without a nuclear membrane</text><text x="540" y="310">Nucleus enclosing most DNA</text><text x="180" y="333">Wall outside the cell membrane</text><text x="540" y="340">Outer boundary: cell membrane</text><text x="360" y="378">Both: cytoplasm inside · dots represent ribosomes</text></g></g>
+<g stroke="#58634e" stroke-width="2" fill="none"><path d="M180 278V196M540 292V220M80 317L48 238M643 321L644 216"/></g>
+</svg>

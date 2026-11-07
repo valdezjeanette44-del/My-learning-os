@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" role="img" aria-labelledby="title desc">
+<title id="title">A viable seed, seedling and enlarged cell</title>
+<desc id="desc">A viable seed contains a living embryo and stored reserves. When germination requirements are satisfied, a root and shoot begin growing using reserves. Green seedling tissues can capture light to make sugars. A dashed callout enlarges one cell, not a later life stage. Simplified, not to scale; not every seed is viable.</desc>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0L6 3L0 6" fill="#526b40"/></marker></defs>
+<rect width="360" height="640" rx="16" fill="#faf9f2"/>
+<g font-family="system-ui,sans-serif" fill="#29362a" font-size="24" text-anchor="middle"><text x="180" y="31" font-weight="700">1 Viable seed</text><text x="180" y="147">Living embryo + reserves</text><text x="180" y="209" font-weight="700">2 Germinating seed</text><text x="180" y="318">Early growth uses reserves</text><text x="180" y="380" font-weight="700">3 Growing seedling</text><text x="180" y="481">Green tissues use light</text><text x="180" y="509">to make sugars</text><text x="180" y="607">Enlarged cell inset</text><text x="180" y="634">Simplified, not to scale</text></g>
+<ellipse cx="175" cy="81" rx="51" ry="35" fill="#e4cfaa" stroke="#766044" stroke-width="3"/><path d="M155 86q16-39 38-9q-15-3-23 13" fill="none" stroke="#526b40" stroke-width="8"/>
+<g stroke="#526b40" stroke-width="3" marker-end="url(#arrow)"><path d="M180 158v23"/><path d="M180 329v23"/></g>
+<ellipse cx="175" cy="252" rx="34" ry="24" fill="#e4cfaa" stroke="#766044" stroke-width="3"/><path d="M167 264q-24 17-18 36m41-55q10-24 26-23" fill="none" stroke="#526b40" stroke-width="5"/>
+<path d="M175 464v-55m0 30q-44 4-44-32q33-4 44 32m0-13q45 0 45-30q-33-2-45 30" fill="#a7bd83" stroke="#526b40" stroke-width="3"/>
+<circle cx="275" cy="408" r="17" fill="#e5d699" stroke="#887434" stroke-width="2"/><path d="M256 425l-29 20" stroke="#887434" stroke-width="3" marker-end="url(#arrow)"/>
+<path d="M145 423H24V558H139" fill="none" stroke="#6d6377" stroke-width="2" stroke-dasharray="5 4"/>
+<rect x="139" y="533" width="82" height="50" rx="12" fill="#e0ebcf" stroke="#526b40" stroke-width="3"/><rect x="145" y="539" width="70" height="38" rx="9" fill="#f0f4e6" stroke="#526b40" stroke-width="2"/><circle cx="179" cy="557" r="9" fill="#d4bfe2" stroke="#79559c" stroke-width="2"/>
+</svg>

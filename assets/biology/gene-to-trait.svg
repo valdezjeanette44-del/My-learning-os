@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 540" role="img" aria-labelledby="title desc">
+<title id="title">One protein-coding gene can contribute to a trait</title>
+<desc id="desc">Information from a gene in DNA is used to make RNA, then a protein. The protein influences a cellular process such as pigment production, contributing to coat colour. Other genes, development and environment can also influence traits. This simplified example does not describe all genes or determine every trait.</desc>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0L6 3L0 6" fill="#526b40"/></marker></defs>
+<rect width="360" height="540" rx="16" fill="#faf9f2"/>
+<g stroke="#cbd5be" stroke-width="2" fill="#edf2df"><rect x="20" y="48" width="320" height="64" rx="12"/><rect x="20" y="138" width="320" height="52" rx="12"/><rect x="20" y="216" width="320" height="52" rx="12"/><rect x="20" y="294" width="320" height="68" rx="12"/><rect x="20" y="388" width="320" height="66" rx="12"/></g>
+<g stroke="#526b40" stroke-width="3" marker-end="url(#arrow)"><path d="M180 115V134"/><path d="M180 193V212"/><path d="M180 271V290"/><path d="M180 365V384"/></g>
+<g font-family="system-ui,sans-serif" font-size="24" fill="#29362a" text-anchor="middle"><text x="180" y="29" font-weight="700">One possible pathway</text><text x="180" y="74" font-weight="700">Gene in DNA</text><text x="180" y="99">A protein-coding example</text><text x="180" y="171">RNA copy</text><text x="180" y="249">Protein</text><text x="180" y="321">Cellular process</text><text x="180" y="348">e.g. pigment production</text><text x="180" y="416">Contribution to a trait</text><text x="180" y="442">e.g. coat colour</text><text x="180" y="487">Other genes, development</text><text x="180" y="513">and environment also matter</text></g>
+</svg>

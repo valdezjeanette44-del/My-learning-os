@@ -30,12 +30,12 @@ test("all entry pages use the same shared stylesheet cache version", async () =>
     const html = await readFile(path, "utf8");
     assert.match(
       html,
-      /styles\.css\?v=13(?:["'])/,
-      `${path} should reference styles.css?v=13`,
+      /styles\.css\?v=14(?:["'])/,
+      `${path} should reference styles.css?v=14`,
     );
     assert.doesNotMatch(
       html,
-      /styles\.css\?v=(?!13(?:["']))\d+/,
+      /styles\.css\?v=(?!14(?:["']))\d+/,
       `${path} contains a mismatched stylesheet cache version`,
     );
   }
@@ -46,8 +46,8 @@ test("all pages that use the shared learning app load its expected script versio
     const html = await readFile(path, "utf8");
     assert.match(
       html,
-      /learning\.js\?v=34(?:["'])/,
-      `${path} should reference learning.js?v=34`,
+      /learning\.js\?v=35(?:["'])/,
+      `${path} should reference learning.js?v=35`,
     );
   }
 });
