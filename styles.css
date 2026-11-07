@@ -990,3 +990,4 @@ body{background:var(--garden-paper,#fbf8f1);color:#302a25}
 .cells-enhanced .cells-diagram-key p{margin:0 0 12px}.cells-enhanced .cells-diagram-key ul{padding-left:22px;margin:0 0 16px}.cells-enhanced .cells-diagram-key li{margin:8px 0}
 .dna-enhanced .dna-pathway{max-width:360px;margin:24px auto}.dna-enhanced .dna-learning>h4{margin-top:28px}
 .selection-enhanced .selection-diagram{max-width:360px;margin:24px auto}.selection-enhanced .selection-learning>h4{margin-top:28px}
+.life-enhanced .life-diagram{max-width:360px;margin:24px auto}.life-enhanced .life-learning>h4{margin-top:28px}

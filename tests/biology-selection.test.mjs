@@ -8,7 +8,7 @@ function render(name='Biology',index=3){
  const data={answers:{Biology:{1:'Historical Cells',2:'Historical DNA',3:'Historical evolution answer'}},quizResults:{'Biology-3':{correct:2,total:3,best:3,attempts:6,lastAnswers:[2,0,1]}},completed:{Biology:[1,2,3,99]},review:{'Biology-3':{nextReview:'2099-01-01'}},unknown:{retain:true}};
  const before=JSON.stringify(data),ids=['biology-life','biology-cells','biology-dna-heredity','biology-natural-selection'];
  const context=vm.createContext({state:()=>data,esc:String,formatDate:String,teacherContent:()=>({simple:'Legacy explanation',example:'Legacy example'}),whyItWorks:()=> 'Legacy reasoning',lessonQuizHTML:(n,i)=>'<section id="mcq-'+i+'">Unchanged quiz</section>',resolveSubjectLesson:(n,i)=>{const legacyIndex=typeof i==='string'?ids.indexOf(i):i;return {id:n==='Biology'?ids[legacyIndex]:'other',legacyIndex,href:'/subjects/biology/#lesson-'+legacyIndex};}});
- vm.runInContext(['cellsLessonIntroduction','cellsLessonSummary','dnaLessonIntroduction','dnaLessonSummary','selectionLessonIntroduction','selectionLessonSummary','lessonHTML'].map(fn).join('\n'),context);
+ vm.runInContext(['cellsLessonIntroduction','cellsLessonSummary','dnaLessonIntroduction','dnaLessonSummary','selectionLessonIntroduction','selectionLessonSummary','lifeLessonIntroduction','lifeLessonSummary','lessonHTML'].map(fn).join('\n'),context);
  context.name=name;context.index=index;
  const html=vm.runInContext("lessonHTML(name,['Evolution by natural selection','Legacy fact','Legacy example','How can evolution create complex adaptations without a plan?','Small inherited differences can be filtered by selection across many generations.'],index,false)",context);
  assert.equal(JSON.stringify(data),before);return html;
