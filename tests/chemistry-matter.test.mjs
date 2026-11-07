@@ -49,3 +49,8 @@ test('all practice changes clear stale feedback and repeated checking matches th
 test('diagram qualifies sample selection and keeps small captions in readable HTML',async()=>{
  const svg=await readFile('assets/chemistry/water-states.svg','utf8');assert.match(svg,/not equal-volume samples/);assert.match(render(),/not equal-volume samples/);assert.doesNotMatch(svg,/font-size="(?:19|20|23|24)"/);assert.match(render(),/vibrate around their positions/);assert.match(render(),/move past one another/);assert.match(render(),/not to scale/);
 });
+
+test('Matter visual composition keeps accessible key idea and responsive scientific panels',async()=>{
+ const html=render();assert.match(html,/class="matter-opening-question"/);assert.match(html,/During melting and evaporation, the molecules remain H₂O. Their arrangement and movement change./);assert.match(html,/aria-labelledby="matter-key-title"/);assert.match(html,/<picture><source media="\(max-width: 650px\)" srcset="\/assets\/chemistry\/water-states.svg">/);
+ const svg=await readFile('assets/chemistry/water-states-wide.svg','utf8');assert.match(svg,/viewBox="0 0 1080 190"/);assert.match(svg,/Not equal-volume samples/);assert.match(svg,/<title id="title">/);assert.match(svg,/<desc id="desc">/);assert.equal((svg.match(/<use href="#panels"/g)||[]).length,3);
+});
