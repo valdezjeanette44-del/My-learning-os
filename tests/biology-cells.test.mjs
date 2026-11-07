@@ -23,10 +23,10 @@ test('historical lesson catalog and quiz banks remain identical to released base
  // Fixed expectations work after committing and in CI without Git history.
  const hash=text=>createHash('sha256').update(text).digest('hex');
  assert.equal(hash(source.slice(source.indexOf('const SUBJECTS='),source.indexOf('const KEY='))),'8d0e065388121750e9054fc8fb3365e7b6e8a2c82d727dac6aaf6c7cb8008f81');
- // This historical region also contains retry scrolling. Normalize only its approved
- // motion preference expression; every assessment byte and the expected hash stay fixed.
- const historicalQuizSource=source.slice(source.indexOf('const QUIZ_MISCONCEPTIONS='),source.indexOf('// Teaching additions stay separate')).trim().replace("behavior:name==='Biology'&&window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'auto':'smooth',block:'center'","behavior:'smooth',block:'center'");
- assert.equal(hash(historicalQuizSource),'9e19ffb85e49d47a47a543cabdde68f479ab65d130f7540660231812b9609b80');
+ // Hash the assessment definitions/generator separately from the approved quiz UI
+ // and retry-handler changes. This fixed hash was computed at accepted 14a8436.
+ const historicalQuizSource=source.slice(source.indexOf('const QUIZ_MISCONCEPTIONS='),source.indexOf('function lessonQuizHTML(')).trim();
+ assert.equal(hash(historicalQuizSource),'94b20756aaac91ff9d3d492c9b9bd1084a6f58de88c27ba76cb59aeae227ab1b');
 });
 test('both diagrams have accessible descriptions and adjacent text alternatives',async()=>{
  for(const file of ['cell-comparison','membrane-exchange']){const svg=await readFile('assets/biology/'+file+'.svg','utf8');assert.match(svg,/<title id="title">/);assert.match(svg,/<desc id="desc">/);assert.match(svg,/viewBox=/);}
