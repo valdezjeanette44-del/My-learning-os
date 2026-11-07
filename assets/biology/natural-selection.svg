@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 620" role="img" aria-labelledby="title desc">
+<title id="title">Hypothetical beetle camouflage across generations</title>
+<desc id="desc">Generation one has four darker striped and four lighter dotted beetles. On dark ground under bird predation, darker parents contribute six offspring and lighter parents two in this simplified illustration. A later generation has six darker and two lighter new beetles. Colour is assumed heritable; patterns are diagram identifiers. Numbers are hypothetical, not measured data or guaranteed outcomes. Original beetles do not change colour.</desc>
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0L6 3L0 6" fill="#526b40"/></marker>
+<g id="legs" stroke="#35412d" stroke-width="2" fill="none"><path d="M-10-8l-10-6m10 14h-11m11 8l-10 6m30-22l10-6m-10 14h11m-11 8l10 6"/></g>
+<g id="dark"><use href="#legs"/><ellipse rx="12" ry="17" fill="#56623d" stroke="#35412d" stroke-width="2"/><path d="M0-13v26" stroke="#fffdf4" stroke-width="3"/></g>
+<g id="light"><use href="#legs"/><ellipse rx="12" ry="17" fill="#dbc69d" stroke="#35412d" stroke-width="2"/><g fill="#35412d"><circle cy="-7" r="2"/><circle r="2"/><circle cy="7" r="2"/></g></g>
+</defs>
+<rect width="360" height="620" rx="16" fill="#faf9f2"/>
+<g fill="#edf2df" stroke="#cbd5be" stroke-width="2"><rect x="12" y="12" width="336" height="170" rx="12"/><rect x="12" y="210" width="336" height="156" rx="12"/><rect x="12" y="394" width="336" height="170" rx="12"/></g>
+<g stroke="#526b40" stroke-width="3" marker-end="url(#arrow)"><path d="M180 185v21"/><path d="M180 369v21"/></g>
+<g><use href="#dark" x="65" y="85"/><use href="#dark" x="140" y="85"/><use href="#dark" x="215" y="85"/><use href="#dark" x="290" y="85"/><use href="#light" x="65" y="130"/><use href="#light" x="140" y="130"/><use href="#light" x="215" y="130"/><use href="#light" x="290" y="130"/></g>
+<g><use href="#dark" x="65" y="465"/><use href="#dark" x="140" y="465"/><use href="#dark" x="215" y="465"/><use href="#dark" x="290" y="465"/><use href="#dark" x="65" y="510"/><use href="#dark" x="140" y="510"/><use href="#light" x="215" y="510"/><use href="#light" x="290" y="510"/></g>
+<g font-family="system-ui,sans-serif" fill="#29362a" font-size="24" text-anchor="middle"><text x="180" y="43" font-weight="700">1 Inherited variation</text><text x="180" y="167">4 darker · 4 lighter</text><text x="180" y="241" font-weight="700">2 Offspring contributions</text><text x="180" y="272">Birds hunt on dark ground</text><text x="180" y="308">Darker parents: 6 offspring</text><text x="180" y="341">Lighter parents: 2 offspring</text><text x="180" y="425" font-weight="700">3 New descendants</text><text x="180" y="550">6 darker · 2 lighter</text><text x="180" y="590">Striped: dark · Dotted: light</text></g>
+</svg>
