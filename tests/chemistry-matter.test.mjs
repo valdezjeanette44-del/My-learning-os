@@ -16,7 +16,7 @@ test('enhanced Matter preserves original controls and confines new teaching to C
  assert.equal((html.match(/id="answer-0"/g)||[]).length,1);for(const [n,i]of [['Chemistry',1],['Chemistry',2],['Chemistry',3],['Biology',0],['Physics',0]])assert.ok(!render(n,i).includes('matter-opening'));
 });
 test('Matter core covers assessment prerequisites; optional disclosures start closed and never save',()=>{
- const html=render();for(const text of ['mass and occupies space','light is not matter','molecules remain water','not destroyed','Burning wood','not all'])assert.ok(html.toLowerCase().includes(text.toLowerCase()),text);
+ const html=render();for(const text of ['mass and occupies space','light is not matter','molecules remain H₂O','without destroying them','Burning wood','not all'])assert.ok(html.toLowerCase().includes(text.toLowerCase()),text);
  const details=[...html.matchAll(/<details([^>]*)>([\s\S]*?)<\/details>/g)];assert.equal(details.filter(d=>d[2].includes('Explore deeper:')).length,2);for(const d of details)assert.doesNotMatch(d[1],/open|on\w+=/);
 });
 test('ungraded classification binding handles every example, missing/wrong answers and never saves',()=>{
@@ -25,8 +25,9 @@ test('ungraded classification binding handles every example, missing/wrong answe
 test('Matter section navigation focuses targets with both motion preferences without changing hashes or saving',()=>{
  for(const reduced of [true,false]){const calls=[],target={setAttribute:(k,v)=>calls.push([k,v]),focus:o=>assert.equal(o.preventScroll,true),scrollIntoView:o=>calls.push(o)},c=vm.createContext({window:{matchMedia:()=>({matches:reduced})},document:{getElementById:id=>{assert.equal(id,'matter-practice');return target;}},location:{hash:'#lesson-0'},saveState:()=>assert.fail()});vm.runInContext(fn('scrollMatterSection'),c);vm.runInContext('scrollMatterSection("practice")',c);assert.equal(calls[1].behavior,reduced?'auto':'smooth');assert.equal(c.location.hash,'#lesson-0');vm.runInContext('scrollMatterSection("unknown")',c);assert.equal(calls.length,2);}
 });
-test('water diagram has equal molecule counts and accessible, qualified state descriptions',async()=>{
- const svg=await readFile('assets/chemistry/water-states.svg','utf8');assert.equal((svg.match(/>H₂O</g)||[]).length,18);for(const text of ['<title id="title">','<desc id="desc">','not grow','Not to scale','font-size="26"'])assert.ok(svg.includes(text));assert.match(render(),/aria-describedby="matter-diagram-description"/);assert.match(render(),/Ice is less dense/);assert.match(render(),/vapour is invisible/);
+test('molecular diagrams retain intact H2O units and accessible qualifications',async()=>{
+ for(const name of ['ice','liquid','vapour']){const svg=await readFile('assets/chemistry/water-'+name+'.svg','utf8');assert.equal((svg.match(/<use href="#molecule"/g)||[]).length,6);assert.match(svg,/<title id="title">/);assert.match(svg,/<desc id="desc">/);assert.match(svg,/not equal-volume samples/i);assert.match(svg,/not to scale/);assert.equal((svg.match(/<circle/g)||[]).length,3);assert.match(svg,/Lines are bonds within molecules/);}
+ const single=await readFile('assets/chemistry/water-molecule.svg','utf8');for(const label of ['>O<','>H<','bent','not to scale'])assert.ok(single.includes(label));assert.match(render(),/Ice is less dense/);assert.match(render(),/Vapour is invisible/);
 });
 test('Chemistry hash navigation preserves legacy Review targets without rendering or storage writes',()=>{
  const opened=[],scroll=[],c=context();c.location={pathname:'/subjects/chemistry/',hash:'#lesson-0',search:'?review=quiz'};c.URLSearchParams=URLSearchParams;c.window={matchMedia:()=>({matches:true})};c.openLesson=i=>opened.push(i);c.document={getElementById:id=>({classList:{contains:()=>false},scrollIntoView:o=>scroll.push([id,o.behavior])})};vm.runInContext(fn('syncChemistryLessonHash'),c);vm.runInContext('syncChemistryLessonHash()',c);assert.deepEqual(opened,[0]);assert.deepEqual(scroll,[['mcq-0','auto']]);c.location.pathname='/subjects/physics/';vm.runInContext('syncChemistryLessonHash()',c);assert.equal(opened.length,1);
@@ -47,10 +48,16 @@ test('all practice changes clear stale feedback and repeated checking matches th
  for(const [e,v]of [['melting','same'],['burning','same'],['burning','new'],['evaporation','new'],['evaporation','same']]){example=e;value=v;vm.runInContext('clearMatterPracticeFeedback()',c);assert.equal(feedback.textContent,'');vm.runInContext('checkMatterPractice()',c);assert.equal(feedback.textContent.startsWith('That fits.'),v===(e==='burning'?'new':'same'));vm.runInContext('checkMatterPractice()',c);assert.ok(feedback.textContent);}
 });
 test('diagram qualifies sample selection and keeps small captions in readable HTML',async()=>{
- const svg=await readFile('assets/chemistry/water-states.svg','utf8');assert.match(svg,/not equal-volume samples/);assert.match(render(),/not equal-volume samples/);assert.doesNotMatch(svg,/font-size="(?:19|20|23|24)"/);assert.match(render(),/vibrate around their positions/);assert.match(render(),/move past one another/);assert.match(render(),/not to scale/);
+ const svg=await readFile('assets/chemistry/water-states.svg','utf8');assert.match(svg,/not equal-volume samples/);assert.match(render(),/not equal-volume samples/);assert.doesNotMatch(svg,/font-size="(?:19|20|23|24)"/);assert.match(render(),/vibrate around positions/);assert.match(render(),/move past one another/);assert.match(render(),/not to scale/);
 });
 
 test('Matter visual composition keeps accessible key idea and responsive scientific panels',async()=>{
- const html=render();assert.match(html,/class="matter-opening-question"/);assert.match(html,/During melting and evaporation, the molecules remain H₂O. Their arrangement and movement change./);assert.match(html,/aria-labelledby="matter-key-title"/);assert.match(html,/<picture><source media="\(max-width: 650px\)" srcset="\/assets\/chemistry\/water-states.svg">/);
- const svg=await readFile('assets/chemistry/water-states-wide.svg','utf8');assert.match(svg,/viewBox="0 0 1080 190"/);assert.match(svg,/Not equal-volume samples/);assert.match(svg,/<title id="title">/);assert.match(svg,/<desc id="desc">/);assert.equal((svg.match(/<use href="#panels"/g)||[]).length,3);
+ const html=render();assert.match(html,/class="matter-opening-question"/);assert.match(html,/During melting and evaporation, the molecules remain H₂O. Their arrangement and movement change./);assert.match(html,/aria-labelledby="matter-key-title"/);assert.match(html,/class="matter-state-cards"/);for(const state of ['ice','liquid','vapour'])assert.ok(html.includes('water-'+state+'.svg'));
+ const svg=await readFile('assets/chemistry/water-states-wide.svg','utf8');assert.match(svg,/viewBox="0 0 1080 200"/);assert.match(svg,/not equal-volume samples/i);assert.match(svg,/<title id="title">/);assert.match(svg,/<desc id="desc">/);assert.equal((svg.match(/<use href="#molecule[0-2]"/g)||[]).length,18);
+});
+
+test('puddle prediction and revisit bindings handle all answers without writes and clear stale feedback',()=>{
+ const feedback={},choice={value:''},calls=[],c=vm.createContext({document:{getElementById:id=>id==='puddle-feedback'?feedback:choice},window:{matchMedia:()=>({matches:true})},saveState:()=>assert.fail('Temporary practice cannot save')});choice.focus=o=>calls.push(o.preventScroll);choice.scrollIntoView=o=>calls.push(o.behavior);for(const n of ['clearPuddleFeedback','checkPuddlePrediction','revisitPuddlePrediction'])vm.runInContext(fn(n),c);
+ for(const value of ['', 'air','gone','atoms']){choice.value=value;vm.runInContext('clearPuddleFeedback()',c);assert.equal(feedback.textContent,'');vm.runInContext('checkPuddlePrediction()',c);assert.ok(feedback.textContent);if(value)assert.equal(feedback.textContent.startsWith('Yes.'),value==='air');}
+ vm.runInContext('revisitPuddlePrediction()',c);assert.deepEqual(calls,[true,'auto']);assert.match(render(),/onchange="clearPuddleFeedback\(\)"/);assert.match(fn('renderSubject'),/#puddle-practice/);
 });

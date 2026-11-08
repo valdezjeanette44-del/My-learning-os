@@ -32,6 +32,7 @@ test('Review extensions survive export, restore and subsequent completion',()=>{
 
 function draftDOM(h){
  const controls=[{id:'answer-0',tagName:'TEXTAREA',value:'UNSAVED answer',selectionStart:3,selectionEnd:8,selectionDirection:'forward',scrollTop:12},{id:'note',tagName:'TEXTAREA',value:'UNSAVED note',selectionStart:2,selectionEnd:2,selectionDirection:'none',scrollTop:9},{id:'mcq-0',tagName:'SECTION',choice:2,feedback:'Previous feedback',variant:1},{id:'quiz',tagName:'DIV',value:'UNSAVED reflection'},{id:'hint-0',tagName:'P',hidden:false},{id:'feedback-0',tagName:'DIV',textContent:'Example answer'}];
+ controls.push({id:'puddle-practice',tagName:'SECTION',choice:'air',feedback:'prediction feedback'});
  for(const e of controls){e.connected=true;e.setSelectionRange=(a,b,d)=>{e.selectionStart=a;e.selectionEnd=b;e.selectionDirection=d;};e.focus=()=>{doc.activeElement=e;};e.closest=()=>null;e.getAttribute=()=>null;}
  const disclosure={open:true};let map=new Map(controls.map(e=>[e.id,e]));const node={textContent:'',remove(){},previousElementSibling:{previousElementSibling:{textContent:''}}};
  const app={set innerHTML(value){for(const e of controls)e.connected=false;map=new Map(controls.map(e=>[e.id,{replaceWith(old){map.set(old.id,old);old.connected=true;}}]));disclosure.open=false;},get innerHTML(){return '';}};
