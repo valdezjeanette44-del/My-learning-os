@@ -696,7 +696,7 @@ function lessonQuizHTML(name,i){
   <div class="mcq-heading"><div><span class="lesson-label">KNOWLEDGE CHECK</span><h3>Test your understanding</h3><p>3 questions · Remember, understand and apply.</p></div><span class="mcq-score">${comparableSaved?'Best: '+saved.best+'/'+saved.total:questions.length+' questions'}</span></div>
   <form onsubmit="submitLessonQuiz(event,'${name}',${i})">
    ${questions.map((q,qi)=>`<fieldset class="mcq-question" id="mcq-question-${i}-${qi}"><legend>${qi+1}. ${esc(q.q)}</legend>${q.options.map((o,oi)=>`<label class="mcq-option"><input type="radio" name="mcq-${i}-${qi}" value="${oi}" data-correct="${o.correct ? 'true' : 'false'}" data-answer="${esc(o.text)}" data-reason="${esc(o.reason||'')}"><span>${esc(o.text)}</span></label>`).join('')}<p class="mcq-feedback" id="mcq-feedback-${i}-${qi}" hidden></p></fieldset>`).join('')}
-   <div class="lesson-actions"><button type="submit"${name==='Biology'?` id="mcq-submit-${i}"`:''}>Check my score</button><button class="button${name==='Biology'?'':' secondary'}" type="button" onclick="retryMissedLessonQuiz('${name}',${i})" id="mcq-retry-missed-${i}" hidden>Retry missed questions</button><button class="button secondary" type="button" onclick="${name==='Biology'?'restartBiologyQuiz':'resetLessonQuiz'}(${i})">${name==='Biology'?'Restart entire quiz':'Try again'}</button></div>
+   <div class="lesson-actions"><button type="submit"${(name==='Biology'||name==='Chemistry'&&i===0)?` id="mcq-submit-${i}"`:''}>Check my score</button><button class="button${(name==='Biology'||name==='Chemistry'&&i===0)?'':' secondary'}" type="button" onclick="retryMissedLessonQuiz('${name}',${i})" id="mcq-retry-missed-${i}" hidden>${name==='Chemistry'&&i===0?'Retry missed':'Retry missed questions'}</button><button class="button secondary" type="button" onclick="${(name==='Biology'||name==='Chemistry'&&i===0)?'restartBiologyQuiz':'resetLessonQuiz'}(${i})">${name==='Chemistry'&&i===0?'Restart':name==='Biology'?'Restart entire quiz':'Try again'}</button></div>
   </form>
   <div class="mcq-result" id="mcq-result-${i}" role="status">${comparableSaved?'Last score: '+saved.correct+'/'+saved.total+' ('+Math.round(saved.correct/saved.total*100)+'%) · Best: '+saved.best+'/'+saved.total+' · Attempts: '+saved.attempts:''}</div>
  </section>`;
@@ -739,11 +739,11 @@ function submitLessonQuiz(event,name,i){
  result.textContent='You got '+correct+' out of '+questions.length+' correct ('+Math.round(correct/questions.length*100)+'%). Best: '+s.quizResults[key].best+'/'+questions.length+' · Attempts: '+s.quizResults[key].attempts+'. Your score is saved on this device.';
  const score=document.querySelector('#mcq-'+i+' .mcq-score');if(score)score.textContent='Best: '+s.quizResults[key].best+'/'+questions.length;
  const retry=document.getElementById('mcq-retry-missed-'+i);if(retry)retry.hidden=missed.length===0;
- if(name==='Biology'){const submit=document.getElementById('mcq-submit-'+i);if(submit)submit.hidden=true;}
+ if((name==='Biology'||name==='Chemistry'&&i===0)){const submit=document.getElementById('mcq-submit-'+i);if(submit)submit.hidden=true;}
 }
 function retryMissedLessonQuiz(name,i){
  const s=state(),key=name+'-'+i,saved=s.quizResults?.[key],missed=saved?.missed||[];
- if(!missed.length){if(name==='Biology')restartBiologyQuiz(i);else resetLessonQuiz(i);return}
+ if(!missed.length){if((name==='Biology'||name==='Chemistry'&&i===0))restartBiologyQuiz(i);else resetLessonQuiz(i);return}
  window.quizRetryVariant=window.quizRetryVariant||{};window.quizRetryVariant[key]=1;
  const alternate=lessonQuizQuestions(name,i,1);
  missed.forEach(qi=>{
@@ -752,7 +752,7 @@ function retryMissedLessonQuiz(name,i){
  });
  const retry=document.getElementById('mcq-retry-missed-'+i);if(retry)retry.hidden=true;
  const result=document.getElementById('mcq-result-'+i);if(result)result.textContent='Retry only the questions you missed, then check your score again.';
- if(name==='Biology'){const submit=document.getElementById('mcq-submit-'+i);if(submit)submit.hidden=false;scrollBiologyQuizQuestion(i,missed[0]);}
+ if((name==='Biology'||name==='Chemistry'&&i===0)){const submit=document.getElementById('mcq-submit-'+i);if(submit)submit.hidden=false;scrollBiologyQuizQuestion(i,missed[0]);}
  else{const first=document.getElementById('mcq-question-'+i+'-'+missed[0]);if(first)first.scrollIntoView({behavior:'smooth',block:'center'});}
 }
 function resetLessonQuiz(i){
