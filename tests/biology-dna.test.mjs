@@ -8,7 +8,7 @@ function render(name='Biology',index=2){
  const data={answers:{Biology:{2:'Historical DNA answer',1:'Original Cells answer'}},quizResults:{'Biology-2':{correct:2,best:3,attempts:4,lastAnswers:[3,1,0]}},completed:{Biology:[1,2,99]},unknown:{retain:true}};
  const before=JSON.stringify(data),ids=['biology-life','biology-cells','biology-dna-heredity','biology-natural-selection'];
  const context=vm.createContext({state:()=>data,esc:String,teacherContent:()=>({simple:'Legacy explanation',example:'Legacy example'}),whyItWorks:()=> 'Legacy reasoning',lessonQuizHTML:(n,i)=>'<section id="mcq-'+i+'">Unchanged quiz</section>',resolveSubjectLesson:(n,i)=>{const legacyIndex=typeof i==='string'?ids.indexOf(i):i;return {id:n==='Biology'?ids[legacyIndex]:'other',legacyIndex,href:'/subjects/biology/#lesson-'+legacyIndex};}});
- vm.runInContext(['cellsLessonIntroduction','cellsLessonSummary','dnaLessonIntroduction','dnaLessonSummary','selectionLessonIntroduction','selectionLessonSummary','lifeLessonIntroduction','lifeLessonSummary','lessonHTML'].map(fn).join('\n'),context);
+ vm.runInContext(['chemistryBondsIntroduction','chemistryBondsSummary','cellsLessonIntroduction','cellsLessonSummary','dnaLessonIntroduction','dnaLessonSummary','selectionLessonIntroduction','selectionLessonSummary','lifeLessonIntroduction','lifeLessonSummary','lessonHTML'].map(fn).join('\n'),context);
  context.name=name;context.index=index;
  const html=vm.runInContext("lessonHTML(name,['DNA and heredity','Legacy fact','Legacy example','How can DNA influence a trait?','Original hint'],index,false)",context);
  assert.equal(JSON.stringify(data),before);return html;
