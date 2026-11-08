@@ -119,15 +119,18 @@ function renderSubject(name,preserveInputs=false){
  <footer>My Learning OS · Learn → Connect → Question → Understand</footer>`;
  newQuestion();
  renderQuiz(name);
- if(name==='Biology'){
+ if(name==='Biology'||name==='Chemistry'){
   const hero=document.querySelector('#app > main.hero'),stats=document.querySelector('#app > section.panel');
   hero.outerHTML=subjectJourneyHTML(name,s);
   stats.remove();
   document.querySelector('.course-heading h2').textContent='Your continuous learning journey';
   document.querySelector('.course-heading p').textContent='Four core lessons. Growing challenge, with every lesson open to explore.';
+  if(name==='Chemistry')document.querySelector('.course-count').textContent=subjectLessonEntries(name).filter(entry=>done.includes(entry.legacyIndex)).length+'/'+d.lessons.length;
+  if(name==='Biology'){
   const quizHeading=document.querySelector('#quiz').previousElementSibling.previousElementSibling;
   quizHeading.textContent='Self-reflection';
   document.getElementById('subject-reflection-description').textContent='Compare your explanation with the model answer. This self-marked activity is separate from scored lesson practice.';
+  }
  }
  const nextLesson=getNextLesson(),cont=document.getElementById("continueLearning");
  if(cont) cont.innerHTML=nextLesson?'<p class="muted">'+esc(nextLesson.name)+' · Lesson '+(nextLesson.i+1)+'</p><h3>'+esc(nextLesson.lesson[0])+'</h3><p class="muted">'+esc(nextLesson.lesson[1])+'</p><a class="button" href="/subjects/'+nextLesson.name.toLowerCase()+'/#lesson-'+nextLesson.i+'">Continue →</a>':'<p>🎉 You have completed every lesson currently in the course.</p>';
@@ -143,6 +146,7 @@ function renderSubject(name,preserveInputs=false){
  }
 }
 function subjectJourneyHTML(name,s){
+ const chemistry=name==='Chemistry';
  const d=SUBJECTS[name],entries=subjectLessonEntries(name),records=entries.map(entry=>resolveLessonRecords(s,name,entry.id??entry.legacyIndex));
  const completed=new Set(records.filter(record=>record.completed).map(record=>record.legacyIndex));
  const nextEntry=records.find(record=>!record.completed),next=nextEntry?nextEntry.legacyIndex:-1;
@@ -150,18 +154,23 @@ function subjectJourneyHTML(name,s){
  return `<main class="hero subject-journey" id="subject-overview">
  <a class="back" href="/">← Back to Learning Areas</a>
  <p class="journey-eyebrow">ONE CONTINUOUS LEARNING JOURNEY</p><h1>${d.icon} ${esc(name)}</h1>
- <p>Discover life. Understand its systems. Connect ideas through investigation.</p>
+ <p>${chemistry?'Explore matter, atoms, bonds and reactions. Connect explanations to everyday changes.':'Discover life. Understand its systems. Connect ideas through investigation.'}</p>
  <div class="journey-next"><section aria-labelledby="journey-next-title"><h2 id="journey-next-title">${next<0?'Core lessons completed':completed.size?'Continue learning':'Start your journey'}</h2>
  <p>${completed.size} of ${d.lessons.length} core lessons completed</p>
- ${next<0?'<p>Return to any lesson, review an idea or investigate the project.</p><a class="button" href="/review.html">Open Review →</a>':`<h3>${esc(d.lessons[next][0])}</h3><a class="button" href="#lesson-${next}" onclick="openLesson(${next})">${completed.size?'Continue lesson':'Start lesson 1'} →</a>`}
+ ${next<0?`<p>Return to any lesson, review an idea or investigate the ${chemistry?'application':'project'}.</p><a class="button" href="/review.html">Open Review →</a>`:`<h3>${esc(d.lessons[next][0])}</h3><a class="button" href="#lesson-${next}" onclick="${chemistry?'openChemistryJourneyLesson':'openLesson'}(${next})">${completed.size?'Continue lesson':'Start lesson 1'} →</a>`}
  <p class="muted">Completion records your learning activity, not a mastery score.</p></section>
- <section><h2>Remember and connect</h2><p>Return to your scheduled lesson and practice reviews.</p><a href="/review.html">View review schedule →</a><p><a href="/tutor.html">Ask your tutor →</a> <small>Select Biology in the Tutor.</small></p></section></div>
- <nav class="journey-links" aria-label="Biology journey">${entries.map((entry,position)=>`<a href="#lesson-${entry.legacyIndex}" onclick="openLesson(${entry.legacyIndex})"><span>${completed.has(entry.legacyIndex)?'✓':position+1}</span> ${esc(entry.lesson[0])}</a>`).join('')}</nav>
- <div class="journey-connections"><section><h2>Apply your learning</h2><p>Investigate connections between cells, heredity and adaptation.</p><a href="/projects.html?project=plant-evolution">Explore Plant Evolution →</a></section>
- <section><h2>Connect and explore</h2><p>How does chemistry help us understand living systems?</p><a href="/knowledge.html">Explore the Knowledge Map →</a></section>
- <section><h2>Your Biology notes</h2><p>${notes.length?notes.length+' Biology '+(notes.length===1?'note':'notes')+' in your library.':'Capture a question or discovery in your Notes Library.'}</p><a href="/notes.html">Open My Notes →</a><p><a href="#note">Your original Biology note ↓</a></p></section></div>
+ <section><h2>Remember and connect</h2><p>Return to your scheduled lesson and practice reviews.</p><a href="/review.html">View review schedule →</a><p><a href="/tutor.html">Ask your tutor →</a> <small>Select ${esc(name)} in the Tutor.</small></p></section></div>
+ <nav class="journey-links" aria-label="${esc(name)} journey">${entries.map((entry,position)=>`<a href="#lesson-${entry.legacyIndex}" onclick="${chemistry?'openChemistryJourneyLesson':'openLesson'}(${entry.legacyIndex})"><span>${completed.has(entry.legacyIndex)?'✓':position+1}</span> ${esc(entry.lesson[0])}</a>`).join('')}</nav>
+ <div class="journey-connections"><section><h2>Apply your learning</h2>${chemistry?'<p>How can you distinguish melting ice from a chemical reaction? Use changes in substance identity as evidence.</p><a href="#lesson-3" onclick="openChemistryJourneyLesson(3)">Explore chemical reactions →</a>':'<p>Investigate connections between cells, heredity and adaptation.</p><a href="/projects.html?project=plant-evolution">Explore Plant Evolution →</a>'}</section>
+ <section><h2>Connect and explore</h2><p>${chemistry?'How do atoms, bonds and reactions connect Chemistry with Biology and Physics?':'How does chemistry help us understand living systems?'}</p><a href="/knowledge.html">Explore the Knowledge Map →</a></section>
+ <section><h2>Your ${esc(name)} notes</h2><p>${notes.length?notes.length+' '+esc(name)+' '+(notes.length===1?'note':'notes')+' in your library.':'Capture a question or discovery in your Notes Library.'}</p><a href="/notes.html">Open My Notes →</a><p><a href="#note">Your original ${esc(name)} note ↓</a></p></section></div>
  <p class="muted">Saved in this browser when you save or complete an activity. Backup controls are below the lessons.</p>
  </main>`;
+}
+function openChemistryJourneyLesson(index){
+ const entry=resolveSubjectLesson('Chemistry',index);if(!entry)return;
+ openLesson(entry.legacyIndex);
+ requestAnimationFrame(()=>requestAnimationFrame(()=>document.getElementById('lesson-'+entry.legacyIndex)?.querySelector('.lesson-summary')?.focus({preventScroll:true})));
 }
 function lessonHelp(title){
  const data={
