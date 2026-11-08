@@ -61,3 +61,12 @@ test('puddle prediction and revisit bindings handle all answers without writes a
  for(const value of ['', 'air','gone','atoms']){choice.value=value;vm.runInContext('clearPuddleFeedback()',c);assert.equal(feedback.textContent,'');vm.runInContext('checkPuddlePrediction()',c);assert.ok(feedback.textContent);if(value)assert.equal(feedback.textContent.startsWith('Yes.'),value==='air');}
  vm.runInContext('revisitPuddlePrediction()',c);assert.deepEqual(calls,[true,'auto']);assert.match(render(),/onchange="clearPuddleFeedback\(\)"/);assert.match(fn('renderSubject'),/#puddle-practice/);
 });
+
+test('Matter comparison separates identity from arrangement and keeps assumptions in selectable HTML',()=>{
+ const html=render();for(const text of ['Stays the same:','Changes:','Arrangement: open and ordered.','Arrangement: close and irregular.','Spacing: much farther apart.','Movement:','About the model:','still drawings represent moving molecules','Attractions between molecules differ from the bonds within them'])assert.ok(html.includes(text),text);
+ const core=html.replace(/<details[\s\S]*?<\/details>/g,'');for(const text of ['mass and occupies space','light is not matter','molecules remain H₂O','without destroying its molecules','Burning wood','physical changes','chemical changes'])assert.ok(core.includes(text),text);
+});
+test('puddle revisit invites reconsideration before a native closed explanation without save handlers',()=>{
+ const html=render(),a=html.indexOf('<h4>Return to the puddle</h4>'),b=html.indexOf('<h4>Same substance or new substances?</h4>',a),revisit=html.slice(a,b);
+ assert.ok(revisit.indexOf('Reconsider before revealing')<revisit.indexOf('Reveal the puddle explanation'));assert.match(revisit,/<details class="matter-puddle-explanation"><summary>Reveal the puddle explanation<\/summary>/);assert.doesNotMatch(revisit,/<details[^>]*(?: open|on\w+=)/);assert.match(revisit,/onclick="revisitPuddlePrediction\(\)"/);assert.match(revisit,/intact H₂O molecules/);assert.doesNotMatch(revisit,/saveState|localStorage/);
+});
