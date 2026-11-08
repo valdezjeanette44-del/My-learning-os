@@ -13,7 +13,7 @@ function harness(i,missed,reduced){
  return {c,data,before,fields,doc,scrolls,submit,retry,result,run:code=>vm.runInContext(code,c)};
 }
 test('actual Chemistry retry/restart button bindings preserve correct choices and history in every lesson',()=>{
- for(let i=0;i<3;i++)for(const missed of [[0],[1],[2],[0,2]])for(const reduced of [false,true]){
+ for(let i=0;i<4;i++)for(const missed of [[0],[1],[2],[0,2]])for(const reduced of [false,true]){
   const h=harness(i,missed,reduced),html=h.run(`lessonQuizHTML('Chemistry',${i})`);
   assert.equal((html.match(/>Restart entire quiz</g)||[]).length,1);assert.doesNotMatch(html,/>Try again</);assert.match(html,/>Retry missed questions</);assert.doesNotMatch(html,/>Retry missed<|>Restart</);assert.match(html,/class="button" type="button" onclick="retryMissedLessonQuiz/);
   const retry=html.match(/onclick="([^"]+)" id="mcq-retry-missed-/)[1];h.run(retry);
@@ -25,7 +25,7 @@ test('actual Chemistry retry/restart button bindings preserve correct choices an
  }
 });
 test('Chemistry grading exposes only the appropriate practice actions after incorrect and perfect results',()=>{
- for(const perfect of [false,true])for(let i=0;i<3;i++){
+ for(const perfect of [false,true])for(let i=0;i<4;i++){
   const h=harness(i,[],false),feedback={hidden:true},choices=[0,1,2].map(q=>({value:'0',dataset:{correct:String(perfect||q!==1),answer:'Choice'}}));
   const originalGet=h.doc.getElementById;h.doc.getElementById=id=>id.startsWith('mcq-feedback-')?feedback:originalGet(id);
   h.doc.querySelector=selector=>selector.includes(':checked')?choices[Number(selector.match(/mcq-\d+-(\d+)/)[1])]:null;
@@ -39,5 +39,5 @@ test('Chemistry missing answers do not grade, write history or change actions',(
  const h=harness(0,[],false);h.doc.querySelector=()=>null;h.c.saveState=()=>assert.fail('Missing answers cannot save');h.run(fn('submitLessonQuiz'));h.run("submitLessonQuiz({preventDefault(){}},'Chemistry',0)");assert.equal(JSON.stringify(h.data),h.before);assert.match(h.result.textContent,/Please answer questions 1, 2, 3/);
 });
 test('only enhanced Chemistry slots opt in; remaining subjects retain legacy actions',()=>{
- const h=harness(0,[],false);for(const [name,i]of [['Chemistry',3],['Physics',0]]){const html=h.run('lessonQuizHTML('+JSON.stringify(name)+','+i+')');assert.match(html,/>Try again</);assert.doesNotMatch(html,/mcq-submit-|>Restart</);}
+ const h=harness(0,[],false);for(const [name,i]of [['Physics',0],['History',3]]){const html=h.run('lessonQuizHTML('+JSON.stringify(name)+','+i+')');assert.match(html,/>Try again</);assert.doesNotMatch(html,/mcq-submit-|>Restart</);}
 });

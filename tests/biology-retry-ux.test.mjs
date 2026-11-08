@@ -24,8 +24,8 @@ test('actual Biology retry/restart button bindings preserve correct choices and 
   assert.ok(Object.values(h.fields).every(f=>!f.input.checked));assert.equal(h.doc.activeElement,h.fields['mcq-question-'+i+'-0']);assert.equal(h.scrolls.at(-1).q,0);assert.equal(JSON.stringify(h.data),h.before);
  }
 });
-test('legacy Chemistry lesson button markup keeps previous labels, styling and reset binding',()=>{
- const h=harness(0,[1],false),html=h.run("lessonQuizHTML('Chemistry',3)");assert.match(html,/onclick="resetLessonQuiz\(3\)">Try again</);assert.doesNotMatch(html,/restartBiologyQuiz|mcq-submit-/);assert.match(html,/class="button secondary" type="button" onclick="retryMissedLessonQuiz/);
+test('legacy Physics lesson button markup keeps previous labels, styling and reset binding',()=>{
+ const h=harness(0,[1],false),html=h.run("lessonQuizHTML('Physics',3)");assert.match(html,/onclick="resetLessonQuiz\(3\)">Try again</);assert.doesNotMatch(html,/restartBiologyQuiz|mcq-submit-/);assert.match(html,/class="button secondary" type="button" onclick="retryMissedLessonQuiz/);
 });
 test('Biology grading exposes only the appropriate practice actions after incorrect and perfect results',()=>{
  for(const perfect of [false,true])for(let i=0;i<4;i++){
