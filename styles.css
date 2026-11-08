@@ -1021,3 +1021,7 @@ body[data-subject="Biology"] #lessons textarea.answer,body[data-subject="Biology
 .chemistry-atoms-enhanced details{background:#fafbf5;border:1px solid #c5ceb9;border-radius:10px;padding:12px;margin:16px 0}.chemistry-atoms-enhanced summary{min-height:44px;cursor:pointer;font-weight:700}.chemistry-atoms-enhanced label{display:block;margin:10px 0}.chemistry-atoms-enhanced select{width:100%;min-width:0;min-height:44px;font:inherit;background:#fff;color:#2c352a;border:1px solid #77608e}.chemistry-atoms-enhanced textarea.answer{border-color:#77608e}.chemistry-atoms-enhanced .mcq-score{color:#563976;background:#f5e8da}.chemistry-atoms-enhanced a{color:#563976}.chemistry-atoms-enhanced fieldset{min-width:0}
 @media(max-width:850px){.chemistry-atoms-enhanced .atoms-pair{grid-template-columns:1fr}.chemistry-atoms-enhanced figure{width:100%;max-width:320px;margin:auto}.chemistry-atoms-enhanced nav button{flex:1 1 40%}}
 @media(prefers-reduced-motion:reduce){.chemistry-atoms-enhanced *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* Keep Lesson 2 particle counts compact beside the teaching text. */
+.chemistry-atoms-enhanced .atoms-count-comparison{grid-template-columns:minmax(0,320px) minmax(0,1fr)}
+@media(max-width:850px){.chemistry-atoms-enhanced .atoms-count-comparison{grid-template-columns:1fr}}
