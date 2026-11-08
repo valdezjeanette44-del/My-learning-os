@@ -25,7 +25,7 @@ test('actual Biology retry/restart button bindings preserve correct choices and 
  }
 });
 test('legacy Chemistry lesson button markup keeps previous labels, styling and reset binding',()=>{
- const h=harness(0,[1],false),html=h.run("lessonQuizHTML('Chemistry',1)");assert.match(html,/onclick="resetLessonQuiz\(1\)">Try again</);assert.doesNotMatch(html,/restartBiologyQuiz|mcq-submit-/);assert.match(html,/class="button secondary" type="button" onclick="retryMissedLessonQuiz/);
+ const h=harness(0,[1],false),html=h.run("lessonQuizHTML('Chemistry',2)");assert.match(html,/onclick="resetLessonQuiz\(2\)">Try again</);assert.doesNotMatch(html,/restartBiologyQuiz|mcq-submit-/);assert.match(html,/class="button secondary" type="button" onclick="retryMissedLessonQuiz/);
 });
 test('Biology grading exposes only the appropriate practice actions after incorrect and perfect results',()=>{
  for(const perfect of [false,true])for(let i=0;i<4;i++){
