@@ -15,12 +15,12 @@ function harness(i,missed,reduced){
 test('actual Chemistry retry/restart button bindings preserve correct choices and history in every lesson',()=>{
  for(let i=0;i<3;i++)for(const missed of [[0],[1],[2],[0,2]])for(const reduced of [false,true]){
   const h=harness(i,missed,reduced),html=h.run(`lessonQuizHTML('Chemistry',${i})`);
-  assert.equal((html.match(/>Restart(?: entire quiz)?</g)||[]).length,1);assert.doesNotMatch(html,/>Try again</);assert.match(html,/class="button" type="button" onclick="retryMissedLessonQuiz/);
+  assert.equal((html.match(/>Restart entire quiz</g)||[]).length,1);assert.doesNotMatch(html,/>Try again</);assert.match(html,/>Retry missed questions</);assert.doesNotMatch(html,/>Retry missed<|>Restart</);assert.match(html,/class="button" type="button" onclick="retryMissedLessonQuiz/);
   const retry=html.match(/onclick="([^"]+)" id="mcq-retry-missed-/)[1];h.run(retry);
   for(let q=0;q<3;q++)assert.equal(h.fields['mcq-question-'+i+'-'+q].input.checked,!missed.includes(q));
   assert.equal(h.doc.activeElement,h.fields['mcq-question-'+i+'-'+missed[0]]);assert.equal(h.scrolls.at(-1).q,missed[0]);assert.equal(h.scrolls.at(-1).behavior,reduced?'auto':'smooth');assert.equal(h.submit.hidden,false);assert.equal(h.retry.hidden,true);
   h.run(retry);assert.equal(JSON.stringify(h.data),h.before);
-  const restart=html.match(/onclick="([^"]+)">Restart(?: entire quiz)?</)[1];h.run(restart);
+  const restart=html.match(/onclick="([^"]+)">Restart entire quiz</)[1];h.run(restart);
   assert.ok(Object.values(h.fields).every(f=>!f.input.checked));assert.equal(h.doc.activeElement,h.fields['mcq-question-'+i+'-0']);assert.equal(h.scrolls.at(-1).q,0);assert.equal(JSON.stringify(h.data),h.before);
  }
 });
