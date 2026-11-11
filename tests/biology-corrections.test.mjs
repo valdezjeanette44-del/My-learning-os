@@ -32,6 +32,10 @@ test('Review extensions survive export, restore and subsequent completion',()=>{
 
 function draftDOM(h){
  const controls=[{id:'answer-0',tagName:'TEXTAREA',value:'UNSAVED answer',selectionStart:3,selectionEnd:8,selectionDirection:'forward',scrollTop:12},{id:'note',tagName:'TEXTAREA',value:'UNSAVED note',selectionStart:2,selectionEnd:2,selectionDirection:'none',scrollTop:9},{id:'mcq-0',tagName:'SECTION',choice:2,feedback:'Previous feedback',variant:1},{id:'quiz',tagName:'DIV',value:'UNSAVED reflection'},{id:'hint-0',tagName:'P',hidden:false},{id:'feedback-0',tagName:'DIV',textContent:'Example answer'}];
+ controls.push({id:'reactions-prediction',tagName:'SECTION',choice:'evidence'},{id:'reactions-balance',tagName:'SECTION',choice:'2:1:2',feedback:'counts'});
+ controls.push({id:'bonds-prediction',tagName:'SECTION',choice:'intact'},{id:'bonds-interpretation',tagName:'SECTION',choice:'sharing',feedback:'bond feedback'});
+ controls.push({id:'atoms-prediction',tagName:'SECTION',choice:'no'},{id:'atoms-comparison',tagName:'SECTION',choice:'ion',feedback:'comparison feedback'});
+ controls.push({id:'puddle-practice',tagName:'SECTION',choice:'air',feedback:'prediction feedback'});
  for(const e of controls){e.connected=true;e.setSelectionRange=(a,b,d)=>{e.selectionStart=a;e.selectionEnd=b;e.selectionDirection=d;};e.focus=()=>{doc.activeElement=e;};e.closest=()=>null;e.getAttribute=()=>null;}
  const disclosure={open:true};let map=new Map(controls.map(e=>[e.id,e]));const node={textContent:'',remove(){},previousElementSibling:{previousElementSibling:{textContent:''}}};
  const app={set innerHTML(value){for(const e of controls)e.connected=false;map=new Map(controls.map(e=>[e.id,{replaceWith(old){map.set(old.id,old);old.connected=true;}}]));disclosure.open=false;},get innerHTML(){return '';}};
@@ -40,7 +44,7 @@ function draftDOM(h){
  for(const n of ['esc','subjectProgress','subjectJourneyHTML','renderSubject'])h.run(fn(n));return {controls,disclosure,doc};
 }
 test('completion and Review rebuilds retain input DOM, quiz variant, feedback, focus and caret without saving drafts',()=>{
- for(const action of ["completeLesson('Biology',0)","finishReview('Biology',0,true)","completeLesson('Chemistry',0)"]){const h=setup(),dom=draftDOM(h);h.run(action);for(const el of dom.controls)assert.equal(dom.doc.getElementById(el.id),el);assert.equal(dom.controls[0].value,'UNSAVED answer');assert.equal(dom.controls[1].value,'UNSAVED note');assert.equal(dom.controls[2].choice,2);assert.equal(dom.controls[2].variant,1);assert.equal(dom.disclosure.open,true);assert.equal(dom.doc.activeElement,dom.controls[0]);assert.equal(dom.controls[0].selectionStart,3);assert.equal(dom.controls[0].selectionEnd,8);assert.deepEqual(h.saved().answers,fixture().answers);assert.deepEqual(h.saved().notes,fixture().notes);assert.deepEqual(h.saved().quizResults,fixture().quizResults);assert.equal(h.writes.length,1);}
+ for(const action of ["completeLesson('Biology',0)","finishReview('Biology',0,true)","completeLesson('Chemistry',0)","completeLesson('Chemistry',1)","completeLesson('Chemistry',2)","completeLesson('Chemistry',3)"]){const h=setup(),dom=draftDOM(h);h.run(action);for(const el of dom.controls)assert.equal(dom.doc.getElementById(el.id),el);assert.equal(dom.controls[0].value,'UNSAVED answer');assert.equal(dom.controls[1].value,'UNSAVED note');assert.equal(dom.controls[2].choice,2);assert.equal(dom.controls[2].variant,1);assert.equal(dom.disclosure.open,true);assert.equal(dom.doc.activeElement,dom.controls[0]);assert.equal(dom.controls[0].selectionStart,3);assert.equal(dom.controls[0].selectionEnd,8);assert.deepEqual(h.saved().answers,fixture().answers);assert.deepEqual(h.saved().notes,fixture().notes);assert.deepEqual(h.saved().quizResults,fixture().quizResults);assert.equal(h.writes.length,1);}
 });
 test('failed completion save leaves draft DOM and stored learning records untouched',()=>{
  const h=setup(),dom=draftDOM(h),before=h.storage.get('myLearningOS.v2');h.c.localStorage.setItem=()=>{throw Error('QuotaExceededError');};h.c.showLearningDataWarning=()=>{};assert.throws(()=>h.run("completeLesson('Biology',0)"),/Quota/);assert.equal(dom.controls[0].connected,true);assert.equal(dom.controls[0].value,'UNSAVED answer');assert.equal(h.storage.get('myLearningOS.v2'),before);
@@ -62,7 +66,7 @@ test('Biology editable-area boundaries contrast with interior and surrounding su
  for(const adjacent of ['ffffff','f5f3ff','fffdf9'])assert.ok((L(adjacent)+.05)/(L('77608e')+.05)>=3,adjacent);
 });
 test('Biology retry respects both motion preferences with target focus and without writes or historical result changes',()=>{
- for(const [name,reduced,expected] of [['Biology',true,'auto'],['Biology',false,'smooth'],['Chemistry',true,'smooth']]){
+ for(const [name,reduced,expected] of [['Biology',true,'auto'],['Biology',false,'smooth'],['Physics',true,'smooth']]){
   const data={quizResults:{[name+'-1']:{missed:[1],attempts:8,best:3,extra:'keep'}}},before=JSON.stringify(data),scroll=[],fields={};
   for(let q=0;q<3;q++)fields['mcq-question-1-'+q]={innerHTML:'Original '+q,setAttribute(){},focus(){document.activeElement=this;},scrollIntoView:options=>scroll.push(options)};
   const active={id:'retry-button'},document={activeElement:active,getElementById:id=>fields[id]||null};

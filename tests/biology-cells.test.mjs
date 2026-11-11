@@ -8,7 +8,7 @@ function fn(name){const start=source.indexOf('function '+name+'('),end=source.in
 function render(name,index){
  const data={answers:{Biology:{1:'Saved cells answer'}},quizResults:{'Biology-1':{correct:2,total:3,attempts:4}},review:{}};const before=JSON.stringify(data);
  const context=vm.createContext({state:()=>data,esc:String,teacherContent:()=>({simple:'Original',example:'Original example'}),whyItWorks:()=> 'Original reasoning',lessonQuizHTML:()=>'<section id="mcq-1">Original quiz</section>',resolveSubjectLesson:(name,i)=>i==='biology-dna-heredity'?{href:'/subjects/biology/#lesson-2',legacyIndex:2}:{id:name==='Biology'&&i===1?'biology-cells':'other'}});
- vm.runInContext(fn('cellsLessonIntroduction')+fn('cellsLessonSummary')+fn('lessonHTML'),context);context.name=name;context.index=index;
+ vm.runInContext(fn('chemistryAtomsIntroduction')+fn('chemistryAtomsSummary')+fn('cellsLessonIntroduction')+fn('cellsLessonSummary')+fn('lessonHTML'),context);context.name=name;context.index=index;
  const html=vm.runInContext("lessonHTML(name,['Cells: the basic unit','Legacy fact','Legacy example','Why do cells need membranes?','Hint'],index,false)",context);
  assert.equal(JSON.stringify(data),before);return html;
 }
@@ -42,7 +42,7 @@ test('Cells section controls preserve the legacy hash and focus existing content
 test('Biology lesson scrolling respects reduced motion while other subjects retain prior behavior',()=>{
  const scroll=[],element={classList:{add(){}},querySelector:()=>null,scrollIntoView:opts=>scroll.push(opts.behavior)};
  const context=vm.createContext({window:{matchMedia:()=>({matches:true})},document:{body:{dataset:{subject:'Biology'}},querySelectorAll:()=>[],getElementById:()=>element}});
- vm.runInContext(fn('openLesson'),context);vm.runInContext('openLesson(1)',context);context.document.body.dataset.subject='Chemistry';vm.runInContext('openLesson(1)',context);assert.deepEqual(scroll,['auto','smooth']);
+ vm.runInContext(fn('openLesson'),context);vm.runInContext('openLesson(1)',context);context.document.body.dataset.subject='Chemistry';vm.runInContext('openLesson(1)',context);assert.deepEqual(scroll,['auto','auto']);
 });
 test('responsive pictures provide mobile labels at readable SVG sizes and scientific assumptions',async()=>{
  for(const file of ['cell-comparison-mobile','membrane-exchange-mobile']){const svg=await readFile('assets/biology/'+file+'.svg','utf8');assert.match(svg,/viewBox="0 0 360 /);assert.match(svg,/font-size="19"/);assert.match(svg,/<desc/);}

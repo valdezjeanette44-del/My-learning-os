@@ -29,5 +29,5 @@ test('history listener registration is outside rendering; refresh retains the bo
  assert.equal((source.match(/addEventListener\('hashchange',syncBiologyLessonHash\)/g)||[]).length,1);
  const render=source.slice(source.indexOf('function renderSubject('),source.indexOf('function subjectJourneyHTML('));assert.doesNotMatch(render,/addEventListener/);
  // Executed boot/refresh and legacy quiz URL coverage lives in subject-journey.test.mjs.
- assert.match(source,/document\.body\.dataset\.subject==='Biology'\|\|\['quiz','lesson'\]/);
+ assert.match(source,/\['Biology','Chemistry'\]\.includes\(document\.body\.dataset\.subject\)\|\|\['quiz','lesson'\]/);
 });

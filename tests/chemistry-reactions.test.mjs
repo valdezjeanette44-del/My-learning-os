@@ -1,0 +1,35 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import {readFile} from 'node:fs/promises';
+const source=(await readFile('learning.js','utf8')).replace(/\r\n/g,'\n');
+function fn(n){const a=source.indexOf('function '+n+'(');assert.ok(a>=0);const end=source.indexOf('\nfunction ',a+10);return source.slice(a,end);}
+function render(name='Chemistry',i=3){const data={answers:{Chemistry:{3:'Historical reaction answer'}},quizResults:{'Chemistry-3':{attempts:7,best:2,extra:'keep'}},review:{},future:{keep:true}},before=JSON.stringify(data),c=vm.createContext({state:()=>data,esc:String,teacherContent:()=>({simple:'original',example:'original'}),whyItWorks:()=>'',lessonQuizHTML:(n,i)=>'<section id="mcq-'+i+'">Historical quiz</section>'});vm.runInContext(source.slice(source.indexOf('const SUBJECTS='),source.indexOf('const STORAGE_RECOVERY_KEY=')),c);for(const n of ['chemistryReactionsIntroduction','chemistryReactionsSummary','chemistryBondsIntroduction','chemistryBondsSummary','chemistryAtomsIntroduction','chemistryAtomsSummary','chemistryMatterIntroduction','chemistryMatterSummary','cellsLessonIntroduction','cellsLessonSummary','dnaLessonIntroduction','dnaLessonSummary','selectionLessonIntroduction','selectionLessonSummary','lifeLessonIntroduction','lifeLessonSummary','lessonHTML'])vm.runInContext(fn(n),c);c.name=name;c.i=i;const html=vm.runInContext('lessonHTML(name,SUBJECTS[name].lessons[i],i,false)',c);assert.equal(JSON.stringify(data),before);return html;}
+
+test('Reactions retains identity, historical written practice, single controls and final overview destination',()=>{
+ const html=render();for(const value of ['id="lesson-3"','id="answer-3"','Historical reaction answer','What does it mean to balance a chemical equation?','It means representing the same number of each type of atom on both sides.',"checkAnswer('Chemistry',3)","completeLesson('Chemistry',3)",'aria-labelledby="reactions-question"','id="mcq-3"','#subject-overview','/review.html','role="status"'])assert.ok(html.includes(value),value);
+ assert.equal((html.match(/id="answer-3"/g)||[]).length,1);assert.doesNotMatch(html,/#lesson-4/);assert.ok(html.indexOf('Remember and continue')<html.indexOf('CAN I EXPLAIN IT?'));assert.match(source,/chemistry-reactions/);
+});
+test('Reactions core teaches historical prerequisites and energy qualifications outside optional depth',()=>{
+ const html=render(),core=html.replace(/<details[\s\S]*?<\/details>/g,'');for(const text of ['Reactants','products','4 hydrogen atoms and 2 oxygen atoms','coefficient','subscript','H₂O₂','Breaking bonds requires energy; forming bonds releases energy','Activation energy','not elapsed time','not measured data for water formation','not a literal single-step mechanism','clue, not proof','open container','many enzyme-controlled steps','ATP production'])assert.ok(core.includes(text),text);
+ const details=[...html.matchAll(/<details([^>]*)>([\s\S]*?)<\/details>/g)];assert.equal(details.filter(d=>d[2].includes('Explore deeper:')).length,2);for(const d of details)assert.doesNotMatch(d[1],/open|on\w+=/);assert.ok(html.indexOf('Would you keep or change')<html.indexOf('Reveal the bubbles explanation'));
+});
+test('Coefficient practice checks every bounded combination, clears stale feedback and never saves',()=>{
+ const controls=Object.fromEntries(['hydrogen','oxygen','water'].map(n=>['reactions-'+n,{value:''}])),feedback={textContent:'old'};controls['reactions-balance-feedback']=feedback;const c=vm.createContext({document:{getElementById:id=>controls[id]},saveState:()=>assert.fail('No practice writes')});for(const n of ['clearReactionsBalance','checkReactionsBalance'])vm.runInContext(fn(n),c);
+ vm.runInContext('checkReactionsBalance()',c);assert.match(feedback.textContent,/Choose all three/);
+ for(let h=1;h<=4;h++)for(let o=1;o<=4;o++)for(let w=1;w<=4;w++){[h,o,w].forEach((v,j)=>controls['reactions-'+['hydrogen','oxygen','water'][j]].value=String(v));vm.runInContext('clearReactionsBalance();checkReactionsBalance()',c);assert.ok(feedback.textContent.includes('Hydrogen: '+2*h+' left, '+2*w+' right'));assert.equal(feedback.textContent.includes('Not balanced yet'),!(h===w&&2*o===w));if(h===4&&o===2&&w===4)assert.match(feedback.textContent,/divide the coefficients/);}
+ vm.runInContext('clearReactionsBalance()',c);assert.equal(feedback.textContent,'');for(const n of ['hydrogen','oxygen','water'])assert.ok(render().includes('id="reactions-'+n+'" onchange="clearReactionsBalance()"'));
+});
+test('Prediction stays temporary, clears old feedback and section focus respects both motion preferences',()=>{
+ const feedback={textContent:'old'},choice={value:'evidence'};const c=vm.createContext({document:{getElementById:id=>id==='reactions-prediction-choice'?choice:feedback},saveState:()=>assert.fail()});vm.runInContext(fn('clearReactionsPrediction'),c);vm.runInContext('clearReactionsPrediction()',c);assert.match(feedback.textContent,/Prediction selected/);choice.value='';vm.runInContext('clearReactionsPrediction()',c);assert.equal(feedback.textContent,'');
+ for(const reduced of [false,true]){let target;const calls=[],ctx=vm.createContext({window:{matchMedia:()=>({matches:reduced})},document:{getElementById:id=>{target=id;return {focus:o=>calls.push(o.preventScroll),scrollIntoView:o=>calls.push(o.behavior)};}},saveState:()=>assert.fail()});vm.runInContext(fn('scrollReactionsSection'),ctx);for(const section of ['visualize','energy','apply','explain','prediction']){vm.runInContext('scrollReactionsSection("'+section+'")',ctx);assert.equal(target,section==='prediction'?'reactions-prediction-choice':'reactions-'+section);assert.deepEqual(calls.splice(0),[true,reduced?'auto':'smooth']);}}
+ assert.match(fn('renderSubject'),/#reactions-prediction, #reactions-balance/);
+});
+test('Reactions additions are isolated from accepted teaching and unrelated subjects',()=>{
+ for(const [name,i]of [['Chemistry',0],['Chemistry',1],['Chemistry',2],['Biology',0],['Biology',1],['Biology',2],['Biology',3],['Physics',3]])assert.doesNotMatch(render(name,i),/reactions-opening|reaction-energy.svg|reaction-atom-balance.svg/);
+});
+test('Original scientific models conserve H/O and explain both energy arrows accessibly',async()=>{
+ const atoms=await readFile('assets/chemistry/reaction-atom-balance.svg','utf8'),energy=await readFile('assets/chemistry/reaction-energy.svg','utf8');assert.equal((atoms.match(/class="atom-H"/g)||[]).length,8);assert.equal((atoms.match(/class="atom-O"/g)||[]).length,4);assert.equal((atoms.match(/4 H · 2 O/g)||[]).length,2);
+ for(const svg of [atoms,energy]){assert.match(svg,/aria-labelledby="title desc"/);assert.match(svg,/<title id="title">/);assert.match(svg,/<desc id="desc">/);assert.match(svg,/font-size="24"/);}
+ for(const text of ['Arrow A','activation energy','Arrow B','overall energy change','not time','Not measured data'])assert.ok(energy.includes(text),text);assert.match(atoms,/not a single-step mechanism/);assert.match(render(),/aria-describedby="reactions-energy-note"/);
+});
