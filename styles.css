@@ -992,6 +992,10 @@ body{background:var(--garden-paper,#fbf8f1);color:#302a25}
 .selection-enhanced .selection-diagram{max-width:360px;margin:24px auto}.selection-enhanced .selection-learning>h4{margin-top:28px}
 .life-enhanced .life-diagram{max-width:360px;margin:24px auto}.life-enhanced .life-learning>h4{margin-top:28px}
 .cells-enhanced .mcq-score{color:#563976;background:#f5e8da}
+/* Biology desktop prose measure; keep figures, grids and assessment layouts wide. */
+@media(min-width:851px){
+ body[data-subject="Biology"] #lessons .cells-enhanced :is(.cells-learning,.cells-summary) :is(p,ul,ol){max-inline-size:62ch}
+}
 body[data-subject="Biology"] #lessons textarea.answer,body[data-subject="Biology"] #note{border-color:#77608e}
 
 /* Chemistry Lesson 1 only. */
