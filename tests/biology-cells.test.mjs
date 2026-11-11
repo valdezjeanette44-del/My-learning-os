@@ -45,7 +45,7 @@ test('Biology lesson scrolling respects reduced motion while other subjects reta
  vm.runInContext(fn('openLesson'),context);vm.runInContext('openLesson(1)',context);context.document.body.dataset.subject='Chemistry';vm.runInContext('openLesson(1)',context);assert.deepEqual(scroll,['auto','auto']);
 });
 test('responsive pictures provide mobile labels at readable SVG sizes and scientific assumptions',async()=>{
- for(const file of ['cell-comparison-mobile','membrane-exchange-mobile']){const svg=await readFile('assets/biology/'+file+'.svg','utf8');assert.match(svg,/viewBox="0 0 360 /);assert.match(svg,/font-size="19"/);assert.match(svg,/<desc/);}
+  for(const file of ['cell-comparison-mobile','membrane-exchange-mobile']){const svg=await readFile('assets/biology/'+file+'.svg','utf8');assert.match(svg,/viewBox="0 0 320 /);assert.match(svg,/font-size="24"/);assert.match(svg,/<desc/);}
  const html=render('Biology',1);assert.match(html,/<picture>/);assert.match(html,/electrical pull/);assert.match(html,/adenosine triphosphate/);assert.match(html,/assumed net inward movement/);assert.match(html,/aria-label="Cells lesson sections"/);
 });
 
@@ -68,4 +68,36 @@ test('membrane key keeps scientific qualifications visible as scannable explanat
  const core=render('Biology',1).replace(/<details\b[^>]*>[\s\S]*?<\/details>/g,'');
  assert.match(core,/id="cells-exchange-description" class="cells-diagram-key"/);
  for(const text of ['<strong>Oxygen:</strong>','<strong>Charged ion:</strong>','<strong>Arrows:</strong>','concentration and electrical forces','Molecules move both ways','do not show a pump','simplified and not to scale'])assert.ok(core.includes(text),text);
+});
+
+test('Cells mobile labels meet the readability target without materially increasing diagram height',async()=>{
+ for(const [file,oldHeight]of [['membrane-exchange-mobile',440],['cell-comparison-mobile',580]]){
+  const svg=await readFile('assets/biology/'+file+'.svg','utf8');
+  const [,width,height]=svg.match(/viewBox="0 0 (\d+) (\d+)"/).map(Number);
+  const sizes=[...svg.matchAll(/font-size="(\d+)"/g)].map(m=>Number(m[1]));
+  assert.ok(sizes.length);assert.ok(sizes.every(size=>size*227.2/width>=16));
+  assert.ok(height/width/(oldHeight/360)<=1.05,'same-width height growth stays below 5%');
+  assert.match(svg,/role="img" aria-labelledby="title desc"/);
+  assert.match(svg,/<title id="title">[^<]+<\/title>/);assert.match(svg,/<desc id="desc">[^<]+<\/desc>/);
+  assert.doesNotMatch(svg,/<script|<foreignObject|onload=|onclick=/);
+ }
+});
+
+test('Cells mobile redraw retains passive routes, numbered structures and non-colour explanations',async()=>{
+ const membrane=await readFile('assets/biology/membrane-exchange-mobile.svg','utf8'),cells=await readFile('assets/biology/cell-comparison-mobile.svg','utf8');
+ for(const text of ['Oxygen is more concentrated outside than inside','lipid layer directly','selective protein channel','net entry under the stated gradients, not pumping','Outside the cell','Inside the cell','Ion +','under stated gradients'])assert.ok(membrane.includes(text),text);
+ assert.equal((membrane.match(/V235/g)||[]).length,2,'both inward transport arrows remain');assert.match(membrane,/marker-end="url\(#arrow\)"/);
+ for(const text of ['Typical bacterium','Typical animal cell','1 DNA: not in a nucleus','2 Cell membrane','3 Cell wall','4 Nucleus: most DNA','5 Cell membrane','Both: cytoplasm inside','Dots: ribosomes','wall surrounds its cell membrane','Simplified, not to scale'])assert.ok(cells.includes(text),text);
+ assert.equal((cells.match(/r="4"/g)||[]).length,6,'ribosomes retained in both cells');
+ const html=render('Biology',1);for(const text of ['Most','both'])assert.ok(html.toLowerCase().includes(text.toLowerCase()));
+ assert.match(html,/cell-comparison\.svg/);assert.match(html,/membrane-exchange\.svg/);
+});
+
+test('Cells mobile text and leader colours retain adequate contrast on the diagram surface',async()=>{
+ const assets=await Promise.all(['membrane-exchange-mobile','cell-comparison-mobile'].map(file=>readFile('assets/biology/'+file+'.svg','utf8')));
+ for(const svg of assets){assert.match(svg,/fill="#faf9f2"/);assert.match(svg,/fill="#29362a"/);}
+ assert.match(assets[0],/stroke="#56624e"/);assert.match(assets[0],/stroke="#4d6737"/);assert.match(assets[1],/stroke="#58634e"/);
+ const lum=rgb=>rgb.map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;}).reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
+ const surface=lum([250,249,242]);
+ for(const [colour,minimum]of [[[41,54,42],4.5],[[86,98,78],3],[[88,99,78],3],[[77,103,55],3]])assert.ok((surface+.05)/(lum(colour)+.05)>=minimum);
 });
