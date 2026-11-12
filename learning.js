@@ -112,7 +112,7 @@ function renderSubject(name,preserveInputs=false){
  ensureQuizStyles();
  document.getElementById('app').innerHTML=nav()+`<main class="hero"><a class="back" href="/">← Back to Learning Areas</a><h1>${d.icon} ${name}</h1><p class="muted">${d.desc}</p></main>
  <section class="panel"><div class="stats"><div class="stat"><strong>${done.length}</strong><span>lessons done</span></div><div class="stat"><strong>${d.lessons.length}</strong><span>lessons</span></div><div class="stat"><strong>${p}%</strong><span>progress</span></div><div class="stat"><strong>${s.scores[name]?.score||0}%</strong><span>quiz</span></div></div><div class="bar" style="margin-top:16px"><div style="width:${p}%"></div></div></section>
- <section class="panel course-panel"><div class="course-heading"><div><h2>Your lessons</h2><p class="muted">Open one lesson at a time. You can go at your own pace.</p></div><span class="course-count">${done.length}/${d.lessons.length}</span></div><div id="lessons">${subjectLessonEntries(name).map(entry=>lessonHTML(name,entry.lesson,entry.legacyIndex,done.includes(entry.legacyIndex))).join('')}</div></section>
+ <section class="panel course-panel${name==='Biology'?' biology-lesson-panels':''}"><div class="course-heading"><div><h2>Your lessons</h2><p class="muted">Open one lesson at a time. You can go at your own pace.</p></div><span class="course-count">${done.length}/${d.lessons.length}</span></div><div id="lessons">${subjectLessonEntries(name).map(entry=>lessonHTML(name,entry.lesson,entry.legacyIndex,done.includes(entry.legacyIndex))).join('')}</div></section>
  <section class="panel"><h2>My notes</h2><textarea class="note" id="note" placeholder="Write what you understood, a question, or a connection...">${esc(s.notes[name]||'')}</textarea><div class="lesson-actions"><button onclick="saveNote()">Save notes</button><span id="saved" class="muted"></span></div><p class="notes-return"><a href="#lessons">← Return to ${esc(name)} lessons</a></p></section>
  <section class="panel"><h2 id="subject-reflection-title">Quick quiz</h2><p id="subject-reflection-description">Answer in your own words, then reveal the model answer.</p><div id="quiz"></div></section>
  <details class="home-details"><summary>🛟 Back up my learning data</summary><div class="home-notes"><p class="muted">Save a copy of your completed lessons, notes, quiz answers, reviews, and project progress. Keep the backup somewhere safe.</p><div class="lesson-actions"><button onclick="exportLearningBackup()">Download backup</button><button class="button secondary" onclick="document.getElementById('learningBackupFile').click()">Restore backup</button><button class="button secondary" onclick="downloadPreRestoreData()">Download pre-restore copy</button></div><input id="learningBackupFile" type="file" accept=".json,application/json" style="display:none" onchange="importLearningBackup(this)"><p class="muted" style="font-size:.8rem">Restoring replaces included fields and keeps fields missing from older backups. A local pre-restore copy is kept; download it before your next restore.</p><p id="backupStatus" class="muted" role="status"></p></div></details>
@@ -1129,10 +1129,18 @@ function openLesson(i){
 }
 function syncBiologyLessonHash(){
  if(!/^\/subjects\/biology\/(?:index\.html)?$/.test(location.pathname))return;
+ // Overview navigation hides panels in place, retaining all unfinished DOM state.
+ if(['','#subject-overview','#lessons'].includes(location.hash)){
+  const active=Array.from(document.querySelectorAll('#lessons > .lesson.active'));
+  active.forEach(el=>{el.classList.remove('active');el.querySelector('.lesson-summary')?.setAttribute('aria-expanded','false');const chevron=el.querySelector('.lesson-chevron');if(chevron)chevron.textContent='+';});
+  if(active.length){const overview=document.getElementById('subject-overview'),heading=overview?.querySelector('h1');heading?.setAttribute('tabindex','-1');heading?.focus({preventScroll:true});overview?.scrollIntoView({behavior:'auto',block:'start'});}
+  return;
+ }
  const match=location.hash.match(/^#lesson-(\d+)$/);if(!match)return;
  const lesson=resolveSubjectLesson('Biology',Number(match[1]));if(!lesson)return;
  const target=document.getElementById('lesson-'+lesson.legacyIndex);if(!target)return;
  if(!target.classList.contains('active'))openLesson(lesson.legacyIndex);
+ target.querySelector('.lesson-summary')?.focus({preventScroll:true});
  if(new URLSearchParams(location.search).get('review')==='quiz'){
   const quiz=document.getElementById('mcq-'+lesson.legacyIndex);if(quiz)quiz.scrollIntoView({behavior:document.body?.dataset?.subject==='Biology'&&typeof window!=='undefined'&&window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'auto':'smooth',block:'start'});
  }
