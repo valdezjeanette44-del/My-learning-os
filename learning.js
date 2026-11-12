@@ -128,8 +128,10 @@ function renderSubject(name,preserveInputs=false){
   if(name==='Chemistry')document.querySelector('.course-count').textContent=subjectLessonEntries(name).filter(entry=>done.includes(entry.legacyIndex)).length+'/'+d.lessons.length;
   if(name==='Biology'){
   const quizHeading=document.querySelector('#quiz').previousElementSibling.previousElementSibling;
-  quizHeading.textContent='Self-reflection';
+  quizHeading.textContent='Subject reflection';
   document.getElementById('subject-reflection-description').textContent='Compare your explanation with the model answer. This self-marked activity is separate from scored lesson practice.';
+  prepareBiologyDashboardTools();
+  if(typeof location!=='undefined'&&['#note','#quiz','#quizAnswer','#subject-reflection-title','#biology-backup-controls','#biology-image-credits'].includes(location.hash))syncBiologyLessonHash();
   }
  }
  const nextLesson=getNextLesson(),cont=document.getElementById("continueLearning");
@@ -145,6 +147,35 @@ function renderSubject(name,preserveInputs=false){
   target?.focus({preventScroll:true});
  }
 }
+function prepareBiologyDashboardTools(){
+ // Move existing panels, never recreate editors, Save controls or their children.
+ if(document.getElementById('biology-original-note'))return;
+ const note=document.getElementById('note'),reflection=document.getElementById('quiz');
+ const notePanel=note?.closest?.('section.panel'),reflectionPanel=reflection?.closest?.('section.panel');
+ const backup=document.getElementById('learningBackupFile')?.closest?.('details');
+ if(!notePanel||!reflectionPanel||!backup)return;
+ const tools=document.createElement('section');tools.className='biology-dashboard-tools';tools.setAttribute('aria-label','Biology notes, reflection, backups and image credits');
+ notePanel.before(tools);
+ for(const [panel,id,label] of [[notePanel,'biology-original-note','Original Biology note'],[reflectionPanel,'biology-reflection','Subject reflection']]){
+  const disclosure=document.createElement('details'),summary=document.createElement('summary');
+  disclosure.className='biology-tools-disclosure';disclosure.id=id;summary.textContent=label;
+  disclosure.appendChild(summary);disclosure.appendChild(panel);tools.appendChild(disclosure);
+ }
+ const noteHeading=notePanel.querySelector('h2');noteHeading.id='biology-original-note-title';note.setAttribute('aria-labelledby',noteHeading.id);
+ backup.classList.add('biology-tools-disclosure');backup.id='biology-backup-controls';backup.querySelector('summary').textContent='Backup and restore';tools.appendChild(backup);
+ const credits=document.createElement('details');credits.className='biology-tools-disclosure biology-image-credits';credits.id='biology-image-credits';
+ credits.innerHTML='<summary>Image credits and licences</summary><div class="biology-credit-content"><p>Hero: <a href="https://www.pexels.com/photo/orange-butterfly-on-a-fern-plant-2640323/">Todd Trapani / Pexels</a> · <a href="https://www.pexels.com/license/">Pexels licence</a>.</p><p>Seedling: <a href="https://unsplash.com/photos/a-small-green-plant-sprouts-from-the-ground---DI97TZcAA">taehyeon kim / Unsplash</a>. DNA visualization: <a href="https://unsplash.com/photos/glowing-dna-double-helix-structure-Iy7QyzOs1bo">Sangharsh Lohakare / Unsplash</a> · <a href="https://unsplash.com/license">Unsplash licence</a>.</p><p>Cells: <a href="https://commons.wikimedia.org/wiki/File:Plagiomnium_affine_laminazellen.jpeg">Kristian Peters; current file modified by René Esposito</a> · <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>. Cropped and resized; colours unchanged. These adapted cell images remain available under CC BY-SA 3.0.</p><p>Finch: <a href="https://commons.wikimedia.org/wiki/File:Darwin%27s_Finch_on_Cactus.jpg">Victor Gleim</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. Cropped and resized; colours unchanged. These adapted finch images remain available under CC BY-SA 4.0.</p><p>Photography illustrates the subject; teaching diagrams remain inside the lessons. <a href="/assets/biology/photography/CREDITS.md">Full source, modification and image licence record</a>.</p></div>';
+ tools.appendChild(credits);
+}
+function revealBiologyDashboardTool(id){
+ if(!/^\/subjects\/biology\/(?:index\.html)?$/.test(location.pathname))return;
+ const target=document.getElementById(id),disclosure=target?.closest?.('details.biology-tools-disclosure');
+ if(!disclosure)return;
+ disclosure.open=true;
+ const focusTarget=target.tagName==='DETAILS'?target.querySelector('summary'):target;
+ focusTarget?.setAttribute('tabindex',focusTarget.tagName==='TEXTAREA'?'0':'-1');
+ focusTarget?.focus({preventScroll:true});target.scrollIntoView({behavior:'auto',block:'start'});
+}
 function subjectJourneyHTML(name,s){
  const chemistry=name==='Chemistry';
  const d=SUBJECTS[name],entries=subjectLessonEntries(name),records=entries.map(entry=>resolveLessonRecords(s,name,entry.id??entry.legacyIndex));
@@ -152,7 +183,7 @@ function subjectJourneyHTML(name,s){
  const nextEntry=records.find(record=>!record.completed),next=nextEntry?nextEntry.legacyIndex:-1;
  const notes=(s.noteLibrary||[]).filter(n=>!n.archivedAt&&(n.category===name||n.category==='Subject · '+name));
  if(name==='Biology'){
-  const percent=Math.round(completed.size/d.lessons.length*100),todayKey=localReviewDayKey(new Date());
+  const todayKey=localReviewDayKey(new Date());
   const completedToday=new Set((s.reviewCompletions||{})[todayKey]||[]),readyIds=new Set();
   Object.values(s.review||{}).forEach(item=>{
    if(item?.subject!==name||!Number.isInteger(item.index)||!d.lessons[item.index]||!item.nextReview)return;
@@ -165,27 +196,27 @@ function subjectJourneyHTML(name,s){
    if(!Number.isNaN(date.getTime())&&localReviewDayKey(date)<=todayKey&&!completedToday.has('quiz:'+name+':'+item.index))readyIds.add('quiz:'+name+':'+item.index);
   });
   const art={
-   'biology-life':{src:'/assets/biology/dashboard-life.svg',alt:'A young seedling emerging from rich soil.'},
-   'biology-cells':{src:'/assets/biology/dashboard-cells.svg',alt:'Illustrated cells with visible membranes and nuclei.'},
-   'biology-dna-heredity':{src:'/assets/biology/dashboard-dna.svg',alt:'A DNA double helix woven through green leaves.'},
-   'biology-natural-selection':{src:'/assets/biology/dashboard-evolution.svg',alt:'A small bird among flowers and leaves, representing biological diversity.'}
+   'biology-life':{key:'seedling',alt:'A two-leaf seedling emerging from dark soil.'},
+   'biology-cells':{key:'cells',alt:'Microscopic moss leaf cells with green chloroplasts and visible cell boundaries.'},
+   'biology-dna-heredity':{key:'dna',alt:'An illustrative three-dimensional DNA double helix, not microscope photography.'},
+   'biology-natural-selection':{key:'finch',alt:'A Galápagos finch perched on a cactus, photographed by Victor Gleim.'}
   };
+  const photograph=(image,className='')=>`<img class="${className}" src="/assets/biology/photography/${image.key}-320.jpg" srcset="/assets/biology/photography/${image.key}-320.jpg 320w, /assets/biology/photography/${image.key}-640.jpg 640w" sizes="(max-width:650px) 96px, (max-width:1100px) 170px, 220px" alt="${image.alt}" width="640" height="480" loading="lazy" decoding="async">`;
   const lessonCards=entries.map((entry,position)=>{
-   const index=entry.legacyIndex,id=entry.id||resolveSubjectLesson(name,index)?.id,image=art[id],isComplete=completed.has(index),isNext=index===next;
+   const index=entry.legacyIndex,id=entry.id||resolveSubjectLesson(name,index)?.id,isComplete=completed.has(index),isNext=index===next;
    const status=isComplete?'Completed':isNext?(completed.size?'Continue learning':'Start here'):'Open lesson';
-   return `<article class="biology-lesson-card${isComplete?' is-complete':''}"><a href="#lesson-${index}" onclick="openLesson(${index})" aria-label="Lesson ${position+1}: ${esc(entry.lesson[0])}. ${status}."><img src="${image.src}" alt="${image.alt}" width="640" height="360" loading="lazy" decoding="async"><span class="biology-lesson-copy"><small>LESSON ${position+1} OF ${d.lessons.length}</small><strong>${esc(entry.lesson[0])}</strong><span class="biology-lesson-status">${isComplete?'<span aria-hidden="true">✓</span> ':''}${status}</span></span><span class="biology-lesson-arrow" aria-hidden="true">→</span></a></article>`;
+   return `<article class="biology-lesson-card${isComplete?' is-complete':''}"><a href="#lesson-${index}" onclick="openLesson(${index})" aria-label="Lesson ${position+1}: ${esc(entry.lesson[0])}. ${status}.">${photograph(art[id])}<span class="biology-lesson-copy"><small>Lesson ${position+1}</small><strong>${esc(entry.lesson[0])}</strong><span class="biology-lesson-status">${isComplete?'<span aria-hidden="true">✓</span> ':''}${status}</span></span><span class="biology-lesson-arrow" aria-hidden="true">→</span></a></article>`;
   }).join('');
-  const assessmentCards=entries.map((entry,position)=>`<a class="biology-assessment-card" href="/subjects/biology/?review=quiz#lesson-${entry.legacyIndex}"><span class="biology-assessment-number" aria-hidden="true">${position+1}</span><span><small>LESSON QUIZ</small><strong>${esc(entry.lesson[0])}</strong></span><span class="biology-lesson-arrow" aria-hidden="true">→</span></a>`).join('');
+  const nextImage=nextEntry&&art[nextEntry.id];
   return `<main class="hero subject-journey biology-dashboard" id="subject-overview">
- <a class="back biology-breadcrumb" href="/">← Back to Learning Areas</a>
- <section class="biology-hero" aria-labelledby="biology-dashboard-title"><img src="/assets/biology/dashboard-hero.svg" alt="Sunlit fern frond and butterfly in a botanical setting." width="1600" height="520" fetchpriority="high" decoding="async"><div class="biology-hero-copy"><p class="journey-eyebrow">ONE CONTINUOUS LEARNING JOURNEY</p><h1 id="biology-dashboard-title">${d.icon} ${esc(name)}</h1><p>Explore life, cells, DNA and evolution.</p><a class="biology-tutor-link" href="/tutor.html">Ask your tutor <span>Choose Biology in the Tutor →</span></a></div></section>
- <section class="biology-progress" aria-label="Biology learning progress"><div class="biology-progress-heading"><strong>${completed.size} of ${d.lessons.length} core lessons completed</strong><span>${percent}%</span></div><div class="bar" role="progressbar" aria-label="Core Biology lessons completed" aria-valuemin="0" aria-valuemax="${d.lessons.length}" aria-valuenow="${completed.size}"><div style="width:${percent}%"></div></div></section>
- <section class="biology-priority-grid" aria-label="Continue learning and review"><article class="biology-feature biology-continue" aria-labelledby="biology-continue-title"><small>YOUR NEXT STEP</small><h2 id="biology-continue-title">${next<0?'Core lessons completed':completed.size?'Continue learning':'Start your journey'}</h2>${next<0?`<p>Return to any lesson, review an idea or explore the Plant Evolution project.</p><a class="button" href="/review.html">Open Review →</a>`:`<p class="biology-next-label">Lesson ${next+1} of ${d.lessons.length}</p><h3>${esc(d.lessons[next][0])}</h3><a class="button" href="#lesson-${next}" onclick="openLesson(${next})">${completed.size?'Continue lesson':'Start lesson 1'} →</a>`}<p class="muted">Completion records your learning activity, not a mastery score.</p></article><article class="biology-feature biology-review" aria-labelledby="biology-review-title"><small>REMEMBER AND REVISIT</small><h2 id="biology-review-title">Ready to review</h2><div class="biology-review-count"><span aria-hidden="true">✓</span><strong>${readyIds.size} ${readyIds.size===1?'item':'items'} to revisit</strong></div><p>${readyIds.size?'Your scheduled Biology lesson and quiz reviews are ready.':'No Biology reviews are due today.'}</p><a class="button secondary" href="/review.html">Open review →</a></article></section>
- <section class="biology-dashboard-section" aria-labelledby="biology-lessons-title"><div class="biology-section-heading"><div><p class="biology-section-kicker">YOUR LEARNING JOURNEY</p><h2 id="biology-lessons-title">Explore the four lessons</h2></div><span>${completed.size}/${d.lessons.length} complete</span></div><div class="biology-lesson-grid">${lessonCards}</div></section>
- <section class="biology-dashboard-section" aria-labelledby="biology-assessments-title"><div class="biology-section-heading"><div><p class="biology-section-kicker">PRACTISE AS YOU LEARN</p><h2 id="biology-assessments-title">Check your understanding</h2></div></div><p class="biology-section-intro">Open an existing lesson quiz whenever you are ready. Each lesson keeps its own questions and saved results.</p><div class="biology-assessment-grid">${assessmentCards}</div></section>
- <section class="biology-support-grid" aria-label="Biology project, notes and connections"><a class="biology-support-card biology-project-card" href="/projects.html?project=plant-evolution"><img src="/assets/projects/plant-evolution-cover.png" alt="Fern fronds in the Plant Evolution project cover." width="640" height="360" loading="lazy" decoding="async"><span><small>APPLY WHAT YOU LEARN</small><strong>Plant Evolution</strong><span>Explore how plants adapt and change over time.</span><b>Open project →</b></span></a><article class="biology-support-card biology-notes-card"><span class="biology-support-icon" aria-hidden="true">✎</span><span><small>CAPTURE AND REMEMBER</small><strong>Your Biology notes</strong><span>${notes.length?notes.length+' '+esc(name)+' '+(notes.length===1?'note':'notes')+' in your library.':'Capture a thought or revisit an idea.'}</span><a href="/notes.html">Open My Notes →</a><a class="biology-original-note" href="#note">Your original Biology note ↓</a></span></article><article class="biology-support-card biology-map-card"><small>CONNECT AND EXPLORE</small><strong>Biology connects with Chemistry</strong><div class="biology-map-connection" aria-label="Biology and Chemistry connection"><span>Biology</span><i aria-hidden="true"></i><span>Chemistry</span></div><span>Explore how chemistry helps us understand living systems.</span><a href="/knowledge.html">Explore the Knowledge Map →</a></article></section>
- <p class="biology-saved-note">Saved in this browser when you save or complete an activity. Backup controls are below the lessons.</p>
+ <a class="back biology-breadcrumb" href="/">Learning Areas <span aria-hidden="true">/</span> <strong>Biology</strong></a>
+ <section class="biology-hero" aria-labelledby="biology-dashboard-title"><picture><source media="(max-width:650px)" srcset="/assets/biology/photography/hero-mobile-480.jpg 480w, /assets/biology/photography/hero-mobile-800.jpg 800w" sizes="70vw"><img src="/assets/biology/photography/hero-wide-600.jpg" srcset="/assets/biology/photography/hero-wide-600.jpg 600w, /assets/biology/photography/hero-wide-1200.jpg 1200w" sizes="(max-width:1100px) 50vw, 600px" alt="Orange-and-black butterfly with open wings resting among fern fronds. Photograph by Todd Trapani." width="1200" height="520" fetchpriority="high" decoding="async"></picture><div class="biology-hero-copy"><h1 id="biology-dashboard-title">Biology</h1><p>Discover how life begins, functions, changes and evolves.</p></div></section>
+ <section class="biology-priority-grid" aria-label="Continue learning and review"><article class="biology-feature biology-continue" aria-labelledby="biology-continue-title"><h2 id="biology-continue-title">${next<0?'Core lessons completed':completed.size?'Continue learning':'Start your journey'}</h2>${next<0?`<p>Return to any lesson, review an idea or explore the Plant Evolution project.</p><a class="button" href="/review.html">Open Review →</a>`:`<div class="biology-next">${photograph(nextImage,'biology-next-image')}<div><h3>${esc(d.lessons[next][0])}</h3><p>Lesson ${next+1} of ${d.lessons.length}</p><a class="button" href="#lesson-${next}" onclick="openLesson(${next})">${completed.size?'Continue lesson':'Start lesson 1'} →</a></div></div>`}</article><article class="biology-feature biology-review" aria-labelledby="biology-review-title"><h2 id="biology-review-title">Ready to review</h2><div class="biology-review-content"><p class="biology-review-count"><span aria-hidden="true">✓</span><strong>${readyIds.size} ${readyIds.size===1?'item':'items'} to revisit</strong></p><a class="button secondary" href="/review.html">Open review →</a></div>${readyIds.size?'':'<p class="biology-review-empty">No Biology reviews are due today.</p>'}</article></section>
+ <section class="biology-dashboard-section" aria-labelledby="biology-lessons-title"><div class="biology-section-heading"><h2 id="biology-lessons-title">Your learning journey</h2><span>${completed.size} of ${d.lessons.length} core lessons completed</span></div><div class="biology-lesson-grid">${lessonCards}</div></section>
+ <section class="biology-dashboard-section" aria-labelledby="biology-explore-title"><h2 id="biology-explore-title">Explore further</h2><div class="biology-support-grid"><a class="biology-support-card" href="/projects.html?project=plant-evolution"><span class="biology-support-icon" aria-hidden="true">♧</span><strong>Plant Evolution project</strong><span class="biology-lesson-arrow" aria-hidden="true">→</span></a><article class="biology-support-card biology-library-card"><a href="/notes.html"><span class="biology-support-icon" aria-hidden="true">▤</span><strong>My Notes</strong><span class="biology-support-meta">${notes.length} Biology ${notes.length===1?'note':'notes'}</span></a></article><a class="biology-support-card" href="/knowledge.html"><span class="biology-support-icon" aria-hidden="true">⌘</span><strong>Knowledge Map</strong><span class="biology-lesson-arrow" aria-hidden="true">→</span></a></div></section>
+ <p class="biology-saved-note">Completion records learning activity, not proven mastery. Quizzes stay inside each lesson.</p><p class="biology-utility-links"><a href="#note" onclick="revealBiologyDashboardTool('note')">Original Biology note</a><a href="#subject-reflection-title" onclick="revealBiologyDashboardTool('subject-reflection-title')">Subject reflection</a><a href="#biology-backup-controls" onclick="revealBiologyDashboardTool('biology-backup-controls')">Backup and restore</a><a href="#biology-image-credits" onclick="revealBiologyDashboardTool('biology-image-credits')">Image credits</a></p>
  </main>`;
+
  }
  return `<main class="hero subject-journey" id="subject-overview">
  <a class="back" href="/">← Back to Learning Areas</a>
@@ -1129,6 +1160,11 @@ function openLesson(i){
 }
 function syncBiologyLessonHash(){
  if(!/^\/subjects\/biology\/(?:index\.html)?$/.test(location.pathname))return;
+ // Reveal quiet tools for legacy/direct anchors without replacing their input nodes.
+ if(['#note','#quiz','#quizAnswer','#subject-reflection-title','#biology-backup-controls','#biology-image-credits'].includes(location.hash)){
+  revealBiologyDashboardTool(location.hash.slice(1));
+  return;
+ }
  // Overview navigation hides panels in place, retaining all unfinished DOM state.
  if(['','#subject-overview','#lessons'].includes(location.hash)){
   const active=Array.from(document.querySelectorAll('#lessons > .lesson.active'));

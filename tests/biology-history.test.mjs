@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 const source=(await readFile('learning.js','utf8')).replace(/\r\n/g,'\n');
-const code=source.slice(source.indexOf('function syncBiologyLessonHash('),source.indexOf('function showModelAnswer('));
+const code=source.slice(source.indexOf('function revealBiologyDashboardTool('),source.indexOf('function subjectJourneyHTML('))+source.slice(source.indexOf('function syncBiologyLessonHash('),source.indexOf('function showModelAnswer('));
 function setup(){
  const listeners=[],opened=[],scrolled=[];let active=0;
  const location={pathname:'/subjects/biology/',search:'',hash:'#lesson-0'};

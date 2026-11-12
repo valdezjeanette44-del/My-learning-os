@@ -12,7 +12,7 @@ function setup(){
  });
  const overview={querySelector:()=>heading,scrollIntoView(){scrolled.push('overview');}},location={pathname:'/subjects/biology/',search:'',hash:''};
  const context=vm.createContext({location,URLSearchParams,window:{matchMedia:()=>({matches:true})},document:{body:{dataset:{subject:'Biology'}},querySelectorAll:s=>s==='.lesson'?panels:panels.filter(p=>p.classList.contains('active')),getElementById:id=>id==='subject-overview'?overview:panels.find(p=>p.id===id)||{scrollIntoView(){scrolled.push(id);}}},resolveSubjectLesson:(name,i)=>i>=0&&i<4?{legacyIndex:i}:null,renderSubject(){assert.fail('navigation cannot rebuild panels');},saveState(){assert.fail('navigation cannot save');}});
- vm.runInContext(fn('openLesson')+fn('syncBiologyLessonHash'),context);
+ vm.runInContext(fn('openLesson')+fn('revealBiologyDashboardTool')+fn('syncBiologyLessonHash'),context);
  return {panels,scrolled,focused,location,focusDashboard(){context.document.activeElement={closest:()=>overview};},open:i=>vm.runInContext('openLesson('+i+')',context),navigate(hash){location.hash=hash;vm.runInContext('syncBiologyLessonHash()',context);}};
 }
 test('Biology-only presentation keeps lesson DOM and hides duplicate heading and inactive rows',async()=>{

@@ -36,12 +36,14 @@ test('Biology note count uses explicit categories, excludes archive and preserve
  assert.match(html,/projects.html\?project=plant-evolution/);
  assert.match(html,/href="#note"/);
 });
-test('dashboard keeps lesson and quiz destinations, shared learning connections and subject-only responsive hooks',async()=>{
+test('dashboard keeps four lesson destinations and connections, with quizzes retained inside lessons',async()=>{
  const html=render({completed:{}});
  for(let i=0;i<4;i++){
   assert.match(html,new RegExp(`href="#lesson-${i}"[^>]*onclick="openLesson\\(${i}\\)"`));
-  assert.match(html,new RegExp(`href="/subjects/biology/\\?review=quiz#lesson-${i}"`));
  }
+ assert.doesNotMatch(html,/biology-assessment-grid|biology-assessment-card|biology-tutor-link/);
+ // The real lesson renderer still provides the historical quiz controls for every slot.
+ assert.match(source,/lessonQuizHTML\(name,i\)/);
  for(const route of ['/review.html','/projects.html?project=plant-evolution','/notes.html','href="#note"','/knowledge.html'])assert.ok(html.includes(route),route);
  const css=await readFile('styles.css','utf8');assert.match(css,/\.biology-dashboard\s*\{/);assert.match(css,/@media\(max-width:650px\)\{\.biology-dashboard/);assert.match(css,/@media\(max-width:380px\)\{\.biology-dashboard/);
 });

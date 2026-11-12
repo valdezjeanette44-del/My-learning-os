@@ -1,0 +1,27 @@
+{
+  "baselineCommit": "05673d3765d9330a25139ddc15b05bd6e41c9baf",
+  "lineEndings": "LF",
+  "sha256": {
+    "historicalContent": "23c27da4f2a27bae31f2c02cc23c698efa8692387fa57be7429e1bb6b0a15983",
+    "function:lessonHTML": "9e99e8ec38b17c0faf5816c172ae4dcba3a78dc20c12842e84e74fb2e6588298",
+    "function:lessonQuizHTML": "0ff6e3c6906ce6f5c8f585346228dacaa753a64c23c4c8745c0ce5c2806737bf",
+    "function:nav": "c5656348a61d5fb20c372223076b357d1ecd3d9f64b4712bc2e15eb2bcc22f56",
+    "function:openLesson": "dd9dc90437cd8653403f48aedd29cb8f1c4793508b4ecb28178f5501d0c8b3d1",
+    "function:syncChemistryLessonHash": "00bf4e62d97f010b3261102fa134484a6b159152e5e2c5ea2fe116a2dac2b246",
+    "function:saveAnswer": "4e7582d3beab35003de2182f31382b2826d1fdd0073e1519f29c254312587919",
+    "function:saveNote": "fb4f977fc62e3d0c10733ea5f5972fbb0bcf9cc07bebf734e3a0d19bed24b36d",
+    "function:completeLesson": "2cc08355c2ab2c2ef1748260470b4a87ef3164dddd92d76afefe8246d8f24089",
+    "function:recordReview": "d99872f1f5535751e5dd08f50c5e2debcd4b15482e0d915844eee7a95dcef991",
+    "function:finishReview": "f5a92d0285cb542c191670540c2e7d0545b3ab9ac637c5d4401295e10444eb31",
+    "function:newQuestion": "f8668d8b9383eea69e32835feb50f590c3158f42c88e0832cae93e4bfd84d59c",
+    "function:renderQuiz": "8e3a1f6037fc135579ff9d149ff7e753803e410df00a877f1cc46c625179ed13",
+    "function:exportLearningBackup": "3ebc7efe222e1e73c3069b3dc5974a594db9a31fb9519fbd0033d11550ebacd3",
+    "function:importLearningBackup": "a1698d349acaf0a1562d2d56c5e4183c1950608f365755aeb87d5c539ac2611f",
+    "function:resetLessonQuiz": "214b39bd7054c1ccb7ee0a0c5f460c02c272246e21068246a7da4fe697c7e169",
+    "function:retryMissedLessonQuiz": "934c49347a2857762d005a11a602365c65bf3320eef631266d50b6bf662fb267",
+    "function:submitLessonQuiz": "43318254c8be50e991aa6c661fbc969e1de79d15842da215588eac6563e27ca4",
+    "chemistryOverview": "f2e932d70930baec1723a34783825ee0c8a8653a691125194d3a67796bf64856",
+    "sharedStylesBefore": "74517dee4f1c3614910923025fddbefd63ac404fc8b94c421e8779cb51374b9a",
+    "sharedStylesAfter": "b3bd4d60816140d7066a24a3dfdfdd85b10e7d1f1cd77e2ead709b53d1a5ce22"
+  }
+}

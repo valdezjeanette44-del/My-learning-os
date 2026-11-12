@@ -19,7 +19,8 @@ test('Biology dashboard styles stay scoped and include narrow-screen layouts',as
  assert.match(section,/@media\(max-width:900px\)/);
  assert.match(section,/@media\(max-width:650px\)/);
  assert.match(section,/@media\(max-width:380px\)/);
- assert.match(section,/--bio-cream:#fbf8f1/);
- assert.match(section,/--bio-green-dark:#344b26/);
+ assert.match(section,/--bio-cream:#f8f5ed/);
+ assert.match(section,/--bio-green-dark:#203a29/);
+ assert.match(section,/background:#634783/);
  assert.doesNotMatch(section,/\.chemistry|\.topbar|\.mobile-nav/);
 });

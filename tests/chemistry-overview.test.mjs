@@ -10,8 +10,9 @@ test('Chemistry overview handles empty, partial, complete and unexpected progres
 test('Chemistry connections use existing routes and retain original note access without invented projects',()=>{
  const html=render({completed:{},notes:{Chemistry:'Keep'},noteLibrary:[{category:'Chemistry'},{category:'Subject · Chemistry'},{category:'Biology'},{category:'Chemistry',archivedAt:'old'}]});for(const t of ['/review.html','/tutor.html','Select Chemistry in the Tutor.','/knowledge.html','/notes.html','href="#note"','2 Chemistry notes','Explore chemical reactions'])assert.ok(html.includes(t),t);assert.doesNotMatch(html,/project=|Plant Evolution|Your Biology/);
 });
-test('Biology dashboard retains its project, notes and existing Tutor route',()=>{
- const html=render({completed:{},noteLibrary:[]},'Biology');for(const t of ['Explore life, cells, DNA and evolution.','/tutor.html','project=plant-evolution','Your Biology notes','/knowledge.html'])assert.ok(html.includes(t),t);assert.doesNotMatch(html,/Explore chemical reactions/);
+test('Biology museum dashboard retains project and notes routes while removing only its Tutor promotion',()=>{
+ const html=render({completed:{},noteLibrary:[]},'Biology');for(const t of ['Discover how life begins, functions, changes and evolves.','project=plant-evolution','My Notes','/knowledge.html','href="#note"'])assert.ok(html.includes(t),t);assert.doesNotMatch(html,/Explore chemical reactions|\/tutor.html/);
+ const nav=source.slice(source.indexOf('function nav('),source.indexOf('function renderSubject('));assert.match(nav,/href="\/tutor.html"/,'Shared Tutor navigation remains intact');
 });
 test('Chemistry opt-in leaves legacy subject overview and assessment presentation paths available',()=>{
  assert.match(source,/if\(name==='Biology'\|\|name==='Chemistry'\)\{/);assert.match(source,/if\(name==='Chemistry'\)document.querySelector\('\.course-count'\)/);assert.match(source,/if\(name==='Biology'\)\{\n  const quizHeading/);
