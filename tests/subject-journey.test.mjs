@@ -34,7 +34,8 @@ test('Biology note count uses explicit categories, excludes archive and preserve
  const html=render({completed:{},noteLibrary:[{category:'Biology'},{category:'Subject · Biology'},{category:'History',title:'Biology'},{category:'Biology',archivedAt:'2026-11-05'}]});
  assert.match(html,/2 Biology notes/);
  assert.match(html,/projects.html\?project=plant-evolution/);
- assert.match(html,/href="#note"/);
+ assert.match(source,/disclosure.id=id;summary.textContent=label/);
+ assert.match(source,/biology-original-note/);
 });
 test('dashboard keeps four lesson destinations and connections, with quizzes retained inside lessons',async()=>{
  const html=render({completed:{}});
@@ -44,7 +45,7 @@ test('dashboard keeps four lesson destinations and connections, with quizzes ret
  assert.doesNotMatch(html,/biology-assessment-grid|biology-assessment-card|biology-tutor-link/);
  // The real lesson renderer still provides the historical quiz controls for every slot.
  assert.match(source,/lessonQuizHTML\(name,i\)/);
- for(const route of ['/review.html','/projects.html?project=plant-evolution','/notes.html','href="#note"','/knowledge.html'])assert.ok(html.includes(route),route);
+ for(const route of ['/review.html','/projects.html?project=plant-evolution','/notes.html','/knowledge.html'])assert.ok(html.includes(route),route);
  const css=await readFile('styles.css','utf8');assert.match(css,/\.biology-dashboard\s*\{/);assert.match(css,/@media\(max-width:650px\)\{\.biology-dashboard/);assert.match(css,/@media\(max-width:380px\)\{\.biology-dashboard/);
 });
 test('review count reflects due lesson and quiz reviews and excludes completed-today and future records',()=>{

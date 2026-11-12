@@ -30,9 +30,17 @@ test('museum hierarchy removes dashboard-only quizzes and Tutor while retaining 
  assert.equal((html.match(/class="biology-lesson-card/g)||[]).length,4);
  assert.equal((html.match(/class="biology-support-card/g)||[]).length,3);
  assert.doesNotMatch(html,/biology-assessment|tutor.html|journey-eyebrow|dashboard-.*\.svg/);
- for(const route of ['/review.html','/projects.html?project=plant-evolution','/notes.html','/knowledge.html','#note','#subject-reflection-title','#biology-backup-controls','#biology-image-credits'])assert.ok(html.includes(route),route);
+ for(const route of ['/review.html','/projects.html?project=plant-evolution','/notes.html','/knowledge.html'])assert.ok(html.includes(route),route);
  assertBaseline('function:lessonHTML',fn(source,'lessonHTML'));
  assertBaseline('function:lessonQuizHTML',fn(source,'lessonQuizHTML'));
+});
+
+test('Biology overview omits duplicate utility navigation and keeps completion context with the journey',()=>{
+ const html=overview({completed:{}});
+ assert.doesNotMatch(html,/biology-utility-links|revealBiologyDashboardTool|href="#(?:note|subject-reflection-title|biology-backup-controls|biology-image-credits)"/);
+ const journey=html.slice(html.indexOf('aria-labelledby="biology-lessons-title"'),html.indexOf('aria-labelledby="biology-explore-title"'));
+ assert.match(journey,/biology-lesson-grid[\s\S]*biology-saved-note[\s\S]*Completion records learning activity, not proven mastery\. Quizzes stay inside each lesson\./);
+ assert.equal((html.match(/Completion records learning activity/g)||[]).length,1);
 });
 
 test('historical content, identities, shared navigation and all persistence/grading paths remain exact baseline source',()=>{
