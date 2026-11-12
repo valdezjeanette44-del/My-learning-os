@@ -151,6 +151,42 @@ function subjectJourneyHTML(name,s){
  const completed=new Set(records.filter(record=>record.completed).map(record=>record.legacyIndex));
  const nextEntry=records.find(record=>!record.completed),next=nextEntry?nextEntry.legacyIndex:-1;
  const notes=(s.noteLibrary||[]).filter(n=>!n.archivedAt&&(n.category===name||n.category==='Subject · '+name));
+ if(name==='Biology'){
+  const percent=Math.round(completed.size/d.lessons.length*100),todayKey=localReviewDayKey(new Date());
+  const completedToday=new Set((s.reviewCompletions||{})[todayKey]||[]),readyIds=new Set();
+  Object.values(s.review||{}).forEach(item=>{
+   if(item?.subject!==name||!Number.isInteger(item.index)||!d.lessons[item.index]||!item.nextReview)return;
+   const date=new Date(item.nextReview);
+   if(!Number.isNaN(date.getTime())&&localReviewDayKey(date)<=todayKey&&!completedToday.has('lesson:'+name+':'+item.index))readyIds.add('lesson:'+name+':'+item.index);
+  });
+  Object.values(s.quizResults||{}).forEach(item=>{
+   if(item?.subject!==name||!Number.isInteger(item.index)||!d.lessons[item.index]||!item.nextReviewAt)return;
+   const date=new Date(item.nextReviewAt);
+   if(!Number.isNaN(date.getTime())&&localReviewDayKey(date)<=todayKey&&!completedToday.has('quiz:'+name+':'+item.index))readyIds.add('quiz:'+name+':'+item.index);
+  });
+  const art={
+   'biology-life':{src:'/assets/biology/dashboard-life.svg',alt:'A young seedling emerging from rich soil.'},
+   'biology-cells':{src:'/assets/biology/dashboard-cells.svg',alt:'Illustrated cells with visible membranes and nuclei.'},
+   'biology-dna-heredity':{src:'/assets/biology/dashboard-dna.svg',alt:'A DNA double helix woven through green leaves.'},
+   'biology-natural-selection':{src:'/assets/biology/dashboard-evolution.svg',alt:'A small bird among flowers and leaves, representing biological diversity.'}
+  };
+  const lessonCards=entries.map((entry,position)=>{
+   const index=entry.legacyIndex,id=entry.id||resolveSubjectLesson(name,index)?.id,image=art[id],isComplete=completed.has(index),isNext=index===next;
+   const status=isComplete?'Completed':isNext?(completed.size?'Continue learning':'Start here'):'Open lesson';
+   return `<article class="biology-lesson-card${isComplete?' is-complete':''}"><a href="#lesson-${index}" onclick="openLesson(${index})" aria-label="Lesson ${position+1}: ${esc(entry.lesson[0])}. ${status}."><img src="${image.src}" alt="${image.alt}" width="640" height="360" loading="lazy" decoding="async"><span class="biology-lesson-copy"><small>LESSON ${position+1} OF ${d.lessons.length}</small><strong>${esc(entry.lesson[0])}</strong><span class="biology-lesson-status">${isComplete?'<span aria-hidden="true">✓</span> ':''}${status}</span></span><span class="biology-lesson-arrow" aria-hidden="true">→</span></a></article>`;
+  }).join('');
+  const assessmentCards=entries.map((entry,position)=>`<a class="biology-assessment-card" href="/subjects/biology/?review=quiz#lesson-${entry.legacyIndex}"><span class="biology-assessment-number" aria-hidden="true">${position+1}</span><span><small>LESSON QUIZ</small><strong>${esc(entry.lesson[0])}</strong></span><span class="biology-lesson-arrow" aria-hidden="true">→</span></a>`).join('');
+  return `<main class="hero subject-journey biology-dashboard" id="subject-overview">
+ <a class="back biology-breadcrumb" href="/">← Back to Learning Areas</a>
+ <section class="biology-hero" aria-labelledby="biology-dashboard-title"><img src="/assets/biology/dashboard-hero.svg" alt="Sunlit fern frond and butterfly in a botanical setting." width="1600" height="520" fetchpriority="high" decoding="async"><div class="biology-hero-copy"><p class="journey-eyebrow">ONE CONTINUOUS LEARNING JOURNEY</p><h1 id="biology-dashboard-title">${d.icon} ${esc(name)}</h1><p>Explore life, cells, DNA and evolution.</p><a class="biology-tutor-link" href="/tutor.html">Ask your tutor <span>Choose Biology in the Tutor →</span></a></div></section>
+ <section class="biology-progress" aria-label="Biology learning progress"><div class="biology-progress-heading"><strong>${completed.size} of ${d.lessons.length} core lessons completed</strong><span>${percent}%</span></div><div class="bar" role="progressbar" aria-label="Core Biology lessons completed" aria-valuemin="0" aria-valuemax="${d.lessons.length}" aria-valuenow="${completed.size}"><div style="width:${percent}%"></div></div></section>
+ <section class="biology-priority-grid" aria-label="Continue learning and review"><article class="biology-feature biology-continue" aria-labelledby="biology-continue-title"><small>YOUR NEXT STEP</small><h2 id="biology-continue-title">${next<0?'Core lessons completed':completed.size?'Continue learning':'Start your journey'}</h2>${next<0?`<p>Return to any lesson, review an idea or explore the Plant Evolution project.</p><a class="button" href="/review.html">Open Review →</a>`:`<p class="biology-next-label">Lesson ${next+1} of ${d.lessons.length}</p><h3>${esc(d.lessons[next][0])}</h3><a class="button" href="#lesson-${next}" onclick="openLesson(${next})">${completed.size?'Continue lesson':'Start lesson 1'} →</a>`}<p class="muted">Completion records your learning activity, not a mastery score.</p></article><article class="biology-feature biology-review" aria-labelledby="biology-review-title"><small>REMEMBER AND REVISIT</small><h2 id="biology-review-title">Ready to review</h2><div class="biology-review-count"><span aria-hidden="true">✓</span><strong>${readyIds.size} ${readyIds.size===1?'item':'items'} to revisit</strong></div><p>${readyIds.size?'Your scheduled Biology lesson and quiz reviews are ready.':'No Biology reviews are due today.'}</p><a class="button secondary" href="/review.html">Open review →</a></article></section>
+ <section class="biology-dashboard-section" aria-labelledby="biology-lessons-title"><div class="biology-section-heading"><div><p class="biology-section-kicker">YOUR LEARNING JOURNEY</p><h2 id="biology-lessons-title">Explore the four lessons</h2></div><span>${completed.size}/${d.lessons.length} complete</span></div><div class="biology-lesson-grid">${lessonCards}</div></section>
+ <section class="biology-dashboard-section" aria-labelledby="biology-assessments-title"><div class="biology-section-heading"><div><p class="biology-section-kicker">PRACTISE AS YOU LEARN</p><h2 id="biology-assessments-title">Check your understanding</h2></div></div><p class="biology-section-intro">Open an existing lesson quiz whenever you are ready. Each lesson keeps its own questions and saved results.</p><div class="biology-assessment-grid">${assessmentCards}</div></section>
+ <section class="biology-support-grid" aria-label="Biology project, notes and connections"><a class="biology-support-card biology-project-card" href="/projects.html?project=plant-evolution"><img src="/assets/projects/plant-evolution-cover.png" alt="Fern fronds in the Plant Evolution project cover." width="640" height="360" loading="lazy" decoding="async"><span><small>APPLY WHAT YOU LEARN</small><strong>Plant Evolution</strong><span>Explore how plants adapt and change over time.</span><b>Open project →</b></span></a><article class="biology-support-card biology-notes-card"><span class="biology-support-icon" aria-hidden="true">✎</span><span><small>CAPTURE AND REMEMBER</small><strong>Your Biology notes</strong><span>${notes.length?notes.length+' '+esc(name)+' '+(notes.length===1?'note':'notes')+' in your library.':'Capture a thought or revisit an idea.'}</span><a href="/notes.html">Open My Notes →</a><a class="biology-original-note" href="#note">Your original Biology note ↓</a></span></article><article class="biology-support-card biology-map-card"><small>CONNECT AND EXPLORE</small><strong>Biology connects with Chemistry</strong><div class="biology-map-connection" aria-label="Biology and Chemistry connection"><span>Biology</span><i aria-hidden="true"></i><span>Chemistry</span></div><span>Explore how chemistry helps us understand living systems.</span><a href="/knowledge.html">Explore the Knowledge Map →</a></article></section>
+ <p class="biology-saved-note">Saved in this browser when you save or complete an activity. Backup controls are below the lessons.</p>
+ </main>`;
+ }
  return `<main class="hero subject-journey" id="subject-overview">
  <a class="back" href="/">← Back to Learning Areas</a>
  <p class="journey-eyebrow">ONE CONTINUOUS LEARNING JOURNEY</p><h1>${d.icon} ${esc(name)}</h1>

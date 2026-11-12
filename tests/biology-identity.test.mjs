@@ -48,7 +48,7 @@ test('full subject rendering uses permanent control indices under reversed prese
  h.context.rendered=rendered;
  h.context.document={title:'',getElementById:id=>id==='app'?app:node,querySelector:()=>node};
  Object.assign(h.context,{nav:()=>'',ensureQuizStyles(){},newQuestion(){},renderQuiz(){},getNextLesson:()=>null,subjectProgress:()=>50,lessonHTML:(name,lesson,index,done)=>{rendered.push({index,title:lesson[0],done});return `<article id="lesson-${index}"></article>`;}});
- h.run(fn('esc')+fn('subjectJourneyHTML')+fn('renderSubject'));
+ h.run(fn('esc')+fn('subjectJourneyHTML')+fn('localReviewDayKey')+fn('renderSubject'));
  h.run("const originalEntries=subjectLessonEntries;subjectLessonEntries=(name,order)=>originalEntries(name,order||(name==='Biology'?[...BIOLOGY_DISPLAY_ORDER].reverse():undefined));renderSubject('Biology');");
  assert.deepEqual(rendered.map(e=>e.index),[3,2,1,0]);
  assert.deepEqual(rendered.map(e=>e.done),[false,true,false,true]);
