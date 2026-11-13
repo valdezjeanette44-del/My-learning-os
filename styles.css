@@ -992,6 +992,11 @@ body{background:var(--garden-paper,#fbf8f1);color:#302a25}
 @media(max-width:650px){.biology-dashboard .biology-lesson-card>a{scroll-margin-block-start:16px;scroll-margin-block-end:calc(100px + env(safe-area-inset-bottom))}}
 @media(prefers-reduced-motion:reduce){.biology-dashboard *{scroll-behavior:auto!important;transition:none!important}}
 
+
+/* Cells Discover exhibit: preserve microscopy resolution and readable captions. */
+.cells-learning .cells-discover figure{max-width:640px}
+.cells-learning .cells-discover figcaption{font-size:1rem;line-height:1.5}
+
 /* Biology dashboard cards navigate to the retained lesson panels below. */
 body[data-subject="Biology"] .biology-lesson-panels>.course-heading,
 body[data-subject="Biology"] .biology-lesson-panels #lessons>.lesson:not(.active),
