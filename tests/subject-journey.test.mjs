@@ -8,7 +8,7 @@ const overview=source.slice(source.indexOf('function subjectJourneyHTML('),sourc
 function render(data){
  const original=JSON.stringify(data);
  const context=vm.createContext({SUBJECTS:{Biology:{icon:'🧬',lessons:['What is life?','Cells: the basic unit','DNA and heredity','Evolution by natural selection'].map(title=>[title])}},esc:value=>String(value).replaceAll('<','&lt;'),data});
- vm.runInContext(source.slice(source.indexOf('const BIOLOGY_LESSON_IDENTITIES='),source.indexOf('const STORAGE_RECOVERY_KEY='))+overview,context);
+ vm.runInContext(source.slice(source.indexOf('const BIOLOGY_LESSON_IDENTITIES='),source.indexOf('const STORAGE_RECOVERY_KEY='))+overview+source.slice(source.indexOf('function localReviewDayKey('),source.indexOf('function getQuizReviewItems(')),context);
  const html=vm.runInContext("subjectJourneyHTML('Biology',data)",context);
  assert.equal(JSON.stringify(data),original,'Rendering must not mutate saved records');
  return html;
@@ -34,7 +34,24 @@ test('Biology note count uses explicit categories, excludes archive and preserve
  const html=render({completed:{},noteLibrary:[{category:'Biology'},{category:'Subject · Biology'},{category:'History',title:'Biology'},{category:'Biology',archivedAt:'2026-11-05'}]});
  assert.match(html,/2 Biology notes/);
  assert.match(html,/projects.html\?project=plant-evolution/);
- assert.match(html,/href="#note"/);
+ assert.match(source,/disclosure.id=id;summary.textContent=label/);
+ assert.match(source,/biology-original-note/);
+});
+test('dashboard keeps four lesson destinations and connections, with quizzes retained inside lessons',async()=>{
+ const html=render({completed:{}});
+ for(let i=0;i<4;i++){
+  assert.match(html,new RegExp(`href="#lesson-${i}"[^>]*onclick="openLesson\\(${i}\\)"`));
+ }
+ assert.doesNotMatch(html,/biology-assessment-grid|biology-assessment-card|biology-tutor-link/);
+ // The real lesson renderer still provides the historical quiz controls for every slot.
+ assert.match(source,/lessonQuizHTML\(name,i\)/);
+ for(const route of ['/review.html','/projects.html?project=plant-evolution','/notes.html','/knowledge.html'])assert.ok(html.includes(route),route);
+ const css=await readFile('styles.css','utf8');assert.match(css,/\.biology-dashboard\s*\{/);assert.match(css,/@media\(max-width:650px\)\{\.biology-dashboard/);assert.match(css,/@media\(max-width:380px\)\{\.biology-dashboard/);
+});
+test('review count reflects due lesson and quiz reviews and excludes completed-today and future records',()=>{
+ const today=new Date(),dayOffset=(days)=>{const d=new Date(today);d.setDate(d.getDate()+days);return d.toISOString();};
+ const html=render({review:{'Biology-0':{subject:'Biology',index:0,nextReview:dayOffset(-1)},'Biology-1':{subject:'Biology',index:1,nextReview:dayOffset(0)},'Chemistry-0':{subject:'Chemistry',index:0,nextReview:dayOffset(-2)}},quizResults:{'Biology-2':{subject:'Biology',index:2,nextReviewAt:dayOffset(-1)},'Biology-3':{subject:'Biology',index:3,nextReviewAt:dayOffset(3)}},reviewCompletions:{[new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0')]:['lesson:Biology:1']}});
+ assert.match(html,/2 items to revisit/);
 });
 test('Biology deep links open on boot while legacy review links still target quiz practice',()=>{
  const boot=source.slice(source.indexOf('function boot()'),source.indexOf('let tutorRequestPending'));

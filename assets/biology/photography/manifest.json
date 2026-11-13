@@ -1,0 +1,106 @@
+{
+  "sources": [
+    {
+      "key": "hero",
+      "creator": "Todd Trapani",
+      "url": "https://www.pexels.com/photo/orange-butterfly-on-a-fern-plant-2640323/",
+      "license": "Pexels",
+      "licenseUrl": "https://www.pexels.com/license/",
+      "modifications": "Cropped and resized, JPEG encoded; original colours retained."
+    },
+    {
+      "key": "seedling",
+      "creator": "taehyeon kim",
+      "url": "https://unsplash.com/photos/a-small-green-plant-sprouts-from-the-ground---DI97TZcAA",
+      "license": "Unsplash",
+      "licenseUrl": "https://unsplash.com/license",
+      "modifications": "Cropped and resized, JPEG encoded; original colours retained."
+    },
+    {
+      "key": "cells",
+      "creator": "Kristian Peters; current file modified by René Esposito",
+      "url": "https://commons.wikimedia.org/wiki/File:Plagiomnium_affine_laminazellen.jpeg",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "modifications": "Cropped and resized, JPEG encoded; original colours retained."
+    },
+    {
+      "key": "dna",
+      "creator": "Sangharsh Lohakare",
+      "url": "https://unsplash.com/photos/glowing-dna-double-helix-structure-Iy7QyzOs1bo",
+      "license": "Unsplash",
+      "licenseUrl": "https://unsplash.com/license",
+      "modifications": "Cropped and resized, JPEG encoded; original colours retained."
+    },
+    {
+      "key": "finch",
+      "creator": "Victor Gleim",
+      "url": "https://commons.wikimedia.org/wiki/File:Darwin%27s_Finch_on_Cactus.jpg",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "modifications": "Cropped and resized, JPEG encoded; original colours retained."
+    }
+  ],
+  "files": [
+    {
+      "file": "cells-320.jpg",
+      "bytes": 26686,
+      "sha256": "96d73bce934af1c464bc5c5baa9b4cab55dd26fd39ab8580d3112bbace0bf6cb"
+    },
+    {
+      "file": "cells-640.jpg",
+      "bytes": 74678,
+      "sha256": "43b523af91b9463858275a3e9f6bda36498c7faf6b176644e2b657609eade124"
+    },
+    {
+      "file": "dna-320.jpg",
+      "bytes": 25820,
+      "sha256": "dea9120e30b5fef975d3830ea304dab7a6f4bce4825a7fe038fc211f974af1f2"
+    },
+    {
+      "file": "dna-640.jpg",
+      "bytes": 69618,
+      "sha256": "cc80eaaeadf0d40ef3066df1bf1c06e78929b18fe6e02497e5fd627498efa9fa"
+    },
+    {
+      "file": "finch-320.jpg",
+      "bytes": 12749,
+      "sha256": "36364e566768f6a8e6cefe854526083dccd6d9d3032dba180e47ec4086336e2a"
+    },
+    {
+      "file": "finch-640.jpg",
+      "bytes": 50636,
+      "sha256": "d68a86186d9f8a75ce81aac49bbc7d181cebc7dc0d62e75dc3d40535a28b59ba"
+    },
+    {
+      "file": "hero-mobile-480.jpg",
+      "bytes": 41395,
+      "sha256": "0743512e306c9abdf6d83613054f7b42281b4a271f8446f8b2227237eaccbb76"
+    },
+    {
+      "file": "hero-mobile-800.jpg",
+      "bytes": 91137,
+      "sha256": "45b6895c42262734326575ed17c4582d0ad88f7cbf3ec44b8a68d1b7f791e44c"
+    },
+    {
+      "file": "hero-wide-1200.jpg",
+      "bytes": 115103,
+      "sha256": "34e24360728f28e2100aa17f1974be46b922880d4faadef1bb03d98ded196669"
+    },
+    {
+      "file": "hero-wide-600.jpg",
+      "bytes": 38876,
+      "sha256": "5f0054d2f8baca22652c450770547f01a6b93afba88bc57c6b152f1b1a026dc7"
+    },
+    {
+      "file": "seedling-320.jpg",
+      "bytes": 11583,
+      "sha256": "c1af13c7009c08983cb1cfeec314098163d83ab37f09dd1d38ec44dad14d05fe"
+    },
+    {
+      "file": "seedling-640.jpg",
+      "bytes": 32167,
+      "sha256": "ae883c88aba29928431a64b3ec39183e67b8f6758fdfb56e09434bc972cae57a"
+    }
+  ]
+}

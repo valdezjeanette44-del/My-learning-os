@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 const source=(await readFile('learning.js','utf8')).replace(/\r\n/g,'\n');
-const code=source.slice(source.indexOf('function syncBiologyLessonHash('),source.indexOf('function showModelAnswer('));
+const code=source.slice(source.indexOf('function revealBiologyDashboardTool('),source.indexOf('function subjectJourneyHTML('))+source.slice(source.indexOf('function syncBiologyLessonHash('),source.indexOf('function showModelAnswer('));
 function setup(){
  const listeners=[],opened=[],scrolled=[];let active=0;
  const location={pathname:'/subjects/biology/',search:'',hash:'#lesson-0'};
- const context=vm.createContext({location,URLSearchParams,window:{addEventListener:(name,fn)=>listeners.push({name,fn})},resolveSubjectLesson:(name,i)=>i>=0&&i<4?{legacyIndex:i}:null,document:{getElementById:id=>({classList:{contains:()=>id==='lesson-'+active},scrollIntoView:()=>scrolled.push(id)})},openLesson:i=>{active=i;opened.push(i);},renderSubject:()=>assert.fail('History must not re-render'),saveState:()=>assert.fail('History must not save')});
+ const context=vm.createContext({location,URLSearchParams,window:{addEventListener:(name,fn)=>listeners.push({name,fn})},resolveSubjectLesson:(name,i)=>i>=0&&i<4?{legacyIndex:i}:null,document:{querySelectorAll:()=>[],getElementById:id=>({querySelector:()=>null,classList:{contains:()=>id==='lesson-'+active},scrollIntoView:()=>scrolled.push(id)})},openLesson:i=>{active=i;opened.push(i);},renderSubject:()=>assert.fail('History must not re-render'),saveState:()=>assert.fail('History must not save')});
  vm.runInContext(code+"\nwindow.addEventListener('hashchange',syncBiologyLessonHash);",context);
  return {location,listeners,opened,scrolled,fire(hash){location.hash=hash;listeners[0].fn();},active:()=>active};
 }
