@@ -30,7 +30,7 @@ function focusHarness(path='/subjects/biology/'){
  const overview={querySelector:()=>heading,scrollIntoView(){}},panel={classList:{remove:v=>classes.delete(v)},querySelector:()=>({setAttribute(){}})};
  const app={dataset:{},addEventListener:(type,handler)=>{assert.ok(!listeners[type]);listeners[type]=handler;}};
  const doc={getElementById:id=>id==='app'?app:id==='biology-dashboard-title'?heading:overview,querySelectorAll:()=>classes.has('active')?[panel]:[]};
- const link={getAttribute:()=> '#subject-overview',closest(){return this;}};
+ const link={getAttribute:()=> '#subject-overview',closest(selector){return selector.startsWith('a[')?this:null;}};
  const c=vm.createContext({document:doc,location:{pathname:path,hash:'#subject-overview'},Date,saveState(){assert.fail('Focus must not save');}});
  const start=source.indexOf('function prepareBiologyOverviewFocus('),end=source.indexOf('function syncChemistryLessonHash(');
  vm.runInContext(source.slice(start,end),c);vm.runInContext('prepareBiologyOverviewFocus()',c);
@@ -57,4 +57,27 @@ test('keyboard, synthetic clicks, cancelled gestures and other subjects cannot e
  }
  const h=focusHarness('/subjects/chemistry/');assert.deepEqual(Object.keys(h.listeners),[]);
  const b=focusHarness();vm.runInContext('prepareBiologyOverviewFocus()',b.c);assert.equal(Object.keys(b.listeners).length,5,'Listeners install once on Biology app only');
+});
+
+
+test('trusted direct heading and child pointer-down suppress before default focus, including repeated taps',()=>{
+ const h=focusHarness();h.heading.closest=selector=>selector==='#biology-dashboard-title'?h.heading:null;
+ const child={closest:selector=>selector==='#biology-dashboard-title'?h.heading:null};
+ for(const target of [h.heading,child,h.heading]){
+  h.event('pointerdown',{target});assert.ok('data-biology-pointer-return' in h.attrs,'Exception exists before native focus');
+  h.heading.focus();h.event('click',{target});assert.equal(h.doc.activeElement,h.heading);assert.ok('data-biology-pointer-return' in h.attrs);
+ }
+ h.event('keydown');assert.ok(!('data-biology-pointer-return' in h.attrs));
+ h.event('pointerdown',{target:child});h.event('focusout',{target:h.heading});assert.ok(!('data-biology-pointer-return' in h.attrs));
+ h.event('pointerdown',{target:child});h.event('pointercancel');assert.ok(!('data-biology-pointer-return' in h.attrs));
+});
+
+test('untrusted heading gestures and synthetic clicks cannot grant exception or cancel default selection',()=>{
+ const h=focusHarness(),target={closest:selector=>selector==='#biology-dashboard-title'?h.heading:null};
+ for(const extra of [{isTrusted:false},{isPrimary:false},{button:2}]){
+  h.event('pointerdown',{target,...extra});assert.ok(!('data-biology-pointer-return' in h.attrs));
+ }
+ h.event('click',{target,isTrusted:false});assert.ok(!('data-biology-pointer-return' in h.attrs));
+ const installer=source.slice(source.indexOf('function prepareBiologyOverviewFocus('),source.indexOf('function syncBiologyLessonHash('));
+ assert.doesNotMatch(installer,/preventDefault|stopPropagation|\.blur\(|\.focus\(/,'Retain native selection and focus behavior');
 });

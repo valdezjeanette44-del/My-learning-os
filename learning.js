@@ -1165,7 +1165,11 @@ function prepareBiologyOverviewFocus(){
  const returnLink=target=>target?.closest?.('a[href="#subject-overview"],a[href="#lessons"]');
  app.addEventListener('pointerdown',event=>{
   clear();const link=returnLink(event.target);
-  if(event.isTrusted&&event.isPrimary&&event.button===0&&link)pointer={link,time:event.timeStamp};
+  if(event.isTrusted&&event.isPrimary&&event.button===0){
+   const heading=event.target?.closest?.('#biology-dashboard-title');
+   heading?.setAttribute('data-biology-pointer-return','');
+   if(link)pointer={link,time:event.timeStamp};
+  }
  });
  app.addEventListener('pointercancel',clear);
  app.addEventListener('keydown',clear,true);
