@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import vm from 'node:vm';
 const source=(await readFile('learning.js','utf8')).replace(/\r\n/g,'\n');
+const css=await readFile('styles.css','utf8');
 function fn(s,name){const a=s.indexOf('function '+name+'('),b=s.indexOf('\nfunction ',a+10);return s.slice(a,b);}
 test('Discover observation handles missing, correct, incorrect and changed answers without persistent writes',()=>{
  const feedback={textContent:''};let writes=0;
@@ -21,6 +22,12 @@ test('Discover precedes core, credits genuine microscopy, and retains its native
  assert.ok(html.indexOf('class="cells-goals"')<html.indexOf('id="cells-understand"'));
  assert.equal((html.match(/id="cells-opening"/g)||[]).length,1);
  assert.equal((html.match(/Your body contains trillions of cells/g)||[]).length,1);
+ assert.match(html,/<h3 id="cells-opening"><span id="cells-discover-title">Discover — A World Too Small to See<\/span><\/h3>/);
+ assert.doesNotMatch(html,/>Cells: the basic unit</);
+ assert.equal((html.match(/class="button cells-discover-next"/g)||[]).length,1);
+ assert.match(html,/Continue: Understand how cells work →/);
+ assert.doesNotMatch(html,/Continue learning: Understand/);
+ assert.match(css,/\.cells-enhanced \.cells-learning a\.cells-discover-next\{[^}]*max-width:100%;background:#634783;color:#fff/);
  assert.match(html,/<figcaption id="cells-microscopy-caption">Moss leaf cells under a microscope\. Cell walls outline individual cells, while green chloroplasts carry out photosynthesis\.<\/figcaption>/);
  assert.match(html,/<summary>Microscopy source and image licence<\/summary><p>Specimen: <em>Plagiomnium affine<\/em> moss leaf\. The visible walls are not the cell membranes\. No calibrated scale is supplied here\.<\/p>/);
  for(const target of ['understand','compare','practice','reflect'])assert.ok(html.includes("scrollCellsSection('"+target+"')"));
