@@ -16,6 +16,14 @@ test('Discover observation handles missing, correct, incorrect and changed answe
 test('Discover precedes core, credits genuine microscopy, and retains its native temporary DOM',()=>{
  const c=vm.createContext({});vm.runInContext(fn(source,'cellsLessonIntroduction'),c);const html=vm.runInContext('cellsLessonIntroduction()',c);
  assert.ok(html.indexOf('cells-discover-title')<html.indexOf('id="cells-understand"'));
+ assert.ok(html.indexOf('cells-microscopy-caption')<html.indexOf('class="cells-section-nav"'));
+ assert.ok(html.indexOf('class="cells-section-nav"')<html.indexOf('class="cells-goals"'));
+ assert.ok(html.indexOf('class="cells-goals"')<html.indexOf('id="cells-understand"'));
+ assert.equal((html.match(/id="cells-opening"/g)||[]).length,1);
+ assert.equal((html.match(/Your body contains trillions of cells/g)||[]).length,1);
+ assert.match(html,/<figcaption id="cells-microscopy-caption">Moss leaf cells under a microscope\. Cell walls outline individual cells, while green chloroplasts carry out photosynthesis\.<\/figcaption>/);
+ assert.match(html,/<summary>Microscopy source and image licence<\/summary><p>Specimen: <em>Plagiomnium affine<\/em> moss leaf\. The visible walls are not the cell membranes\. No calibrated scale is supplied here\.<\/p>/);
+ for(const target of ['understand','compare','practice','reflect'])assert.ok(html.includes("scrollCellsSection('"+target+"')"));
  assert.match(html,/trillions of cells/);assert.match(html,/Plagiomnium affine/);assert.match(html,/not the cell membranes/);assert.match(html,/CC BY-SA 3.0/);assert.match(html,/colours unchanged/);
  assert.match(html,/alt="Microscope view/);assert.match(html,/<fieldset><legend>/);assert.equal((html.match(/onchange="clearCellsObservation\(\)"/g)||[]).length,4);assert.match(html,/id="cells-discover-feedback" role="status" aria-live="polite"/);
  assert.match(fn(source,'renderSubject'),/#cells-discover-practice/);assert.match(html,/scrollCellsSection\('understand'\)/);
