@@ -1157,6 +1157,31 @@ function openLesson(i){
  el.classList.add('active');const b=el.querySelector('.lesson-summary');if(b)b.setAttribute('aria-expanded','true');const c=el.querySelector('.lesson-chevron');if(c)c.textContent='−';
  el.scrollIntoView({behavior:(document.body?.dataset?.subject==='Biology'||document.body?.dataset?.subject==='Chemistry'&&(i===0||i===1||i===2||i===3))&&typeof window!=='undefined'&&window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'auto':'smooth',block:'start'});
 }
+function prepareBiologyOverviewFocus(){
+ if(!/^\/subjects\/biology\/(?:index\.html)?$/.test(location.pathname))return;
+ const app=document.getElementById('app');if(!app||app.dataset.biologyFocusReady)return;
+ app.dataset.biologyFocusReady='true';let pointer=null;
+ const clearPending=()=>{pointer=null;syncBiologyLessonHash.pointerReturn=null;};
+ const clearFocus=()=>{clearPending();document.getElementById('biology-dashboard-title')?.removeAttribute('data-biology-pointer-return');};
+ const returnLink=target=>target?.closest?.('a[href="#subject-overview"],a[href="#lessons"]');
+ app.addEventListener('pointerdown',event=>{
+  clearPending();const link=returnLink(event.target);
+  if(event.isTrusted&&event.isPrimary&&event.button===0){
+   const heading=event.target?.closest?.('#biology-dashboard-title');
+   heading?.setAttribute('data-biology-pointer-return','');
+   if(link)pointer={link,time:event.timeStamp};
+  }
+ });
+ app.addEventListener('pointercancel',clearPending);
+ app.addEventListener('keydown',clearFocus,true);
+ app.addEventListener('focusout',event=>{if(event.target.id==='biology-dashboard-title')clearFocus();});
+ app.addEventListener('click',event=>{
+  const link=returnLink(event.target),gesture=pointer;pointer=null;syncBiologyLessonHash.pointerReturn=null;
+  if(event.isTrusted&&!event.defaultPrevented&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&!event.shiftKey&&gesture&&link&&gesture.link===link&&event.timeStamp-gesture.time<1500&&event.timeStamp>=gesture.time){
+   syncBiologyLessonHash.pointerReturn={hash:link.getAttribute('href'),time:Date.now()};
+  }
+ });
+}
 function syncBiologyLessonHash(){
  if(!/^\/subjects\/biology\/(?:index\.html)?$/.test(location.pathname))return;
  // Reveal quiet tools for legacy/direct anchors without replacing their input nodes.
@@ -1164,11 +1189,12 @@ function syncBiologyLessonHash(){
   revealBiologyDashboardTool(location.hash.slice(1));
   return;
  }
+ const pointerReturn=syncBiologyLessonHash.pointerReturn;syncBiologyLessonHash.pointerReturn=null;
  // Overview navigation hides panels in place, retaining all unfinished DOM state.
  if(['','#subject-overview','#lessons'].includes(location.hash)){
   const active=Array.from(document.querySelectorAll('#lessons > .lesson.active'));
   active.forEach(el=>{el.classList.remove('active');el.querySelector('.lesson-summary')?.setAttribute('aria-expanded','false');const chevron=el.querySelector('.lesson-chevron');if(chevron)chevron.textContent='+';});
-  if(active.length){const overview=document.getElementById('subject-overview'),heading=overview?.querySelector('h1');heading?.setAttribute('tabindex','-1');heading?.focus({preventScroll:true});overview?.scrollIntoView({behavior:'auto',block:'start'});}
+  if(active.length){const overview=document.getElementById('subject-overview'),heading=overview?.querySelector('h1');heading?.toggleAttribute?.('data-biology-pointer-return',!!pointerReturn&&pointerReturn.hash===location.hash&&Date.now()-pointerReturn.time<1500);heading?.setAttribute('tabindex','-1');heading?.focus({preventScroll:true});overview?.scrollIntoView({behavior:'auto',block:'start'});}
   return;
  }
  const match=location.hash.match(/^#lesson-(\d+)$/);if(!match)return;
@@ -1860,6 +1886,7 @@ function saveHomeScrollOnLeave(){
 window.addEventListener('pagehide',saveHomeScrollOnLeave);
 function saveReviewScrollOnLeave(){if(location.pathname.includes('review.html')){try{sessionStorage.setItem('myLearningOS.reviewScroll',String(window.scrollY));}catch{}}}
 window.addEventListener('pagehide',saveReviewScrollOnLeave);
+prepareBiologyOverviewFocus();
 // Registered once per page, outside renderSubject (which runs again after saves).
 window.addEventListener('hashchange',syncBiologyLessonHash);
 window.addEventListener('hashchange',syncChemistryLessonHash);
