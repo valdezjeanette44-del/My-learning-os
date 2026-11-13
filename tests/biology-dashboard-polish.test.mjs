@@ -69,7 +69,7 @@ test('trusted direct heading and child pointer-down suppress before default focu
  }
  h.event('keydown');assert.ok(!('data-biology-pointer-return' in h.attrs));
  h.event('pointerdown',{target:child});h.event('focusout',{target:h.heading});assert.ok(!('data-biology-pointer-return' in h.attrs));
- h.event('pointerdown',{target:child});h.event('pointercancel');assert.ok(!('data-biology-pointer-return' in h.attrs));
+ h.event('pointerdown',{target:child});h.heading.focus();h.event('pointercancel');assert.ok('data-biology-pointer-return' in h.attrs,'Scrolling does not end the current quiet focus session');
 });
 
 test('untrusted heading gestures and synthetic clicks cannot grant exception or cancel default selection',()=>{
@@ -80,4 +80,29 @@ test('untrusted heading gestures and synthetic clicks cannot grant exception or 
  h.event('click',{target,isTrusted:false});assert.ok(!('data-biology-pointer-return' in h.attrs));
  const installer=source.slice(source.indexOf('function prepareBiologyOverviewFocus('),source.indexOf('function syncBiologyLessonHash('));
  assert.doesNotMatch(installer,/preventDefault|stopPropagation|\.blur\(|\.focus\(/,'Retain native selection and focus behavior');
+});
+
+
+test('quiet focus survives unrelated blank, paragraph, image and card touches and scroll cancellation',()=>{
+ for(const origin of ['return','direct']){
+  const h=focusHarness();
+  if(origin==='return'){h.event('pointerdown');h.event('click');h.sync();}
+  else {h.event('pointerdown',{target:{closest:q=>q==='#biology-dashboard-title'?h.heading:null}});h.heading.focus();}
+  for(const kind of ['blank','paragraph','image','card']){
+   const target={kind,closest:()=>null};
+   h.event('pointerdown',{target});h.event('click',{target});h.event('pointercancel',{target});
+   assert.equal(h.doc.activeElement,h.heading);assert.ok('data-biology-pointer-return' in h.attrs,origin+' / '+kind);
+   assert.equal(vm.runInContext('syncBiologyLessonHash.pointerReturn',h.c),null);
+  }
+  h.event('keydown');assert.ok(!('data-biology-pointer-return' in h.attrs),'Keyboard must reveal focus immediately');
+ }
+});
+
+test('genuine heading blur ends quiet session and cancelled return cannot affect new uncertain focus',()=>{
+ const h=focusHarness();h.event('pointerdown');h.event('click');h.sync();
+ h.doc.activeElement={id:'another-control'};h.event('focusout',{target:h.heading});assert.ok(!('data-biology-pointer-return' in h.attrs));
+ h.event('pointerdown');h.event('pointercancel');h.event('click');h.reset();h.sync();
+ assert.equal(h.doc.activeElement,h.heading);assert.ok(!('data-biology-pointer-return' in h.attrs));
+ h.event('pointerdown');h.event('click');h.reset();h.sync();assert.ok('data-biology-pointer-return' in h.attrs);
+ h.reset();h.sync();assert.ok(!('data-biology-pointer-return' in h.attrs),'Each history/unknown return must explicitly choose visible focus');
 });

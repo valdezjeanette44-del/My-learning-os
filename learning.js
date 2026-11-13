@@ -1161,19 +1161,20 @@ function prepareBiologyOverviewFocus(){
  if(!/^\/subjects\/biology\/(?:index\.html)?$/.test(location.pathname))return;
  const app=document.getElementById('app');if(!app||app.dataset.biologyFocusReady)return;
  app.dataset.biologyFocusReady='true';let pointer=null;
- const clear=()=>{pointer=null;syncBiologyLessonHash.pointerReturn=null;document.getElementById('biology-dashboard-title')?.removeAttribute('data-biology-pointer-return');};
+ const clearPending=()=>{pointer=null;syncBiologyLessonHash.pointerReturn=null;};
+ const clearFocus=()=>{clearPending();document.getElementById('biology-dashboard-title')?.removeAttribute('data-biology-pointer-return');};
  const returnLink=target=>target?.closest?.('a[href="#subject-overview"],a[href="#lessons"]');
  app.addEventListener('pointerdown',event=>{
-  clear();const link=returnLink(event.target);
+  clearPending();const link=returnLink(event.target);
   if(event.isTrusted&&event.isPrimary&&event.button===0){
    const heading=event.target?.closest?.('#biology-dashboard-title');
    heading?.setAttribute('data-biology-pointer-return','');
    if(link)pointer={link,time:event.timeStamp};
   }
  });
- app.addEventListener('pointercancel',clear);
- app.addEventListener('keydown',clear,true);
- app.addEventListener('focusout',event=>{if(event.target.id==='biology-dashboard-title')clear();});
+ app.addEventListener('pointercancel',clearPending);
+ app.addEventListener('keydown',clearFocus,true);
+ app.addEventListener('focusout',event=>{if(event.target.id==='biology-dashboard-title')clearFocus();});
  app.addEventListener('click',event=>{
   const link=returnLink(event.target),gesture=pointer;pointer=null;syncBiologyLessonHash.pointerReturn=null;
   if(event.isTrusted&&!event.defaultPrevented&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&!event.shiftKey&&gesture&&link&&gesture.link===link&&event.timeStamp-gesture.time<1500&&event.timeStamp>=gesture.time){
