@@ -103,7 +103,7 @@ function totalStats(){const s=state();let lessons=0,total=0,scores=0;Object.keys
 function nav(){return '<div class="topbar"><a class="brand" href="/">🧠 My Learning OS</a><nav class="nav" aria-label="Main navigation"><a href="/">Home</a><a href="/notes.html">My Notes</a><a href="/search.html">Search</a><a href="/projects.html" onclick="saveProjectsScroll()">Projects</a><a href="/review.html">Review</a><a href="/knowledge.html">Knowledge Map</a><a href="/tutor.html">Tutor</a></nav></div><nav class="mobile-nav" aria-label="Quick navigation"><a href="/" aria-label="Home"><span>⌂</span><small>Home</small></a><a href="/projects.html" aria-label="Projects" onclick="saveProjectsScroll()"><span>◫</span><small>Projects</small></a><a href="/review.html" aria-label="Review"><span>↻</span><small>Review</small></a><a href="/notes.html" aria-label="My Notes"><span>✎</span><small>Notes</small></a><details class="mobile-more"><summary><span>•••</span><small>More</small></summary><div class="mobile-more-menu"><a href="/search.html">🔎 Search</a><a href="/knowledge.html">🗺️ Knowledge Map</a><a href="/tutor.html">👩‍🏫 Tutor</a></div></details></nav>'}
 function renderSubject(name,preserveInputs=false){
  // Keep unfinished work in DOM memory only; completion/Review must not save drafts.
- const retained=preserveInputs?Array.from(document.querySelectorAll('.lesson-mcq[id], #cells-oxygen-practice, #matter-practice, #puddle-practice, #atoms-prediction, #atoms-comparison, #bonds-prediction, #bonds-interpretation, #reactions-prediction, #reactions-balance, #quiz, textarea[id], .lesson-hint[id], .feedback[id], .simple-explanation[id]')):[];
+ const retained=preserveInputs?Array.from(document.querySelectorAll('.lesson-mcq[id], #cells-oxygen-practice, #cells-discover-practice, #matter-practice, #puddle-practice, #atoms-prediction, #atoms-comparison, #bonds-prediction, #bonds-interpretation, #reactions-prediction, #reactions-balance, #quiz, textarea[id], .lesson-hint[id], .feedback[id], .simple-explanation[id]')):[];
  const selections=retained.filter(el=>el.tagName==='TEXTAREA').map(el=>({el,start:el.selectionStart,end:el.selectionEnd,direction:el.selectionDirection,scrollTop:el.scrollTop}));
  const disclosures=preserveInputs?Array.from(document.querySelectorAll('details')).map(el=>el.open):[];
  const focused=preserveInputs?document.activeElement:null,focusId=focused?.id,focusLesson=focused?.closest('.lesson')?.id,focusHandler=focused?.getAttribute('onclick');
@@ -882,10 +882,23 @@ function restartBiologyQuiz(i){
  scrollBiologyQuizQuestion(i,0);
 }
 function cellsLessonIntroduction(){
- return `<section class="cells-learning" aria-labelledby="cells-opening">
+ return `<section class="cells-learning" aria-labelledby="cells-opening" onpointerdown="prepareCellsUnderstandPointer(event)" onpointercancel="scrollCellsSection.pending=null" onkeydown="clearCellsUnderstandFocus()" onfocusout="if(event.target.id==='cells-understand')clearCellsUnderstandFocus(true)">
  <a href="#subject-overview">← Back to Biology overview</a>
- <header class="cells-header"><p class="cells-eyebrow">BIOLOGY · LESSON 2 OF 4</p><h3 id="cells-opening">Cells: the basic unit</h3><p>How does a tiny cell stay alive?</p><p>In What is life?, you met cells as the places where living processes happen. Now explore how their boundaries help those processes continue.</p></header>
- <nav class="cells-section-nav" aria-label="Cells lesson sections"><button type="button" onclick="scrollCellsSection('understand')">Understand</button><button type="button" onclick="scrollCellsSection('compare')">Compare cells</button><button type="button" onclick="scrollCellsSection('practice')">Practice</button><button type="button" onclick="scrollCellsSection('reflect')">Reflect</button></nav>
+ <header class="cells-header"><p class="cells-eyebrow">BIOLOGY · LESSON 2 OF 4</p></header>
+ <section class="cells-discover" aria-labelledby="cells-discover-title"><h3 id="cells-opening"><span id="cells-discover-title">Discover — A World Too Small to See</span></h3><p><strong>Your body contains trillions of cells. How can something so small keep you alive?</strong></p>
+ <p>In What is life?, you met cells as the places where living processes happen. Look closely at a moss leaf: a green surface becomes a world of individual cells. Plant cells and human cells differ, but both support essential processes of life.</p>
+ <figure><img src="/assets/biology/photography/cells-640.jpg" srcset="/assets/biology/photography/cells-320.jpg 320w, /assets/biology/photography/cells-640.jpg 640w" sizes="(max-width: 600px) 100vw, 640px" width="640" height="480" loading="lazy" alt="Microscope view of a moss leaf: repeated cells outlined by cell walls, with many small green chloroplasts inside." aria-describedby="cells-microscopy-caption"><figcaption id="cells-microscopy-caption">Moss leaf cells under a microscope. Cell walls outline individual cells, while green chloroplasts carry out photosynthesis.</figcaption></figure>
+ <details class="cells-sources"><summary>Microscopy source and image licence</summary><p>Specimen: <em>Plagiomnium affine</em> moss leaf. The visible walls are not the cell membranes. No calibrated scale is supplied here.</p><p><a href="https://commons.wikimedia.org/wiki/File:Plagiomnium_affine_laminazellen.jpeg">Kristian Peters; current file modified by René Esposito</a>. <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>. Cropped and resized; colours unchanged. This adapted image remains under CC BY-SA 3.0. <a href="/assets/biology/photography/CREDITS.md">Full provenance and modification record</a>.</p></details>
+ <section id="cells-discover-practice" class="cells-connection" aria-labelledby="cells-observation-title"><h4 id="cells-observation-title">Look closer — what do you notice?</h4><p>This is temporary, ungraded observation. Nothing here is saved.</p><fieldset><legend>What does the image suggest about how this leaf is organized?</legend>
+ <label><input type="radio" name="cells-discover-choice" value="one" onchange="clearCellsObservation()"> A. The whole leaf is one enormous cell.</label><br>
+ <label><input type="radio" name="cells-discover-choice" value="many" onchange="clearCellsObservation()"> B. The leaf contains many smaller cells arranged together.</label><br>
+ <label><input type="radio" name="cells-discover-choice" value="alive" onchange="clearCellsObservation()"> C. The green areas prove that every part of every cell is alive.</label><br>
+ <label><input type="radio" name="cells-discover-choice" value="boundaries" onchange="clearCellsObservation()"> D. Cells have no identifiable boundaries.</label></fieldset>
+ <button type="button" class="button secondary" onclick="revealCellsObservation()">Reveal the observation</button><p id="cells-discover-feedback" role="status" aria-live="polite"></p></section>
+ <p>Cells are the basic structural and functional units of living organisms. Some organisms consist of one cell; others contain enormous numbers working together. Their organization supports the processes necessary for life.</p>
+ <h4>From observation to understanding</h4><p>A microscope reveals shapes and arrangements, but not everything happening inside. How does a cell maintain the conditions it needs to survive? Begin with the cell membrane, which helps regulate what enters and leaves.</p>
+ <a class="button cells-discover-next" data-cells-understand-control href="#cells-understand" onclick="scrollCellsSection('understand',event);return false">Continue: Understand how cells work →</a></section>
+ <nav class="cells-section-nav" aria-label="Cells lesson sections"><button type="button" data-cells-understand-control onclick="scrollCellsSection('understand',event)">Understand</button><button type="button" onclick="scrollCellsSection('compare')">Compare cells</button><button type="button" onclick="scrollCellsSection('practice')">Practice</button><button type="button" onclick="scrollCellsSection('reflect')">Reflect</button></nav>
  <section class="cells-goals"><h4>What you will understand</h4><ul><li>Explain how a membrane regulates exchange and helps a cell survive.</li><li>Compare cells with and without a membrane-bound nucleus.</li></ul></section>
  <div class="cells-pair"><div><h4 id="cells-understand" tabindex="-1">A boundary that regulates exchange</h4><p>A cell is an organized unit surrounded by a <strong>cell membrane</strong>. This boundary separates its interior from its surroundings, helping maintain conditions for the chemical reactions that keep it alive.</p>
  <p>The membrane is <strong>selectively permeable</strong>: some substances cross more easily than others. Their size, charge and the membrane’s transport proteins affect passage. The membrane does not decide what is useful; harmful substances can cross too.</p>
@@ -903,6 +916,14 @@ function cellsLessonIntroduction(){
  <div id="cells-oxygen-reconsider" hidden><h4 id="cells-oxygen-reconsider-title" tabindex="-1">Keep or change your prediction?</h4><p>Picture individual molecules moving both ways. Would more cross inward or outward under these conditions? You can change your choice above before revealing the explanation.</p><button type="button" class="button secondary" onclick="explainCellsOxygen()">Reveal the scientific explanation</button></div><p id="cells-oxygen-feedback" role="status" aria-live="polite"></p></section>
  <details class="cells-sources"><summary>Sources for this explanation</summary><ul><li><a href="https://openstax.org/books/biology-2e/pages/4-2-prokaryotic-cells">OpenStax Biology 2e: Prokaryotic Cells</a></li><li><a href="https://openstax.org/books/biology-2e/pages/4-3-eukaryotic-cells">Eukaryotic Cells</a></li><li><a href="https://openstax.org/books/biology-2e/pages/5-2-passive-transport">Passive Transport</a> and <a href="https://openstax.org/books/biology-2e/pages/5-3-active-transport">Active Transport</a></li></ul></details>
  </section>`;
+}
+function clearCellsObservation(){
+ const feedback=document.getElementById('cells-discover-feedback');if(feedback)feedback.textContent='';
+}
+function revealCellsObservation(){
+ const choice=document.querySelector('input[name="cells-discover-choice"]:checked'),feedback=document.getElementById('cells-discover-feedback');
+ if(!choice){feedback.textContent='Choose an observation first. It is fine to be unsure; this is not graded.';return;}
+ feedback.textContent=choice.value==='many'?'Exactly. The image shows many cells forming a larger leaf. Their visible walls help us recognize individual cells.':'Look at the repeating compartments and their boundaries. Rather than one enormous cell, this leaf consists of many cells arranged together. The image alone cannot establish that every visible structure is alive.';
 }
 function clearCellsOxygenFeedback(){
  const feedback=document.getElementById('cells-oxygen-feedback');if(feedback)feedback.textContent='';
@@ -924,9 +945,27 @@ function cellsLessonSummary(){
  const next=resolveSubjectLesson('Biology','biology-dna-heredity');
  return `<section class="cells-summary"><h4 id="cells-reflect" tabindex="-1">Remember and continue</h4><ul><li>Membranes regulate exchange; they are selectively permeable.</li><li>Typical prokaryotic and eukaryotic cells share basic structures, but differ in how their contents are organized.</li><li>A nucleus is not required for a cell to contain DNA.</li></ul><p>Completion records your activity, not proven mastery. Use the completion button below when you are ready.</p><p><a href="${next.href}" onclick="openLesson(${next.legacyIndex})">Next: DNA and heredity →</a></p><p><a href="/notes.html">Open Notes Library →</a> · <a href="#note">Your original Biology note</a></p><p>Notes require an explicit Save. Before leaving, save any answer or note you want to keep.</p></section>`;
 }
-function scrollCellsSection(section){
+function prepareCellsUnderstandPointer(event){
+ scrollCellsSection.pending=null;
+ const control=event.target?.closest?.('[data-cells-understand-control]');
+ if(event.isTrusted&&event.isPrimary&&event.button===0){
+  event.target?.closest?.('#cells-understand')?.setAttribute('data-cells-pointer-focus','');
+  if(control)scrollCellsSection.pending={control,time:event.timeStamp};
+ }
+}
+function clearCellsUnderstandFocus(keepPending=false){
+ if(!keepPending)scrollCellsSection.pending=null;
+ document.getElementById('cells-understand')?.removeAttribute('data-cells-pointer-focus');
+}
+function scrollCellsSection(section,event){
  const targets={understand:'cells-understand',compare:'cells-compare',practice:'mcq-1',reflect:'cells-reflect'};
+ const gesture=scrollCellsSection.pending;scrollCellsSection.pending=null;
  const id=Object.hasOwn(targets,section)?targets[section]:null,target=id&&document.getElementById(id);if(!target)return;
+ if(id==='cells-understand'){
+  const control=event?.target?.closest?.('[data-cells-understand-control]');
+  const quiet=!!(gesture&&event?.type==='click'&&event.isTrusted&&!event.defaultPrevented&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&!event.shiftKey&&control===gesture.control&&event.timeStamp>=gesture.time&&event.timeStamp-gesture.time<1500);
+  target.toggleAttribute('data-cells-pointer-focus',quiet);
+ }
  target.setAttribute('tabindex','-1');target.focus({preventScroll:true});
  target.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'auto':'smooth',block:'start'});
 }
