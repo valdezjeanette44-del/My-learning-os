@@ -30,10 +30,12 @@ test('Discover precedes core, credits genuine microscopy, and retains its native
  assert.match(css,/\.cells-enhanced \.cells-learning a\.cells-discover-next\{[^}]*max-width:100%;background:#634783;color:#fff/);
  assert.match(html,/<figcaption id="cells-microscopy-caption">Moss leaf cells under a microscope\. Cell walls outline individual cells, while green chloroplasts carry out photosynthesis\.<\/figcaption>/);
  assert.match(html,/<summary>Microscopy source and image licence<\/summary><p>Specimen: <em>Plagiomnium affine<\/em> moss leaf\. The visible walls are not the cell membranes\. No calibrated scale is supplied here\.<\/p>/);
- for(const target of ['understand','compare','practice','reflect'])assert.ok(html.includes("scrollCellsSection('"+target+"')"));
+ for(const target of ['understand','compare','practice','reflect'])assert.ok(html.includes("scrollCellsSection('"+target+"'"));
+ assert.equal((html.match(/data-cells-understand-control/g)||[]).length,2);
+ assert.match(html,/onpointerdown="prepareCellsUnderstandPointer\(event\)"/);
  assert.match(html,/trillions of cells/);assert.match(html,/Plagiomnium affine/);assert.match(html,/not the cell membranes/);assert.match(html,/CC BY-SA 3.0/);assert.match(html,/colours unchanged/);
  assert.match(html,/alt="Microscope view/);assert.match(html,/<fieldset><legend>/);assert.equal((html.match(/onchange="clearCellsObservation\(\)"/g)||[]).length,4);assert.match(html,/id="cells-discover-feedback" role="status" aria-live="polite"/);
- assert.match(fn(source,'renderSubject'),/#cells-discover-practice/);assert.match(html,/scrollCellsSection\('understand'\)/);
+ assert.match(fn(source,'renderSubject'),/#cells-discover-practice/);assert.match(html,/scrollCellsSection\('understand',event\)/);
 });
 test('production assessments, oxygen handlers, unrelated teaching and data paths remain byte-identical',()=>{
  // Fixed production hashes allow the same checks in a shallow CI checkout.
@@ -65,4 +67,41 @@ test('production assessments, oxygen handlers, unrelated teaching and data paths
  "selectionLessonIntroduction": "e903d2e965ca1c9f80354da1c5bfa303da43e8d256d45691222a0f2dab5157e3"
 };
  for(const [name,digest] of Object.entries(expected))assert.equal(hash(fn(source,name)),digest,name);
+});
+
+function cellsFocusHarness(reduced=false){
+ const attrs={},calls=[];let time=10;
+ const heading={id:'cells-understand',setAttribute:(k,v)=>attrs[k]=v,removeAttribute:k=>delete attrs[k],toggleAttribute(k,v){if(v)attrs[k]='';else delete attrs[k];},focus(opts){doc.activeElement=this;calls.push(['focus',opts.preventScroll]);},scrollIntoView(opts){calls.push(['scroll',opts.behavior]);},matches:()=>true};
+ const doc={getElementById:()=>heading};const c=vm.createContext({document:doc,window:{matchMedia:()=>({matches:reduced})},saveState(){assert.fail('Focus cannot save');},localStorage:{setItem(){assert.fail('Focus cannot write');}}});
+ vm.runInContext(['prepareCellsUnderstandPointer','clearCellsUnderstandFocus','scrollCellsSection'].map(n=>fn(source,n)).join('\n'),c);
+ const controls=['continue','understand'].map(kind=>({kind,closest:q=>q==='[data-cells-understand-control]'?controls.find(x=>x.kind===kind):null}));
+ const run=code=>vm.runInContext(code,c),event=(type,target=controls[0],extra={})=>({type,target,isTrusted:true,isPrimary:true,button:0,timeStamp:time++,...extra});
+ return {c,heading,doc,attrs,calls,controls,run,event,prepare(e){c.e=e;run('prepareCellsUnderstandPointer(e)');},navigate(e){c.e=e;run("scrollCellsSection('understand',e)");},quiet:()=>Object.hasOwn(attrs,'data-cells-pointer-focus')};
+}
+test('Cells pointer Continue and Understand use a single quiet focus session even if Safari matches focus-visible',()=>{
+ for(const reduced of [false,true])for(const index of [0,1]){
+  const h=cellsFocusHarness(reduced),control=h.controls[index];h.prepare(h.event('pointerdown',control));h.navigate(h.event('click',control));
+  assert.equal(h.doc.activeElement,h.heading);assert.equal(h.attrs.tabindex,'-1');assert.equal(h.heading.matches(':focus-visible'),true);assert.equal(h.quiet(),true);assert.equal(h.run('scrollCellsSection.pending'),null);assert.deepEqual(h.calls.at(-1),['scroll',reduced?'auto':'smooth']);
+  for(const kind of ['blank','paragraph','image','card']){h.prepare(h.event('pointerdown',{kind,closest:()=>null}));h.run('scrollCellsSection.pending=null');assert.equal(h.quiet(),true,'Unrelated touch/cancel must not end focus session');}
+  h.prepare(h.event('pointerdown',control));h.run('clearCellsUnderstandFocus(true)');assert.equal(h.quiet(),false,'Blur ends the old session');h.navigate(h.event('click',control));assert.equal(h.quiet(),true,'New pointer gesture survives old heading blur');
+  h.run('clearCellsUnderstandFocus()');assert.equal(h.quiet(),false,'Keyboard must reveal focus');
+ }
+ assert.match(css,/#cells-understand:focus\{outline:3px solid #49305f;outline-offset:4px\}/);
+ assert.match(css,/#cells-understand\[data-cells-pointer-focus\]:focus\{outline:none\}/);
+});
+test('Cells synthetic, cancelled, expired, modified and uncertain activations default to visible focus',()=>{
+ for(const kind of ['synthetic','cancel','keyboard','expired','modified','different-control','uncertain','nonprimary','rightbutton','untrusted-down']){
+  const h=cellsFocusHarness(),down=h.event('pointerdown',h.controls[0],kind==='nonprimary'?{isPrimary:false}:kind==='rightbutton'?{button:2}:kind==='untrusted-down'?{isTrusted:false}:{});h.prepare(down);
+  if(kind==='cancel')h.run('scrollCellsSection.pending=null');if(kind==='keyboard')h.run('clearCellsUnderstandFocus()');
+  const click=h.event('click',kind==='different-control'?h.controls[1]:h.controls[0],kind==='synthetic'?{isTrusted:false}:kind==='expired'?{timeStamp:9999}:kind==='modified'?{ctrlKey:true}:{});
+  h.navigate(kind==='uncertain'?undefined:click);assert.equal(h.quiet(),false,kind);assert.equal(h.doc.activeElement,h.heading,kind);
+ }
+ const h=cellsFocusHarness();h.prepare(h.event('pointerdown'));h.navigate(h.event('click'));h.run('clearCellsUnderstandFocus()');assert.equal(h.quiet(),false,'Genuine blur cleanup');h.navigate();assert.equal(h.quiet(),false,'History/programmatic focus cannot reuse gesture');
+});
+test('Cells markup wires focus cleanup locally and dashboard lifecycle remains unchanged',()=>{
+ const markup=fn(source,'cellsLessonIntroduction');
+ assert.match(markup,/onpointercancel="scrollCellsSection.pending=null"/);assert.match(markup,/onkeydown="clearCellsUnderstandFocus\(\)"/);assert.match(markup,/onfocusout="if\(event.target.id==='cells-understand'\)clearCellsUnderstandFocus\(true\)"/);
+ const hash=s=>createHash('sha256').update(s).digest('hex');
+ assert.equal(hash(fn(source,'prepareBiologyOverviewFocus')),'0bff1054a1a3d7b6094fb5efd17e4ee3b0ec39ad3d6899a1ed40d6f200b3afba');
+ assert.doesNotMatch(fn(source,'prepareCellsUnderstandPointer')+fn(source,'clearCellsUnderstandFocus'),/preventDefault|stopPropagation|\.blur\(|saveState|localStorage/);
 });

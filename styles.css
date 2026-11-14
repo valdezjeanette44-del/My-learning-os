@@ -997,6 +997,9 @@ body{background:var(--garden-paper,#fbf8f1);color:#302a25}
 .cells-learning .cells-discover figure{max-width:640px}
 .cells-learning .cells-discover figcaption{font-size:1rem;line-height:1.5}
 .cells-enhanced .cells-learning a.cells-discover-next{display:inline-block;max-width:100%;background:#634783;color:#fff;text-decoration:none;line-height:1.5;margin:8px 0;white-space:normal}
+/* Keep semantic heading focus; quiet only a verified pointer-originated session. */
+.cells-enhanced #cells-understand:focus{outline:3px solid #49305f;outline-offset:4px}
+.cells-enhanced #cells-understand[data-cells-pointer-focus]:focus{outline:none}
 
 /* Biology dashboard cards navigate to the retained lesson panels below. */
 body[data-subject="Biology"] .biology-lesson-panels>.course-heading,

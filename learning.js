@@ -882,7 +882,7 @@ function restartBiologyQuiz(i){
  scrollBiologyQuizQuestion(i,0);
 }
 function cellsLessonIntroduction(){
- return `<section class="cells-learning" aria-labelledby="cells-opening">
+ return `<section class="cells-learning" aria-labelledby="cells-opening" onpointerdown="prepareCellsUnderstandPointer(event)" onpointercancel="scrollCellsSection.pending=null" onkeydown="clearCellsUnderstandFocus()" onfocusout="if(event.target.id==='cells-understand')clearCellsUnderstandFocus(true)">
  <a href="#subject-overview">← Back to Biology overview</a>
  <header class="cells-header"><p class="cells-eyebrow">BIOLOGY · LESSON 2 OF 4</p></header>
  <section class="cells-discover" aria-labelledby="cells-discover-title"><h3 id="cells-opening"><span id="cells-discover-title">Discover — A World Too Small to See</span></h3><p><strong>Your body contains trillions of cells. How can something so small keep you alive?</strong></p>
@@ -897,8 +897,8 @@ function cellsLessonIntroduction(){
  <button type="button" class="button secondary" onclick="revealCellsObservation()">Reveal the observation</button><p id="cells-discover-feedback" role="status" aria-live="polite"></p></section>
  <p>Cells are the basic structural and functional units of living organisms. Some organisms consist of one cell; others contain enormous numbers working together. Their organization supports the processes necessary for life.</p>
  <h4>From observation to understanding</h4><p>A microscope reveals shapes and arrangements, but not everything happening inside. How does a cell maintain the conditions it needs to survive? Begin with the cell membrane, which helps regulate what enters and leaves.</p>
- <a class="button cells-discover-next" href="#cells-understand" onclick="scrollCellsSection('understand');return false">Continue: Understand how cells work →</a></section>
- <nav class="cells-section-nav" aria-label="Cells lesson sections"><button type="button" onclick="scrollCellsSection('understand')">Understand</button><button type="button" onclick="scrollCellsSection('compare')">Compare cells</button><button type="button" onclick="scrollCellsSection('practice')">Practice</button><button type="button" onclick="scrollCellsSection('reflect')">Reflect</button></nav>
+ <a class="button cells-discover-next" data-cells-understand-control href="#cells-understand" onclick="scrollCellsSection('understand',event);return false">Continue: Understand how cells work →</a></section>
+ <nav class="cells-section-nav" aria-label="Cells lesson sections"><button type="button" data-cells-understand-control onclick="scrollCellsSection('understand',event)">Understand</button><button type="button" onclick="scrollCellsSection('compare')">Compare cells</button><button type="button" onclick="scrollCellsSection('practice')">Practice</button><button type="button" onclick="scrollCellsSection('reflect')">Reflect</button></nav>
  <section class="cells-goals"><h4>What you will understand</h4><ul><li>Explain how a membrane regulates exchange and helps a cell survive.</li><li>Compare cells with and without a membrane-bound nucleus.</li></ul></section>
  <div class="cells-pair"><div><h4 id="cells-understand" tabindex="-1">A boundary that regulates exchange</h4><p>A cell is an organized unit surrounded by a <strong>cell membrane</strong>. This boundary separates its interior from its surroundings, helping maintain conditions for the chemical reactions that keep it alive.</p>
  <p>The membrane is <strong>selectively permeable</strong>: some substances cross more easily than others. Their size, charge and the membrane’s transport proteins affect passage. The membrane does not decide what is useful; harmful substances can cross too.</p>
@@ -945,9 +945,24 @@ function cellsLessonSummary(){
  const next=resolveSubjectLesson('Biology','biology-dna-heredity');
  return `<section class="cells-summary"><h4 id="cells-reflect" tabindex="-1">Remember and continue</h4><ul><li>Membranes regulate exchange; they are selectively permeable.</li><li>Typical prokaryotic and eukaryotic cells share basic structures, but differ in how their contents are organized.</li><li>A nucleus is not required for a cell to contain DNA.</li></ul><p>Completion records your activity, not proven mastery. Use the completion button below when you are ready.</p><p><a href="${next.href}" onclick="openLesson(${next.legacyIndex})">Next: DNA and heredity →</a></p><p><a href="/notes.html">Open Notes Library →</a> · <a href="#note">Your original Biology note</a></p><p>Notes require an explicit Save. Before leaving, save any answer or note you want to keep.</p></section>`;
 }
-function scrollCellsSection(section){
+function prepareCellsUnderstandPointer(event){
+ scrollCellsSection.pending=null;
+ const control=event.target?.closest?.('[data-cells-understand-control]');
+ if(event.isTrusted&&event.isPrimary&&event.button===0&&control)scrollCellsSection.pending={control,time:event.timeStamp};
+}
+function clearCellsUnderstandFocus(keepPending=false){
+ if(!keepPending)scrollCellsSection.pending=null;
+ document.getElementById('cells-understand')?.removeAttribute('data-cells-pointer-focus');
+}
+function scrollCellsSection(section,event){
  const targets={understand:'cells-understand',compare:'cells-compare',practice:'mcq-1',reflect:'cells-reflect'};
+ const gesture=scrollCellsSection.pending;scrollCellsSection.pending=null;
  const id=Object.hasOwn(targets,section)?targets[section]:null,target=id&&document.getElementById(id);if(!target)return;
+ if(id==='cells-understand'){
+  const control=event?.target?.closest?.('[data-cells-understand-control]');
+  const quiet=!!(gesture&&event?.type==='click'&&event.isTrusted&&!event.defaultPrevented&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&!event.shiftKey&&control===gesture.control&&event.timeStamp>=gesture.time&&event.timeStamp-gesture.time<1500);
+  target.toggleAttribute('data-cells-pointer-focus',quiet);
+ }
  target.setAttribute('tabindex','-1');target.focus({preventScroll:true});
  target.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'auto':'smooth',block:'start'});
 }
