@@ -948,7 +948,10 @@ function cellsLessonSummary(){
 function prepareCellsUnderstandPointer(event){
  scrollCellsSection.pending=null;
  const control=event.target?.closest?.('[data-cells-understand-control]');
- if(event.isTrusted&&event.isPrimary&&event.button===0&&control)scrollCellsSection.pending={control,time:event.timeStamp};
+ if(event.isTrusted&&event.isPrimary&&event.button===0){
+  event.target?.closest?.('#cells-understand')?.setAttribute('data-cells-pointer-focus','');
+  if(control)scrollCellsSection.pending={control,time:event.timeStamp};
+ }
 }
 function clearCellsUnderstandFocus(keepPending=false){
  if(!keepPending)scrollCellsSection.pending=null;

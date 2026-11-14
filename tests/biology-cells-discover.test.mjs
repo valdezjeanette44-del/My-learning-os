@@ -105,3 +105,24 @@ test('Cells markup wires focus cleanup locally and dashboard lifecycle remains u
  assert.equal(hash(fn(source,'prepareBiologyOverviewFocus')),'0bff1054a1a3d7b6094fb5efd17e4ee3b0ec39ad3d6899a1ed40d6f200b3afba');
  assert.doesNotMatch(fn(source,'prepareCellsUnderstandPointer')+fn(source,'clearCellsUnderstandFocus'),/preventDefault|stopPropagation|\.blur\(|saveState|localStorage/);
 });
+
+test('direct Cells heading and descendant taps reuse quiet focus through the complete pointer lifecycle',()=>{
+ const h=cellsFocusHarness();h.heading.closest=q=>q==='#cells-understand'?h.heading:null;
+ const child={closest:q=>q==='#cells-understand'?h.heading:null};
+ h.prepare(h.event('pointerdown'));h.navigate(h.event('click')); // Continue first.
+ for(const target of [h.heading,child,h.heading]){
+  h.prepare(h.event('pointerdown',target));assert.equal(h.quiet(),true,'Quiet state precedes native focus');h.heading.focus({preventScroll:true});
+  assert.equal(h.doc.activeElement,h.heading);assert.equal(h.run('scrollCellsSection.pending'),null,'Direct tap cannot seed navigation token');
+  for(const kind of ['blank','paragraph','image','card']){h.prepare(h.event('pointerdown',{kind,closest:()=>null}));h.run('scrollCellsSection.pending=null');assert.equal(h.quiet(),true,'Unrelated touch/scroll cancellation preserves session');}
+ }
+ h.run('clearCellsUnderstandFocus()');assert.equal(h.quiet(),false,'Keyboard immediately restores indicator');
+ h.prepare(h.event('pointerdown',child));assert.equal(h.quiet(),true);h.doc.activeElement={id:'another-control'};h.run('clearCellsUnderstandFocus(true)');assert.equal(h.quiet(),false,'Real blur clears appearance');
+ h.navigate();assert.equal(h.quiet(),false,'Uncertain refocus is visible');assert.equal(h.attrs.tabindex,'-1');
+});
+test('untrusted or non-primary heading gestures never create quiet focus or cancel native behavior',()=>{
+ for(const extra of [{isTrusted:false},{isPrimary:false},{button:2}]){
+  const h=cellsFocusHarness(),target={closest:q=>q==='#cells-understand'?h.heading:null};h.prepare(h.event('pointerdown',target,extra));assert.equal(h.quiet(),false);assert.equal(h.run('scrollCellsSection.pending'),null);
+ }
+ const h=cellsFocusHarness();h.navigate(h.event('click',{closest:q=>q==='#cells-understand'?h.heading:null},{isTrusted:false}));assert.equal(h.quiet(),false);
+ assert.doesNotMatch(fn(source,'prepareCellsUnderstandPointer'),/preventDefault|stopPropagation|\.focus\(|\.blur\(/);
+});
