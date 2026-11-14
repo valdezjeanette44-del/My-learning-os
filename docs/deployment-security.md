@@ -30,7 +30,8 @@ other directory. Input bytes are copied without rewriting or normalization.
 Do not put hand-authored content in this generated directory.
 
 `vercel.json` keeps the Other preset (`framework: null`), selects this build command
-and output directory, and keeps source/log publication false. It adds no routing,
+and output directory. Deployment protection remains a dashboard setting, unchanged
+by this configuration. It adds no routing,
 redirect, function, runtime, install, cache or environment overrides. `.gitignore`
 excludes generated output. No package manifest or dependency is introduced.
 

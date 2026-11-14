@@ -119,7 +119,10 @@ test('HTML navigation, manifest, CSS resources and literal JS asset paths exist 
 test('Vercel serves only dedicated output while native Tutor source and CI remain unchanged',async()=>{
   const config=JSON.parse(await readFile('vercel.json','utf8'));
   assert.equal(config.framework,null);assert.equal(config.outputDirectory,'dist-public');
-  assert.equal(config.buildCommand,'node scripts/build-public.mjs');assert.equal(config.public,false);
+  assert.equal(config.buildCommand,'node scripts/build-public.mjs');
+  // Current official Vercel schema rejects additional properties, including public.
+  assert.deepEqual(Object.keys(config).sort(),['$schema','buildCommand','framework','outputDirectory']);
+  assert.equal(config.$schema,'https://openapi.vercel.sh/vercel.json');
   assert.equal(config.routes,undefined);assert.equal(config.rewrites,undefined);assert.equal(config.builds,undefined);
   assert.ok(!PUBLIC_FILES.includes('api/tutor.js'));
   for(const file of [...expected,'api/tutor.js','.github/workflows/static-integrity.yml']) {

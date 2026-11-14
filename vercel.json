@@ -2,6 +2,5 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "buildCommand": "node scripts/build-public.mjs",
-  "outputDirectory": "dist-public",
-  "public": false
+  "outputDirectory": "dist-public"
 }
