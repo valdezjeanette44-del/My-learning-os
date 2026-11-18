@@ -2,6 +2,15 @@ name: Static integrity checks
 
 on:
   workflow_dispatch:
+    inputs:
+      approved_candidate_sha:
+        description: Full candidate SHA independently approved by the founder
+        required: true
+        type: string
+      trusted_policy_sha:
+        description: Full verification-policy SHA separately reviewed and approved
+        required: true
+        type: string
   pull_request:
   push:
     branches:
@@ -17,9 +26,23 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          # Pinned PR #47/source objects are mandatory historical evidence.
+          fetch-depth: 0
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
       - name: Run static integrity tests
         run: node --test tests/*.test.mjs
+      - name: Verify packaging (provisional or integration evidence only)
+        run: node scripts/verify-candidate.mjs --mode provisional
+      - name: Verify independently approved exact candidate and policy
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          APPROVED_CANDIDATE_SHA: ${{ inputs.approved_candidate_sha }}
+          TRUSTED_POLICY_SHA: ${{ inputs.trusted_policy_sha }}
+        run: |
+          node -e "for(const key of ['APPROVED_CANDIDATE_SHA','TRUSTED_POLICY_SHA'])if(!/^[0-9a-f]{40}$/.test(process.env[key]||''))throw Error('Full externally approved SHA required: '+key)"
+          git show "$TRUSTED_POLICY_SHA:scripts/verify-candidate.mjs" > "$RUNNER_TEMP/trusted-verify-candidate.mjs"
+          node "$RUNNER_TEMP/trusted-verify-candidate.mjs" --root "$GITHUB_WORKSPACE" --mode candidate --expected-sha "$APPROVED_CANDIDATE_SHA" --trusted-policy-sha "$TRUSTED_POLICY_SHA"

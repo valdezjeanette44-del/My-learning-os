@@ -1,5 +1,128 @@
 # Deployment packaging correction — local implementation
 
+## Verification contract v1.0 — security-maintenance increment, 18 November 2026
+
+Status: local implementation, uncommitted; execution evidence must be recorded
+separately. This increment starts at PR #47 commit
+`554e7d3016c4c9e34003dfd7c4fa656475464aaa`. It does not contain Understand,
+animal-cell artwork or application changes. The historical sections below remain
+audit evidence, not a current deployment claim.
+
+### Three independent questions
+
+1. Historical integrity: the original snapshot remains byte-equivalent (checkout
+   CRLF allowed) to its blob in pinned PR #47. Its original application/Tutor/CI
+   hashes are evaluated against raw blobs in original source commit
+   `7b998c5b1ba63f566c8d793aa85c004aaec06f16`, never current feature files.
+   Original expected hashes are not regenerated. Missing Git objects fail.
+2. Ongoing security: exactly 62 independently classified public paths, 15 HTML
+   pages, private/internal exclusions, source/output symlink rejection, safe fixed
+   output handling, missing-input preservation, stale-output removal, runtime
+   references and exact packaged bytes remain mandatory tests. Only the existing
+   public photography credits are an exception to internal Markdown exclusion.
+3. Candidate identity: exact-candidate evidence requires an externally approved
+   full candidate SHA AND a separately approved trusted policy SHA. Neither is
+   loaded from a candidate-owned approval file or inferred from a passing test.
+
+### Provisional verification, before commit
+
+With explicit permission to create disposable test/build fixtures:
+
+```text
+node --test tests/*.test.mjs
+node scripts/verify-candidate.mjs --mode provisional
+```
+
+The verifier reads the current worktree inputs and records HEAD only as its
+baseline. It builds in a guarded OS-temp fixture and cleans that fixture. It
+does not create project dist-public output, change either existing workspace,
+or save a digest manifest into the repository. Its JSON output explicitly says
+uncommitted/integration evidence, not approved exact-candidate evidence. Private
+untracked files are neither inputs nor approval authority. Packaging tests plant
+synthetic internal canaries; they never need real private-document contents.
+
+### Committed and remote verification, after separate authorization
+
+Record the repository, candidate SHA, base SHA, trusted policy SHA, reviewed scope
+and founder approval outside candidate source (for example in the release approval
+and Actions dispatch record). The verifier requires HEAD to equal the supplied
+candidate SHA, and all security-critical policy files to match both the trusted
+Git revision and the working checkout. It rejects changed policy and dirty public
+inputs. Textual checkout CRLF is accepted only when it represents the same source;
+packaging inputs are materialized from raw candidate Git blobs and output is
+compared byte-for-byte to those blobs. The report includes SHA-256 and size for
+every public path. Digests describe evidence; they do not approve new files.
+
+Release verification must execute the verifier extracted from the externally
+approved policy commit, using its `--root` argument to inspect the candidate.
+Do not trust a candidate-modified verifier merely because it claims a pass.
+The existing manual workflow performs that extraction into RUNNER_TEMP, with
+required `approved_candidate_sha` and `trusted_policy_sha` inputs. It uses full
+history so the fixed historical objects are available; unavailable objects fail.
+No network fallback, dependency, deployment step or secret is introduced by the
+verifier. GitHub checkout itself continues to require repository access.
+
+The workflow reports event SHA and PR head/base. PR runs retain their integration
+checkout and are labelled provisional/integration evidence, not feature-head
+release approval. Push-main runs likewise do not infer founder acceptance.
+Exact feature-head evidence uses manual dispatch on the verified feature branch
+and must match the separately approved SHA. A branch movement causes failure.
+
+### Trust bootstrap and future policy changes
+
+This new verifier does not exist at PR #47. Therefore that commit cannot serve as
+its trusted policy revision. After separate commit authorization, an independent
+review must approve the new security commit as the initial policy revision.
+For that bootstrap, candidate and policy SHA may be the same ONLY with explicit
+external approval of both roles. Passing its own CI is not that approval.
+Future changes to inventory, packager, verifier, security tests, workflow or config
+require explicit review and a new approved policy revision. The policy cannot
+silently accept animal-cell.webp: this increment retains the original 62 files.
+
+The manual workflow remains code under review. If it changes, inspect its diff and
+run the pinned verifier independently; these checks do not provide a malicious-code
+sandbox or cryptographic proof of founder identity. Branch protection/settings are
+unchanged. External approval and review of the exact policy remain essential.
+
+### Failure and learning-data guarantees
+
+Permission errors (including EPERM during file symlink/junction creation), missing
+objects, inventory differences, changed/missing/extra bytes and SHA mismatches are
+failures, never skips. Re-run in an explicitly approved capable environment if
+needed. Existing output is preserved for prevalidation/missing-input failures;
+atomic recovery from arbitrary mid-copy I/O failure is not claimed. Failed output
+must not be deployed. Output/source junction tests remain intact, with an added
+file-symlink test. Historical assessments, learning-data compatibility and existing
+storage/backup tests remain unchanged. No founder browser data is accessed.
+
+Before release: full suite, provisional evidence, independent policy review,
+exact-candidate CI, separately authorized protected-preview/output verification,
+and founder release approval are required. Authentication redirects do not prove
+private-file exclusion. Native Tutor bundling and hosted routes remain separate
+deployment checks. No commit, push, PR, merge or deployment is authorized here.
+
+### Local execution evidence — 18 November 2026
+
+Founder separately approved the full suite and provisional verifier. Executed in
+the dedicated codex/deployment-verification-contract worktree, not Antigravity:
+
+- Full suite: 236 tests; 235 passed, one failed, zero skipped. The new approved-file
+  symlink test failed at fixture creation with Windows EPERM. Original directory
+  junction/output tests and historical/learning compatibility tests passed. This
+  is incomplete security verification, not a green suite or an application defect.
+  The file-symlink assertion is retained unchanged and must pass in a capable
+  environment; no system permission changes or test skips were made.
+- Provisional verifier: passed, exactly 62 public files; candidateSha and policy
+  SHA are null and identityAndPolicyMatched is false, as required before commit.
+- JavaScript syntax and git diff whitespace checks passed.
+- No committed-candidate positive end-to-end run or hosted CI/deployment was
+  performed. Those require a future committed revision, independent approval of
+  candidate/policy SHAs and separate publication/workflow authorization.
+- Antigravity retains its four tracked modifications, new image and new Understand
+  tests; the original workspace and private founder documents were not edited.
+
+---
+
 Date: 14 November 2026. Status: local, uncommitted, not published.
 
 ## Baseline and scope
