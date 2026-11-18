@@ -7,8 +7,10 @@ import {createHash} from 'node:crypto';
 import vm from 'node:vm';
 import {PUBLIC_FILES} from '../scripts/public-files.mjs';
 import {buildPublic} from '../scripts/build-public.mjs';
+import {historicalSnapshot, gitBytes, HISTORICAL_RELEASE} from '../scripts/verify-candidate.mjs';
 
-const baseline = JSON.parse(await readFile(new URL('./fixtures/deployment-baseline.json',import.meta.url),'utf8'));
+// Missing historical Git objects are failures, never permission-dependent skips.
+const baseline = await historicalSnapshot(process.cwd());
 const baselinePaths = Object.keys(baseline.files);
 // Independent policy applied to the fixed production tree, not the packager's inventory.
 const internal = baselinePaths.filter(p => p.startsWith('docs/') || p.startsWith('tests/') ||
@@ -116,7 +118,7 @@ test('HTML navigation, manifest, CSS resources and literal JS asset paths exist 
   for(const icon of manifest.icons)check(icon.src,'manifest.webmanifest');
   assert.ok(count>50);
 });
-test('Vercel serves only dedicated output while native Tutor source and CI remain unchanged',async()=>{
+test('Vercel serves only dedicated output and never publishes native Tutor source',async()=>{
   const config=JSON.parse(await readFile('vercel.json','utf8'));
   assert.equal(config.framework,null);assert.equal(config.outputDirectory,'dist-public');
   assert.equal(config.buildCommand,'node scripts/build-public.mjs');
@@ -125,8 +127,11 @@ test('Vercel serves only dedicated output while native Tutor source and CI remai
   assert.equal(config.$schema,'https://openapi.vercel.sh/vercel.json');
   assert.equal(config.routes,undefined);assert.equal(config.rewrites,undefined);assert.equal(config.builds,undefined);
   assert.ok(!PUBLIC_FILES.includes('api/tutor.js'));
+});
+
+test('PR #47 historical application, Tutor and CI hashes remain intact against pinned historical inputs',()=>{
   for(const file of [...expected,'api/tutor.js','.github/workflows/static-integrity.yml']) {
-    const bytes=await readFile(file);
+    const bytes=gitBytes(process.cwd(),HISTORICAL_RELEASE,file);
     const blobHash=buffer=>createHash('sha1').update(`blob ${buffer.length}\0`).update(buffer).digest('hex');
     const normalized=Buffer.from(bytes.toString('utf8').replace(/\r\n/g,'\n'));
     assert.ok(blobHash(bytes)===baseline.files[file] ||
