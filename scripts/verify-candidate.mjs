@@ -28,6 +28,22 @@ export function verifyIdentity(expectedSha, actualSha) {
   sha(expectedSha); sha(actualSha);
   assert.equal(actualSha, expectedSha, 'Candidate identity differs from independently approved SHA');
 }
+export function verifyExecutionIdentity({mode, expectedSha, head, environment = process.env}) {
+  if (mode === 'provisional') return 'provisional/integration';
+  assert.ok(['candidate', 'candidate-ci'].includes(mode), 'Unknown verification mode');
+  verifyIdentity(expectedSha, head);
+  if (mode === 'candidate-ci') {
+    assert.equal(environment.GITHUB_ACTIONS, 'true', 'Exact-candidate CI requires GitHub Actions context');
+    assert.equal(environment.GITHUB_EVENT_NAME, 'workflow_dispatch', 'Exact-candidate CI requires workflow_dispatch');
+    sha(environment.GITHUB_SHA);
+    assert.equal(environment.GITHUB_SHA, expectedSha, 'GitHub Actions event SHA differs from approved candidate');
+    return 'exact-candidate-ci';
+  }
+  // Local mode must never substitute for missing/malformed CI metadata.
+  assert.ok(!['CI', 'GITHUB_ACTIONS', 'GITHUB_SHA', 'GITHUB_EVENT_NAME', 'GITHUB_EVENT_PATH']
+    .some(key => Object.hasOwn(environment, key)), 'Local candidate mode cannot run with CI context; use candidate-ci');
+  return 'local-candidate';
+}
 const normalized = bytes => Buffer.from(bytes.toString('utf8').replace(/\r\n/g, '\n'));
 function sourceMatches(actual, wanted, file) {
   // Checkout CRLF is allowed for textual source only; output always uses raw Git bytes.
@@ -78,11 +94,13 @@ export async function verifyOutput(output, expectedBytes) {
   }
   return digests;
 }
-export async function verifyCandidate({root, mode, expectedSha, trustedPolicySha}) {
-  assert.ok(['provisional', 'candidate'].includes(mode), 'Use provisional or candidate mode');
+export async function verifyCandidate({root, mode, expectedSha, trustedPolicySha, environment = process.env}) {
+  assert.ok(['provisional', 'candidate', 'candidate-ci'].includes(mode), 'Use provisional, candidate or candidate-ci mode');
   const head = execFileSync('git', ['-C', root, 'rev-parse', 'HEAD'], {encoding: 'utf8'}).trim();
-  if (mode === 'candidate') {
-    verifyIdentity(expectedSha, head); commitExists(root, trustedPolicySha);
+  const evidence = verifyExecutionIdentity({mode, expectedSha, head, environment});
+  const exact = mode !== 'provisional';
+  if (exact) {
+    commitExists(root, trustedPolicySha);
     const candidateFiles = new Map(), trustedFiles = new Map(), workingFiles = new Map();
     for (const file of POLICY_FILES) {
       candidateFiles.set(file, gitBytes(root, head, file));
@@ -102,7 +120,7 @@ export async function verifyCandidate({root, mode, expectedSha, trustedPolicySha
       assert.ok(!stat.isSymbolicLink(), `Source symlink: ${ancestor}`);
     }
     const current = await readFile(path.join(root, file));
-    if (mode === 'candidate') {
+    if (exact) {
       const committed = gitBytes(root, head, file);
       assert.ok(sourceMatches(current, committed, file), `Dirty candidate source: ${file}`);
       inputs.set(file, committed);
@@ -116,8 +134,9 @@ export async function verifyCandidate({root, mode, expectedSha, trustedPolicySha
     }
     const {buildPublic} = await import(pathToFileURL(path.join(root, 'scripts/build-public.mjs')).href);
     const digests = await verifyOutput(await buildPublic(fixture), inputs);
-    return {mode, identityAndPolicyMatched: mode === 'candidate', candidateSha: mode === 'candidate' ? head : null,
-      baselineHead: head, trustedPolicySha: mode === 'candidate' ? trustedPolicySha : null,
+    return {mode, evidence, identityAndPolicyMatched: exact, candidateSha: exact ? head : null,
+      eventSha: mode === 'candidate-ci' ? environment.GITHUB_SHA : null,
+      baselineHead: head, trustedPolicySha: exact ? trustedPolicySha : null,
       files: digests, warning: mode === 'provisional' ? 'Uncommitted/integration evidence only; not an approved exact-candidate result' :
         'External approval of both supplied SHAs is required; this program cannot authenticate founder approval'};
   } finally {

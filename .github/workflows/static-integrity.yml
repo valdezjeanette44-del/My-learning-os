@@ -45,4 +45,4 @@ jobs:
         run: |
           node -e "for(const key of ['APPROVED_CANDIDATE_SHA','TRUSTED_POLICY_SHA'])if(!/^[0-9a-f]{40}$/.test(process.env[key]||''))throw Error('Full externally approved SHA required: '+key)"
           git show "$TRUSTED_POLICY_SHA:scripts/verify-candidate.mjs" > "$RUNNER_TEMP/trusted-verify-candidate.mjs"
-          node "$RUNNER_TEMP/trusted-verify-candidate.mjs" --root "$GITHUB_WORKSPACE" --mode candidate --expected-sha "$APPROVED_CANDIDATE_SHA" --trusted-policy-sha "$TRUSTED_POLICY_SHA"
+          node "$RUNNER_TEMP/trusted-verify-candidate.mjs" --root "$GITHUB_WORKSPACE" --mode candidate-ci --expected-sha "$APPROVED_CANDIDATE_SHA" --trusted-policy-sha "$TRUSTED_POLICY_SHA"

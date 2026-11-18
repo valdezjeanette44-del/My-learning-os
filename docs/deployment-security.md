@@ -12,8 +12,11 @@ audit evidence, not a current deployment claim.
 
 1. Historical integrity: the original snapshot remains byte-equivalent (checkout
    CRLF allowed) to its blob in pinned PR #47. Its original application/Tutor/CI
-   hashes are evaluated against raw blobs in original source commit
-   `7b998c5b1ba63f566c8d793aa85c004aaec06f16`, never current feature files.
+   hashes are evaluated against raw blobs in audited PR #47 release commit
+   `554e7d3016c4c9e34003dfd7c4fa656475464aaa`, never current feature files.
+   Expected hashes remain those captured from original source commit
+   `7b998c5b1ba63f566c8d793aa85c004aaec06f16`: this verifies preservation
+   across PR #47, rather than only consistency with the snapshot's source.
    Original expected hashes are not regenerated. Missing Git objects fail.
 2. Ongoing security: exactly 62 independently classified public paths, 15 HTML
    pages, private/internal exclusions, source/output symlink rejection, safe fixed
@@ -68,6 +71,16 @@ release approval. Push-main runs likewise do not infer founder acceptance.
 Exact feature-head evidence uses manual dispatch on the verified feature branch
 and must match the separately approved SHA. A branch movement causes failure.
 
+The manual workflow explicitly uses `--mode candidate-ci`. Before policy reads or
+packaging, this requires GITHUB_ACTIONS=true, workflow_dispatch and a valid
+GITHUB_SHA equal to both externally approved candidate SHA and checkout HEAD.
+Missing/malformed context or a different event fails; reporting GITHUB_SHA alone
+is not evidence. Local `--mode candidate` rejects CI/GitHub environment markers,
+even incomplete markers, rather than silently falling back to a local check.
+Provisional mode remains explicitly non-release evidence for PR merge-ref runs.
+Successful JSON reports distinguish local-candidate, exact-candidate-ci and
+provisional/integration evidence, including the checked event SHA in CI mode.
+
 ### Trust bootstrap and future policy changes
 
 This new verifier does not exist at PR #47. Therefore that commit cannot serve as
@@ -120,6 +133,26 @@ the dedicated codex/deployment-verification-contract worktree, not Antigravity:
   candidate/policy SHAs and separate publication/workflow authorization.
 - Antigravity retains its four tracked modifications, new image and new Understand
   tests; the original workspace and private founder documents were not edited.
+
+### Targeted corrections after committed review — local, 18 November 2026
+
+From ef4df88c5e9cac90f25c64e5e35f06f3c8a3bcb8: historical verification now
+checks audited release blobs against the same original expected hashes. Regression
+coverage executes the actual historical assertion with pinned-release inputs,
+then altered and missing blobs; every historical public/Tutor/CI path is required.
+Manual exact-candidate CI now enforces three-way SHA equality with fail-closed
+context validation. Tests cover both SHA mismatch directions, missing/malformed
+context, wrong events, local/PR distinction and real CLI rejection before build.
+No baseline, public inventory, packager or learning compatibility assertion changed.
+Founder approved both local verification commands. Full suite: 241 tests,
+240 passed, one failed, zero skipped. All five added regression tests passed;
+the only failure remains Windows EPERM creating the file-symlink fixture
+(`tests/deployment-candidate.test.mjs`, symlink creation), before its rejection
+assertion can execute. The unchanged original junction tests passed. Provisional
+verification passed with 62 public files and no approved-candidate identity claim.
+Syntax and whitespace checks passed. Remote/exact-committed CI is still unrun;
+the corrected policy is uncommitted and requires independent review before any
+future trusted-policy designation. No permission bypass or system change occurred.
 
 ---
 

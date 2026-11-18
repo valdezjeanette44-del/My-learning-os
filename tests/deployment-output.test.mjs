@@ -7,7 +7,7 @@ import {createHash} from 'node:crypto';
 import vm from 'node:vm';
 import {PUBLIC_FILES} from '../scripts/public-files.mjs';
 import {buildPublic} from '../scripts/build-public.mjs';
-import {historicalSnapshot, gitBytes, HISTORICAL_SOURCE} from '../scripts/verify-candidate.mjs';
+import {historicalSnapshot, gitBytes, HISTORICAL_RELEASE} from '../scripts/verify-candidate.mjs';
 
 // Missing historical Git objects are failures, never permission-dependent skips.
 const baseline = await historicalSnapshot(process.cwd());
@@ -131,7 +131,7 @@ test('Vercel serves only dedicated output and never publishes native Tutor sourc
 
 test('PR #47 historical application, Tutor and CI hashes remain intact against pinned historical inputs',()=>{
   for(const file of [...expected,'api/tutor.js','.github/workflows/static-integrity.yml']) {
-    const bytes=gitBytes(process.cwd(),HISTORICAL_SOURCE,file);
+    const bytes=gitBytes(process.cwd(),HISTORICAL_RELEASE,file);
     const blobHash=buffer=>createHash('sha1').update(`blob ${buffer.length}\0`).update(buffer).digest('hex');
     const normalized=Buffer.from(bytes.toString('utf8').replace(/\r\n/g,'\n'));
     assert.ok(blobHash(bytes)===baseline.files[file] ||
